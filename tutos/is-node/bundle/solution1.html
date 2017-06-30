@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>is-node</title>
+</head>
+<body>
+<script type="text/javascript">
+const isNode = function () { try { return this === global } catch (e) { return false } }
+const isBrowser = function () { try { return this === window } catch (e) { return false } }
+// const isNode = function () { return !!(typeof process !== 'undefined' && process.versions && process.versions.node) }
+// const isBrowser = function () { return !(typeof process !== 'undefined' && process.versions && process.versions.node) }
+
+async function main () {
+  'use strict'
+  if (isBrowser()) {
+    console.log('Running under browser')
+  } else if (isNode()) {
+    console.log('Running under node.js')
+  } else {
+    throw new Error('Unknown running context')
+  }
+}
+
+function trycatch (cb) {
+  'use strict'
+  console.log('launching async processes')
+  _trycatch(cb)
+  console.log('async processes launched')
+}
+
+async function _trycatch (cb) {
+  'use strict'
+  try {
+    await cb()
+    console.log('async processes succeeded, nothing more to do, leaving script')
+  } catch (err) {
+    console.error('async processes failed with error:', err.message)
+  }
+}
+
+function testIsNode () {
+  'use strict'
+  trycatch(main)
+}
+
+testIsNode()
+</script>
+</body>
+</html>

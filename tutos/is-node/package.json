@@ -1,0 +1,36 @@
+{
+  "name": "is-node",
+  "version": "1.0.0",
+  "description": "different method for is node or browser",
+  "license": "MIT",
+  "repository": {
+    "type": "git"
+  },
+  "browser": {
+    "./src/lib/index.js": "./src/lib/browser.js"
+  },
+  "dependencies": {
+    "browserify": "^14.4.0",
+    "cross-env": "^5.0.1"
+  },
+  "scripts": {
+    "start": "npm run sol2:start:server",
+    "sol1:start:server": "node src/solution1.js",
+    "sol1:deploy": "cp bundle/solution1.html //safetest.hq.k.grp/custom/tmp/",
+    "sol1:start:browser": "bash bin/chrome https://safetest.hq.k.grp/Safetest/custom/tmp/solution1.html",
+    "sol2:start:server": "node src/solution2.js",
+    "sol2:build": "browserify src/solution2.js -o bundle/solution2.js && bash bin/js2html bundle/solution2.js",
+    "sol2:deploy": "cp bundle/solution2.* //safetest.hq.k.grp/custom/tmp/",
+    "sol2:start:browser": "bash bin/chrome https://safetest.hq.k.grp/Safetest/custom/tmp/solution2.html",
+    "sol3:start:server": "cross-env node=false node src/solution3-node.test.js",
+    "sol3:start:browser": "cross-env node=false node src/solution3-browser.test.js",
+    "sol3:test:server": "jest solution3-node.test.js --env=node",
+    "sol3:test:browser": "jest solution3-browser.test.js --env=jsdom"
+  },
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "jest": "^20.0.4",
+    "sinon": "^2.3.6",
+    "sinon-chai": "^2.11.0"
+  }
+}
