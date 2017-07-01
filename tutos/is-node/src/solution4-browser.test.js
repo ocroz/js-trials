@@ -1,5 +1,12 @@
 // load isNode and isBrowser first or their values are wrong
-const { isNode, isBrowser } = require('./lib/isnode')
+const { isNode, isBrowser } = require('./lib/index')
+
+// load ./lib/browser instead of ./lib/index as previously required
+/* global jest */
+jest.mock('./lib/index', () => {
+  return require('./lib/browser')
+})
+
 console.log('isBrowser =', isBrowser(), ', isNode =', isNode(), '.')
 
 /* global describe it */
@@ -10,7 +17,7 @@ describe('is-browser tests', () => {
     expect(isBrowser()).to.equal(true)
   })
 
-  it('isNode should be true too', () => {
-    expect(isNode()).to.equal(true)
+  it('isNode should be false', () => {
+    expect(isNode()).to.equal(false)
   })
 })

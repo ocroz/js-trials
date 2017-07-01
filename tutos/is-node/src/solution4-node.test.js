@@ -1,5 +1,5 @@
 // load isNode and isBrowser first or their values are wrong
-const { isNode, isBrowser } = require('./lib/isnode')
+const { isNode, isBrowser } = require('./lib/index')
 console.log('isBrowser =', isBrowser(), ', isNode =', isNode(), '.')
 
 /* global describe it */
