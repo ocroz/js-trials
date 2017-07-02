@@ -1,11 +1,9 @@
 // load isNode and isBrowser first or their values are wrong
-const { isNode, isBrowser } = require('./lib/index')
+const { isNode, isBrowser } = require('./solution4')
 
-// load ./lib/browser instead of ./lib/index as previously required
 /* global jest */
-jest.mock('./lib/index', () => {
-  return require('./lib/browser')
-})
+jest.mock('./lib/index')
+// same as: jest.mock('./lib/index', () => { return require('./lib/__mocks__/index') })
 
 console.log('isBrowser =', isBrowser(), ', isNode =', isNode(), '.')
 

@@ -1,5 +1,10 @@
 // load isNode and isBrowser first or their values are wrong
-const { isNode, isBrowser } = require('./lib/index')
+const { isNode, isBrowser } = require('./solution4')
+
+//
+// No mock needed
+//
+
 console.log('isBrowser =', isBrowser(), ', isNode =', isNode(), '.')
 
 /* global describe it */

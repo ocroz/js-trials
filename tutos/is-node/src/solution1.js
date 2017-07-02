@@ -1,5 +1,5 @@
 'use strict'
 
-const { testIsNode } = require('./test-isnode')
+const { testIsNode } = require('./solution1-test')
 
 testIsNode()

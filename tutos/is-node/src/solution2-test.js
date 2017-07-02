@@ -1,10 +1,8 @@
 'use strict'
 
-const { isNode, isBrowser } = require('./lib/isnode')
-const { trycatch } = require('./lib/trycatch')
+const { isNode, isBrowser } = require('./lib/index')
 
-async function main () {
-  'use strict'
+function testIsNode () {
   if (isBrowser()) {
     console.log('Running under browser')
   } else if (isNode()) {
@@ -12,11 +10,6 @@ async function main () {
   } else {
     throw new Error('Unknown running context')
   }
-}
-
-function testIsNode () {
-  'use strict'
-  trycatch(main)
 }
 
 module.exports = { testIsNode }

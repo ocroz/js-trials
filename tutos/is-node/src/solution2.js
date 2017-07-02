@@ -1,17 +1,5 @@
 'use strict'
 
-const { isNode, isBrowser } = require('./lib/index')
-const { trycatch } = require('./lib/trycatch')
+const { testIsNode } = require('./solution2-test')
 
-async function main () {
-  'use strict'
-  if (isBrowser()) {
-    console.log('Running under browser')
-  } else if (isNode()) {
-    console.log('Running under node.js')
-  } else {
-    throw new Error('Unknown running context')
-  }
-}
-
-trycatch(main)
+testIsNode()
