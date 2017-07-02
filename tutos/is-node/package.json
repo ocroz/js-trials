@@ -2,7 +2,7 @@
   "name": "is-node",
   "version": "1.0.0",
   "description": "different method for is node or browser",
-  "license": "MIT",
+  "license": "ISC",
   "repository": {
     "type": "git"
   },
@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "npm run sol1:start:server",
+    "test": "npm run sol4:test:browser",
     "sol1:start:server": "node src/solution1.js",
     "sol1:start:browser": "bash bin/chrome bundle/solution1.html",
     "sol2:start:server": "node src/solution2.js",
