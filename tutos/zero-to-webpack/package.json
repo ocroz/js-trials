@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "build:prod": "cross-env NODE_ENV=production webpack",
+    "start": "nodemon dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,17 +16,15 @@
     "babel-loader": "^7.1.1",
     "babel-preset-env": "^1.6.0",
     "babel-preset-react": "^6.24.1",
+    "cross-env": "^5.0.1",
     "nodemon": "^1.11.0",
-    "webpack": "^3.0.0"
+    "webpack": "^3.0.0",
+    "webpack-node-externals": "^1.6.0"
   },
   "dependencies": {
     "colors": "^1.1.2",
     "express": "^4.15.3",
     "react": "^15.6.1",
     "react-dom": "^15.6.1"
-  },
-  "scripts": {
-    "build": "webpack",
-    "start": "nodemon dist/server.js"
   }
 }
