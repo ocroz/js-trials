@@ -20,6 +20,6 @@ module.exports = {
   },
 
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({ output: {beautify: true, comments: false} })
-  ].filter(e => e)
+    new webpack.optimize.UglifyJsPlugin({ output: {beautify: true} })
+  ]
 }
