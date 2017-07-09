@@ -1,55 +1,72 @@
-!(function (n) {
-  function e (t) {
-    if (r[t]) return r[t].exports
-    var o = r[t] = {
-      i: t,
-      l: !1,
+(function (modules) {
+  var installedModules = {}
+  function __webpack_require__ (moduleId) {
+    if (installedModules[moduleId]) {
+      return installedModules[moduleId].exports
+    }
+    var module = installedModules[moduleId] = {
+      i: moduleId,
+      l: false,
       exports: {}
     }
-    return n[t].call(o.exports, o, o.exports, e), o.l = !0, o.exports
+    modules[moduleId].call(module.exports, module, module.exports, __webpack_require__)
+    module.l = true
+    return module.exports
   }
-  var r = {}
-  e.m = n, e.c = r, e.d = function (n, r, t) {
-    e.o(n, r) || Object.defineProperty(n, r, {
-      configurable: !1,
-      enumerable: !0,
-      get: t
-    })
-  }, e.n = function (n) {
-    var r = n && n.__esModule ? function () {
-      return n.default
-    } : function () {
-      return n
+  __webpack_require__.m = modules
+  __webpack_require__.c = installedModules
+  __webpack_require__.d = function (exports, name, getter) {
+    if (!__webpack_require__.o(exports, name)) {
+      Object.defineProperty(exports, name, {
+        configurable: false,
+        enumerable: true,
+        get: getter
+      })
     }
-    return e.d(r, 'a', r), r
-  }, e.o = function (n, e) {
-    return Object.prototype.hasOwnProperty.call(n, e)
-  }, e.p = '', e(e.s = 0)
-}([ function (n, e, r) {
-  'use strict';
-  (0, r(1).testIsNode)()
-}, function (n, e, r) {
+  }
+  __webpack_require__.n = function (module) {
+    var getter = module && module.__esModule ? function getDefault () {
+      return module['default']
+    } : function getModuleExports () {
+      return module
+    }
+    __webpack_require__.d(getter, 'a', getter)
+    return getter
+  }
+  __webpack_require__.o = function (object, property) {
+    return Object.prototype.hasOwnProperty.call(object, property)
+  }
+  __webpack_require__.p = ''
+  return __webpack_require__(__webpack_require__.s = 0)
+})([ function (module, exports, __webpack_require__) {
   'use strict'
-  function t () {
-    if (s()) console.log('Running under browser'); else {
-      if (!u()) throw new Error('Unknown running context')
+  var _require = __webpack_require__(1), testIsNode = _require.testIsNode
+  testIsNode()
+}, function (module, exports, __webpack_require__) {
+  'use strict'
+  var _require = __webpack_require__(2), isNode = _require.isNode, isBrowser = _require.isBrowser
+  function testIsNode () {
+    if (isBrowser()) {
+      console.log('Running under browser')
+    } else if (isNode()) {
       console.log('Running under node.js')
+    } else {
+      throw new Error('Unknown running context')
     }
   }
-  var o = r(2), u = o.isNode, s = o.isBrowser
-  n.exports = {
-    testIsNode: t
+  module.exports = {
+    testIsNode: testIsNode
   }
-}, function (n, e, r) {
+}, function (module, exports, __webpack_require__) {
   'use strict'
-  function t () {
-    return !1
+  function isNode () {
+    return false
   }
-  function o () {
-    return !0
+  function isBrowser () {
+    return true
   }
-  n.exports = {
-    isNode: t,
-    isBrowser: o
+  module.exports = {
+    isNode: isNode,
+    isBrowser: isBrowser
   }
-} ]))
+} ])
