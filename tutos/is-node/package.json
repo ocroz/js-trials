@@ -15,13 +15,14 @@
   },
   "scripts": {
     "start": "npm run sol1:start:server",
-    "build": "npm run sol2:build:webpack",
+    "build": "npm run sol2:build:webpack:dev",
     "test": "npm run sol3:test:server && npm run sol4:test:browser",
     "sol1:start:server": "node src/solution1.js",
     "sol1:start:browser": "chrome bundle/solution1.html",
     "sol2:start:server": "node src/solution2.js",
-    "sol2:build:browserify": "browserify src/solution2.js -o bundle/solution2-browserify.js",
-    "sol2:build:webpack": "webpack && standard --fix bundle/solution2-webpack.js || echo.",
+    "sol2:build:browserify": "browserify src/solution2.js -o bundle/solution2-browserify.js && standard --fix bundle/solution2-browserify.js || echo.",
+    "sol2:build:webpack:dev": "cross-env NODE_ENV=dev webpack && standard --fix bundle/solution2-webpack-main.js || echo.",
+    "sol2:build:webpack:test": "webpack && standard --fix bundle/solution2-webpack-main.js || echo.",
     "sol2:build:webpack:prod": "webpack -p",
     "sol2:start:browser": "chrome bundle/solution2.html",
     "sol3:test:server": "jest solution3-node.test.js --env=node",
@@ -34,6 +35,7 @@
     "babel-loader": "^7.1.1",
     "babel-preset-env": "^1.6.0",
     "chai": "^4.0.2",
+    "cross-env": "^5.0.1",
     "jest": "^20.0.4"
   }
 }
