@@ -25,13 +25,24 @@ const clientConfig = {
   },
 
   plugins: [
-    PRODUCTION && new MinifierPlugin()
+    PRODUCTION && new MinifierPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    })
   ].filter(e => e)
 }
 
 const serverConfig = {
   target: 'node',
-  externals: [ nodeExternals() ],
+  externals: [ nodeExternals({
+    whitelist: PRODUCTION ? [ 'react', 'react-dom/server' ] : []
+  }) ],
+  // resolve: {
+  //   alias: PRODUCTION ? {
+  //     'react': 'react/dist/react.min.js',
+  //     'react-dom/server': 'react-dom/dist/react-dom-server.min.js'
+  //   } : {}
+  // },
 
   node: {
     __dirname: true
@@ -55,7 +66,10 @@ const serverConfig = {
   },
 
   plugins: [
-    PRODUCTION && new MinifierPlugin()
+    PRODUCTION && new MinifierPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    })
   ].filter(e => e)
 }
 
