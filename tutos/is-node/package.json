@@ -22,7 +22,7 @@
     "sol2:start:server": "node src/solution2.js",
     "sol2:build:browserify": "browserify src/solution2.js -o bundle/solution2-browserify.js && standard --fix bundle/solution2-browserify.js || echo.",
     "sol2:build:webpack:dev": "cross-env NODE_ENV=dev webpack && standard --fix bundle/solution2-webpack-main.js || echo.",
-    "sol2:build:webpack:test": "webpack && standard --fix bundle/solution2-webpack-main.js || echo.",
+    "sol2:build:webpack:test": "webpack",
     "sol2:build:webpack:prod": "webpack -p",
     "sol2:start:browser": "chrome bundle/solution2.html",
     "sol3:test:server": "jest solution3-node.test.js --env=node",
@@ -36,6 +36,8 @@
     "babel-preset-env": "^1.6.0",
     "chai": "^4.0.2",
     "cross-env": "^5.0.1",
-    "jest": "^20.0.4"
+    "eslint-loader": "^1.9.0",
+    "jest": "^20.0.4",
+    "standard": "^10.0.2"
   }
 }

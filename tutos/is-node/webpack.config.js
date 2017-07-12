@@ -19,7 +19,24 @@ module.exports = {
   ]
 }
 
-if (!isDev) {
+if (isDev) {
+  module.exports.module = {
+    rules: [
+      {
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, './src')
+        ],
+        loader: 'eslint-loader',
+        exclude: /node_modules/,
+        enforce: 'pre',
+        options: {
+          fix: true
+        }
+      }
+    ]
+  }
+} else {
   // Add babel for the code compatibility in various browsers (see babelrc.js) and for the uglify plugin to function
   module.exports.module = {
     rules: [
