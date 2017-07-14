@@ -1,0 +1,19 @@
+{
+  "name": "trycatch",
+  "version": "1.0.0",
+  "description": "always trycatch your main function",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "test": "jest",
+    "dev:test": "npm test -- --watch"
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "jest": "^20.0.4",
+    "sinon": "^2.3.8",
+    "sinon-chai": "^2.11.0"
+  }
+}
