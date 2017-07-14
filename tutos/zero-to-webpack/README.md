@@ -2,7 +2,7 @@
 
 http://www.jumoel.com/2017/zero-to-webpack.html
 
-### What has been achieved?
+## What has been achieved?
 
 If you’ve followed along, you should:
 
