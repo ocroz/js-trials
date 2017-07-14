@@ -1,0 +1,440 @@
+<!--
+    CONTAINER PART:
+    - <html> and <body> tags
+    NOTE: This section is not needed within a Confluence page
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+
+<!--
+    INCLUDE PART:
+    - JIRA server URL
+    - Load jquery.js from JIRA server (not needed if within a Confluence page)
+-->
+
+<script type="text/javascript">
+// JIRA server URL
+const JIRAURL = 'https://atlassian-test.hq.k.grp/jira'
+
+// Load CIC.js and jquery.js from JIRA server
+let script = document.createElement('script')
+script.src = JIRAURL + '/static-assets/jquery-1.7.2.min.js'
+document.getElementsByTagName('head')[0].appendChild(script)
+
+</script>
+
+<!--
+    DEBUG PART:
+    - Function Confluence() as if within a Confluence page
+-->
+
+<script type="text/javascript">
+// DEBUG section
+let Confluence = {
+  getBaseUrl: function () {
+    return 'https://atlassian-test.hq.k.grp/confluence'
+  }
+}
+// DEBUG section
+</script>
+
+<!--
+    CUSTOM PART:
+    - The button to open the form
+    - The form with the questions to ask
+    - The behaviour for the received answers (mandatory/optional)
+    - How to value the JIRA fields (fixed info/received answers/formatting)
+-->
+
+<button id="popup" onclick="createBug()">Submit Bug into CMTOOLSPRCR</button>
+<button id="popup" onclick="createTask()">Submit Task into SPLPRJ</button>
+
+<div id="BugP4CM" class="cic">
+  <form class="cic-body">
+    <p><b>BugP4CM Submit Form</b></p><hr>
+    <p><input id="improvement" placeholder="What needs to be improved?" type="text"/></p>
+    <p><input id="addedvalue" placeholder="What would be the added value?" type="text" required="true"/></p>
+    <p><textarea id="msg" placeholder="Any details about the desired modification?" required="true"></textarea></p>
+    <p><select id="priority" type="jira" class="priorities" placeholder="Select Priority"></select></p>
+    <p><select id="issuetype" type="jira" class="issuetypes" placeholder="Select Issue Type"></select></p>
+    <p><select id="component" type="jira" class="components" placeholder="Select Component"></select></p>
+    <p><select id="affectversion" type="jira" class="versions" placeholder="Select Affected Version"></select></p>
+    <p><select id="fixversion" type="jira" class="versions" placeholder="Select Fix Version"></select></p>
+    <button id="popup" onclick="BugP4CM.cancel()" formnovalidate="true">Cancel</button>
+    <button id="popup" onclick="BugP4CM.submit()">Submit</button>
+  </form>
+</div>
+
+<div id="TaskSPL" class="cic">
+  <form class="cic-body">
+    <p><b>TaskSPL Submit Form</b></p><hr>
+    <p><input id="improvement" placeholder="What needs to be improved?" type="text"/></p>
+    <p><input id="addedvalue" placeholder="What would be the added value?" type="text" required="true"/></p>
+    <p><textarea id="msg" placeholder="Any details about the desired modification?" required="true"></textarea></p>
+    <p><select id="priority" type="jira" class="priorities" placeholder="Select Priority" required="true"></select></p>
+    <p><select id="issuetype" type="jira" class="issuetypes" placeholder="Select Issue Type"></select></p>
+    <p><select id="component" type="jira" class="components" placeholder="Select Component"></select></p>
+    <p><select id="affectversion" type="jira" class="versions" placeholder="Select Affected Version"></select></p>
+    <p><select id="fixversion" type="jira" class="versions" placeholder="Select Fix Version"></select></p>
+    <button id="popup" onclick="TaskSPL.cancel()" formnovalidate="true">Cancel</button>
+    <button id="popup" onclick="TaskSPL.submit()">Submit</button>
+  </form>
+</div>
+
+<script type="text/javascript">
+let BugP4CM
+function createBug () {
+  let myCIC = BugP4CM = new CIC('BugP4CM', 'CMTOOLSPRCR')
+  if (myCIC.constructed) {
+    myCIC.mapfields = function () {
+      return {
+        'fields': {
+          'labels': ['platform'],
+          'assignee': {'name': myCIC.user},
+          'issuetype': {'name': myCIC.value('issuetype')},
+          'priority': {'name': myCIC.value('priority')},
+          'components': myCIC.value('component') ? [ {'name': myCIC.value('component')} ] : undefined,
+          'versions': myCIC.value('affectversion') ? [ {'name': myCIC.value('affectversion')} ] : undefined,
+          'fixVersions': myCIC.value('fixversion') ? [ {'name': myCIC.value('fixversion')} ] : undefined,
+          'summary': myCIC.value('improvement'),
+          'description':
+            '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
+            myCIC.value('addedvalue') +
+            '{panel}' +
+            '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
+            myCIC.value('msg') +
+            '{panel}'
+        }
+      }
+    }
+    myCIC.show()
+  }
+}
+
+let TaskSPL
+function createTask () {
+  let myCIC = TaskSPL = new CIC('TaskSPL', 'SPLPRJ')
+  if (myCIC.constructed) {
+    myCIC.mapfields = function () {
+      return {
+        'fields': {
+          'labels': ['platform'],
+          'assignee': {'name': myCIC.user},
+          'issuetype': {'name': myCIC.value('issuetype')},
+          'priority': {'name': myCIC.value('priority')},
+          'components': myCIC.value('component') ? [ {'name': myCIC.value('component')} ] : undefined,
+          'versions': myCIC.value('affectversion') ? [ {'name': myCIC.value('affectversion')} ] : undefined,
+          'fixVersions': myCIC.value('fixversion') ? [ {'name': myCIC.value('fixversion')} ] : undefined,
+          'summary': myCIC.value('improvement'),
+          'description':
+            '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
+            myCIC.value('addedvalue') +
+            '{panel}' +
+            '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
+            myCIC.value('msg') +
+            '{panel}'
+        }
+      }
+    }
+    myCIC.show()
+  }
+}
+</script>
+
+<!--
+    GENERIC PART:
+    - The style for the form
+    - The REST API calls to the JIRA server
+    - The post-processing on success or error
+-->
+
+<script type="text/javascript">
+/* global JIRAURL Confluence $ alert Option */
+
+// Prefix all complain messages in the console
+function complain (message) {
+  console.log('COMPLAIN: ' + message)
+}
+
+// Get JIRA URL
+function getJira () {
+  let conf2jira = ''
+  return (typeof JIRAURL !== 'undefined') ? JIRAURL : (
+    (typeof Confluence !== 'undefined') ? (
+      conf2jira = Confluence.getBaseUrl().split('/'),
+      conf2jira[conf2jira.length - 1] = 'jira',
+      conf2jira.join('/')
+    ) : undefined
+  )
+}
+
+// Generic REST function
+function restJira (jira, type = 'GET', request = 'api/2/myself', input) {
+  console.log('BEGINNING OF REST CALL')
+  input = input !== undefined ? JSON.stringify(input) : undefined
+  let response
+  $.ajax({
+    type,
+    url: jira + '/rest/' + request,
+    dataType: 'json',
+    crossDomain: true,
+    contentType: 'application/json',
+    async: false,
+    data: input,
+    xhrFields: {
+      withCredentials: true
+    },
+    success: function (data, status, result) {
+      console.log('ajax call succeeded', data, status, result)
+      response = { data, status, result }
+    },
+    error: function (result, status, error) {
+      console.log('Internal Error ajax call', result, status, error)
+      complain('Error:' + JSON.stringify(result) + ',' + status + ',' + error + '.')
+      response = { result, status, error }
+    }
+  })
+  console.log('END OF REST CALL')
+  return response
+}
+
+// Get user
+function getUser (jira) {
+  let response = restJira(jira)
+  if (response.status !== 'success') {
+    showModal('<p><b>Please first login to JIRA server</b></p><hr><p>Go and login at:<br><a href="' + jira + '">' + jira + '</a></p><p>Then come back here.</p>')
+  }
+  return response.status === 'success' ? response.data.key : undefined
+}
+
+// Get priorities
+function getPriorities (jira) {
+  let response = restJira(jira, 'GET', 'api/2/priority')
+  return response.status === 'success' ? response.data : undefined
+}
+
+// Get Project data
+function getProjectData (jira, project) {
+  let response = restJira(jira, 'GET', 'api/2/project/' + project)
+  return response.status === 'success' ? [
+    response.data.issueTypes,
+    response.data.components,
+    response.data.versions
+  ] : new Array(3) // Array of 3 elements as above, each with undefined value
+}
+
+// Send issue
+function sendIssue (that, issue) {
+  return issue.fields ? sendThatIssue() : (complain('Error CIC issue fields are undefined!'), false)
+  function sendThatIssue () {
+    issue.fields.project = {'key': that.project}
+    issue.fields.labels === undefined
+      ? issue.fields.labels = [that.label]
+      : issue.fields.labels[issue.fields.labels.length] = that.label
+    console.log('SUBMITTING ISSUE...', that, issue)
+    let response = restJira(that.jira, 'POST', 'api/2/issue', issue)
+    return response.status === 'success'
+      ? (
+          console.log('ISSUE SUBMITTED'),
+          showModal('New issue submitted: <a href="' + that.jira + '/browse/' + response.data.key + '">' + response.data.key + '</a>'),
+          true
+        )
+      : (
+          complain('Fail to submit issue'),
+          alert(JSON.stringify(JSON.parse(response.result.responseText).errors)),
+          false
+        )
+  }
+}
+
+// Create the Custom Issue Collector class
+class CIC {
+  constructor (collector, project) {
+    !(collector && project) ? (
+      complain('Error CIC : label and/or project is/are undefined')
+    ) : (
+      [this.collector, this.label, this.form] = new Array(3).fill(collector),
+      this.project = project,
+      this.jira = getJira() || complain('Error JIRA server is undefined!')
+    )
+    if (this.jira) {
+      this.user = getUser(this.jira) || complain('Fail to execute REST')
+    }
+    if (this.user) {
+      this.priorities = getPriorities(this.jira) || complain('Fail to load priorities'),
+      [this.issuetypes, this.components, this.versions] = getProjectData(this.jira, this.project)
+    }
+    if (this.user && !(this.issuetypes && this.components && this.versions)) {
+      complain('Fail to load issuetypes, components, and versions')
+    }
+    this.constructed = (this.issuetypes && this.components && this.versions)
+  }
+  show () {
+    !(typeof this.mapfields === 'function') ? complain('CIC mapfields is not defined. Please set it first!')
+    : (
+        addJiraOptions(this),
+        document.getElementById(this.form).style.display = 'block'
+      )
+  }
+  cancel () {
+    document.getElementById(this.form).style.display = 'none'
+  }
+  submit () {
+    if (mandatoryFields(this)) {
+      let issue = this.mapfields()
+      console.log(issue)
+      if (sendIssue(this, issue)) {
+        document.querySelector('#' + this.form + ' #Form').reset()
+        document.getElementById(this.form).style.display = 'none'
+      }
+    }
+  }
+  value (id, value) {
+    if (value !== undefined) { document.querySelectorAll('#' + this.form + ' #' + id)[0].value = value }
+    return document.querySelectorAll('#' + this.form + ' #' + id)[0].value
+  }
+}
+
+// Add JIRA options to the select lists
+function addJiraOptions (that) {
+  for (let select of document.getElementById(that.form).getElementsByTagName('select')) {
+    if (select.getAttribute('type') === 'jira') {
+      let list = select.getAttribute('class')
+      if (select.options.length === 0) {
+        let head = new Option(select.getAttribute('placeholder'), '')
+        head.setAttribute('disabled', true)
+        head.setAttribute('selected', true)
+        head.setAttribute('hidden', true)
+        select.options.add(head)
+        if (list === 'versions') {
+          addOptionGroup(select, 'Unreleased')
+          for (let item of that[list]) {
+            if (!item.archived && !item.released) { // unarchived and unreleased
+              select.options.add(new Option(item.name))
+            }
+          }
+          addOptionGroup(select, 'Released')
+          for (let item of that[list]) {
+            if (!item.archived && item.released) { // unarchived and released
+              select.options.add(new Option(item.name))
+            }
+          }
+        } else {
+          for (let item of that[list]) {
+            if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
+              select.options.add(new Option(item.name))
+            }
+          }
+        }
+      }
+    }
+  }
+  function addOptionGroup (select, groupname) {
+    let group = document.createElement('OPTGROUP')
+    group.setAttribute('label', groupname)
+    select.insertBefore(group, select.options[select.options.length])
+  }
+}
+
+// Check mandatory fields
+function mandatoryFields (that) {
+  let needValue = []
+  for (let tag of document.getElementById(that.form).getElementsByTagName('*')) {
+    if (tag.getAttribute('required')) {
+      if (that.value(tag.getAttribute('id')) === '') {
+        needValue.push(tag.getAttribute('id'))
+      }
+    }
+  }
+  if (needValue.length > 0) {
+    if (needValue.length === 1) {
+      complain("The field '" + needValue[0] + "' is required !")
+    } else {
+      complain("The fields '" + needValue.join(', ') + "' are required !")
+    }
+  }
+  return needValue.length === 0
+}
+
+// Show modal
+function showModal (message) {
+  if (!document.getElementById('ModalContent')) {
+    document.body.innerHTML += '<div id="Modal"><div id="ModalContent" class="modal-content"></div></div>'
+  }
+  document.getElementById('ModalContent').innerHTML = '<span class="close">&times;</span><p>' + message + '</p>'
+  let modal = document.getElementById('Modal')
+  let span = document.getElementsByClassName('close')[0]
+  modal.style.display = 'block'
+  span.onclick = function () {
+    modal.style.display = 'none'
+  }
+  window.onclick = function (event) {
+    if (event.target === modal) {
+      modal.style.display = 'none'
+    }
+  }
+}
+</script>
+
+<style>
+.cic {
+    display: none;
+    margin-top:15px;
+    margin-bottom:15px;
+}
+.cic-body {
+    padding: 2px;
+    border: 1px solid;
+    width: 300px;
+    margin-top:-1px;
+    background-color: lightblue;
+}
+.cic-body input,.cic-body textarea {
+    width: 295px; /* Is 295px max in Confluence */
+}
+.modal {
+    display: none;
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 20%; /* Could be more or less, depending on screen size */
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+
+<div id="Modal" class="modal">
+  <div id="ModalContent" class="modal-content"></div>
+</div>
+
+<!--
+    CONTAINER PART:
+    - </html> and </body> tags
+    NOTE: This section is not needed within a Confluence page
+-->
+
+</body>
+</html>
