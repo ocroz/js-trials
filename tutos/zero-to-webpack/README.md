@@ -2,7 +2,8 @@
 
 http://www.jumoel.com/2017/zero-to-webpack.html
 
-What has been achieved?
+### What has been achieved?
+
 If you’ve followed along, you should:
 
 * Know how to [configure Babel](http://www.jumoel.com/2017/zero-to-webpack.html#transforming-code-with-babel) and how to [differentiate between environments](http://www.jumoel.com/2017/zero-to-webpack.html#getting-more-information-during-development)
