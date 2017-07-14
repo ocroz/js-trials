@@ -1,3 +1,4 @@
+require("source-map-support").install();
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -217,3 +218,4 @@ module.exports = require("fs");
 
 /***/ })
 /******/ ]);
+//# sourceMappingURL=server.js.map

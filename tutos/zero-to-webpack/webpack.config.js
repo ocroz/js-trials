@@ -4,7 +4,6 @@ const webpack = require('webpack')
 const nodeExternals = require('webpack-node-externals')
 
 const PRODUCTION = process.env.NODE_ENV === 'production'
-const MinifierPlugin = webpack.optimize.UglifyJsPlugin
 
 const clientConfig = {
   entry: path.resolve('./src/index.browser.js'),
@@ -24,8 +23,10 @@ const clientConfig = {
     ]
   },
 
+  devtool: PRODUCTION ? 'source-map' : 'cheap-module-eval-source-map',
+
   plugins: [
-    PRODUCTION && new MinifierPlugin(),
+    PRODUCTION && new webpack.optimize.UglifyJsPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     })
@@ -65,10 +66,17 @@ const serverConfig = {
     ]
   },
 
+  devtool: 'source-map',
+
   plugins: [
-    PRODUCTION && new MinifierPlugin(),
+    PRODUCTION && new webpack.optimize.UglifyJsPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    }),
+    new webpack.BannerPlugin({
+      banner: 'require("source-map-support").install();',
+      raw: true,
+      entryOnly: false
     })
   ].filter(e => e)
 }
