@@ -1,0 +1,25 @@
+{
+  "name": "coding-style",
+  "version": "1.0.0",
+  "description": "keep compliant with your favorite coding style",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "dependencies": {
+    "webpack": "^3.3.0"
+  },
+  "scripts": {
+    "build": "webpack",
+    "test": "standard ./src/*"
+  },
+  "devDependencies": {
+    "eslint": "^4.2.0",
+    "eslint-loader": "^1.9.0",
+    "semistandard": "^11.0.0",
+    "standard": "^10.0.2"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended"
+  }
+}
