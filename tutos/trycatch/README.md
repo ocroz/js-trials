@@ -13,20 +13,25 @@ trycatch(main)
 
 ### Create your package.json
 
+```bash
 npm init -y
+```
 
 * Keep only name, version, description, license
 * Add "repository": { "type": "git" }
 
-From now 'npm ls -depth 0' no longer raise errors
+From now `npm init` or `npm ls -depth 0` no longer raise errors.
 
 ### Install packages for tests
 
+```bash
 npm install --save-dev chai jest sinon sinon-chai
+```
 
 ### Add few scripts
 
 ```javascript
+// package.json
   "scripts": {
     "test": "jest",
     "dev:test": "npm test -- --watch"
@@ -35,14 +40,15 @@ npm install --save-dev chai jest sinon sinon-chai
 
 ### Run them
 
+```bash
 npm run test # One time test
-
 npm run dev:test # The test restarts automatically every time a source file is saved
+```
 
 ## Post scriptum
 
 One will say to try catch all of your code will decrease the overal performance of your script because javascript cannot optimise the code that is within a try.
-Well, if performance is not your main battle, you may accept such a non optimised code.
+Well, if performance is not your main battle (would you even see a difference?), you may accept such a non optimised code.
 With a global try catch, you could gain in term of visibility rather than catching every individual error.
 
 ```javascript
