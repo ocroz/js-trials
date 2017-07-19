@@ -127,3 +127,50 @@ describe('test cnn title', () => {
 ```
 
 See also [Acceptance Testing React Apps with Jest and Nightmare](https://www.viget.com/articles/acceptance-testing-react-apps-with-jest-and-nightmare).
+
+## solution 6: debug node in chrome too
+
+See [Debugging Node.js Apps](https://nodejs.org/en/docs/inspector/)
+
+Debug a browser version under in chrome is easy.
+
+```bash
+npm run sol1:start:browser # chrome bundle/solution1.html
+```
+
+Then F12 > Console > `console.log(isBrowser(),isNode())` returns `true false`.
+
+Debug a node version in chrome is possible too.
+
+The script must be waiting for something so we are able to debug it before it exits.
+Let's write a simple server application which listens to [http://localhost:7000/].
+
+Then run it with `--inspect`.
+
+```bash
+npm run sol6:debug:server # node --inspect src/solution6-node.js
+```
+
+The console says the debugger is listening on something. Simply ignores this and steps forward.
+
+* Open `chrome://inspect` in another browser tab > [possibly 'configure' then] inspect (the relevant target) > this opens a new chrome window with the chrome-devtools.
+* Deploy the files listed under `(no domain)` and open the file `.../src/solution6-node.js`.
+* Add a breakpoint within the function testIsNode()
+* Then when you open [http://localhost:7000/] > The node script stops at the breakpoint in the chrome-devtools and the browser is now waiting for a response that does not come.
+
+Then Console > `console.log(isBrowser(),isNode())` returns `false true`.
+
+## summary
+
+solution | isBrowser() | isNode()
+--- | --- | ---
+1- node in node | false | true
+1- browser in chrome | true | false
+2- harcoded node in node | false | true
+2- harcoded replacement for browser in chrome | true | false
+3- jest --env=node | false | true
+3- jest --env=jsdom | true | ~~true~~
+4- hardcoded node in jest | false | true
+4- hardcoded mock for browser in jest | true | false
+5- browser in nightmare | false | true
+6- node in chrome-devtools | true | false
