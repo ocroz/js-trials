@@ -109,7 +109,7 @@ pm2 show <id or app-name>
 When navigating into the project folder of one of the managed processes, PM2 will additionally show revision control metadata if the project folder is also a revision control directory.
 
 ```bash
-$ pm2 describe homepage
+$ pm2 describe homepage # 'show' is an alias to 'describe'
 Describing process with id 0 - name homepage
  -----------------------------------------------------------------------------
 │ status            │ online                                                  │
@@ -144,3 +144,5 @@ Revision control metadata
 ```
 
 The revision control metadata can be helpful in cases when the app doesn’t work properly and you’re wondering if you pulled the latest code changes from your co-workers.
+
+See also [pm2 pull - "No versioning system found for process..."](https://github.com/Unitech/PM2/issues/1563). This fails on Windows or with an old git.
