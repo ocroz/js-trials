@@ -1,0 +1,23 @@
+{
+  "name": "mylittleapp",
+  "version": "1.0.0",
+  "description": "My Little App",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev:server": "nodemon src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.15.3",
+    "isomorphic-fetch": "^2.2.1",
+    "jade": "^1.11.0",
+    "unfluff": "^1.1.0"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "nodemon": "^1.11.0"
+  }
+}

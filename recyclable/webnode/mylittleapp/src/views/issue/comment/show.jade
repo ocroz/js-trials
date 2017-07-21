@@ -1,0 +1,10 @@
+extend ../../_layout
+
+block content
+  p <a href="/">home</a> > <a href="/issue">issue</a> > <a href="/issue/#{issue.id}">#{issue.id}</a> > #{comment.id}
+  h1
+    = pageTitle
+  p
+    span Posted by #{comment.author}<br>
+    | #{comment.body}<br>
+    | <a href="/issue/#{issue.id}">show issue</a>

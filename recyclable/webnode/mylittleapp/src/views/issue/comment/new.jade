@@ -1,0 +1,15 @@
+extend ../../_layout
+
+block content
+  p <a href="/">home</a> > <a href="/issue">issue</a> > <a href="/issue/#{issue.id}">#{issue.id}</a> > new
+  h1
+    = pageTitle
+
+  form(method="post" action="/issue/#{issue.id}")
+    .form-group
+      label(for="edtBody") Boby &nbsp;
+      input#edtBody.form-control(name="body" type="text" autofocus required)
+    p
+      button.btn.btn-primary(type="submit")
+        i.glyphicon.glyphicon-plus
+        |  Add
