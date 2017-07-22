@@ -1,7 +1,7 @@
 extend ../../_layout
 
 block content
-  p <a href="/">home</a> > <a href="/issue">issue</a> > <a href="/issue/#{issue.id}">#{issue.id}</a> > new
+  div(class='line-feed') <a href="/">home</a> > <a href="/issue">issue</a> > <a href="/issue/#{issue.id}">#{issue.id}</a> > new
   h1
     = pageTitle
 

@@ -1,7 +1,7 @@
 extend ../_layout
 
 block content
-  p <a href="/">home</a> > <a href="/issue">issue</a> > #{issue.id}
+  div(class='line-feed') <a href="/">home</a> > <a href="/issue">issue</a> > #{issue.id}
   h1
     = pageTitle
   p #{issue.summary}

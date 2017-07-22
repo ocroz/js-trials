@@ -2,5 +2,7 @@ html(lang="fr")
   head
     meta(charset="utf-8")
     title= pageTitle ? pageTitle + ' — ' + title : title
+    link(rel="stylesheet" href="/app.css")
   body
     block content
+    script(src="/app.js")
