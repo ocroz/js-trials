@@ -1,5 +1,6 @@
 const express = require('express')
 const Path = require('path')
+const bodyParser = require('body-parser')
 
 const mainController = require('./controllers/main')
 const issuesController = require('./controllers/issues')
@@ -12,6 +13,8 @@ app.set('views', Path.resolve(__dirname, 'views'))
 app.set('view engine', 'jade')
 
 app.use(express.static(Path.resolve(__dirname, '../public')))
+
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(mainController)
 app.use('/issue', issuesController)

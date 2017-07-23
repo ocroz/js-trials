@@ -1,8 +1,5 @@
 const { Router } = require('express')
 
-const fetch = require('isomorphic-fetch')
-const unfluff = require('unfluff')
-
 const router = new Router()
 
 router.get('/', listIssues)
@@ -45,10 +42,8 @@ function showIssue (req, res) {
 }
 
 async function createComment (req, res) {
-  const urlReq = await fetch(req.body.body)
-  const html = await urlReq.text()
-  const analysis = unfluff(html)
-  console.log(analysis)
+  // Save the comment and show the issue again
+  console.log(req.body)
   res.redirect(`/issue/${req.params.id}`)
 }
 
