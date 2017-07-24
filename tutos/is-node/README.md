@@ -7,12 +7,36 @@ Goal: Run different actions if in node or in browser
 
 ## solution 1: run the very same code in node and in the browser
 
+The dynamic solution:
+
+```javascript
+const isNode = function () { try { return this === global } catch (e) { return false } }
+const isBrowser = function () { try { return this === window } catch (e) { return false } }
+console.log(isNode(), isBrowser())
+```
+
 ```bash
 node src/solution1.js # run in node
 chrome bundle/solution1.html # run in browser
 ```
 
 ## solution 2: replace the specific code for node with another specific code for the browser
+
+The static solution:
+
+```javascript
+// ./node.js: I know I'm in node
+const isNode = function () { return true }
+const isBrowser = function () { return false }
+console.log(isNode(), isBrowser())
+```
+
+```javascript
+// ./browser.js: I know I'm in browser
+const isNode = function () { return false }
+const isBrowser = function () { return true }
+console.log(isNode(), isBrowser())
+```
 
 This is achieved via a file replacement while creating the bundle for the browser
 
@@ -25,6 +49,8 @@ This is achieved via a file replacement while creating the bundle for the browse
 
 ### browserify
 
+Browserify first replaces the file as defined in package.json > browser.
+
 ```bash
 browserify src/solution2.js -o bundle/solution2-browserify.js
 chrome bundle/solution2.html
@@ -32,7 +58,7 @@ chrome bundle/solution2.html
 
 ### webpack
 
-Webpack needs a configuration file too.
+Webpack does the same replacement. Webpack needs a configuration file too.
 
 ```javascript
 // webpack.config.js
@@ -50,7 +76,7 @@ chrome bundle/solution2.html
 ```
 
 Webpack generates few more code than browerify.
-Webpack is also much more configurable and flexible. See the other tuto 'zero-to-webpack'.
+Webpack is also much more configurable and flexible. See the other tuto [zero-to-webpack](../zero-to-webpack/README.md).
 
 Note: `webpack -p` builds and uglifies the code for the browser in ES5 and thus requires `babel` to transform the ES5+ code.
 
@@ -77,14 +103,21 @@ jest solution4-browser.test.js
 `solution4-node.test.js` calls and uses `src/lib/index.js`.<br>
 `solution4-browser.test.js` calls src/lib/index.js and **mocks** it to use `src/lib/__mocks__/index.js` instead.
 
+```javascript
+// solution4-browser.test.js
+const { isNode, isBrowser } = require('./lib/index')
+jest.mock('./lib/index')
+// { isNode, isBrowser } are now taken from ./lib/__mocks__/index.js
+```
+
 ## solution 5: test in a true browser environment
 
 Thanks to a high-level browser automation library such as `PhantomJS` or `NightmareJS`.
 
 [Nightmare](https://www.npmjs.com/package/nightmare) uses [Electron](https://electron.atom.io/), which is similar to [PhantomJS](http://phantomjs.org/) but roughly [2 times faster](https://github.com/segmentio/nightmare/issues/484#issuecomment-184519591) and more modern:
 
-* Every method is a simple English command: goto, refresh, click, type... you can check out [Nightmare's full API here](https://github.com/segmentio/nightmare#api).
-* It [lets you simplify deeply nested callbacks into a few sequential statements](http://www.nightmarejs.org/).
+- Every method is a simple English command: goto, refresh, click, type... you can check out [Nightmare's full API here](https://github.com/segmentio/nightmare#api).
+- It [lets you simplify deeply nested callbacks into a few sequential statements](http://www.nightmarejs.org/).
 
 ```bash
 jest solution5-browser.test.js
