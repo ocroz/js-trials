@@ -1,0 +1,18 @@
+extend ./_layout
+
+block content
+  div(class='line-feed') <a href="/">home</a> > post
+  h1
+    = pageTitle
+
+  form(method="post" action="/post")
+    .form-group
+      p
+        label(for='input') input<br>
+          input.form-control(id='input' name="input" required placeholder="Your input here")
+      p
+        label(for='text') text<br>
+          textarea.form-control(id='text' name="text" rows="3" required placeholder="Your text here")
+      p
+        button.btn.btn-primary(type="submit")
+          i.glyphicon.glyphicon-plus Add
