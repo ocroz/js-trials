@@ -1,0 +1,30 @@
+extend ./_layout
+
+block content
+  h1
+    = pageTitle
+
+  form(method="post" action="/")
+    .form-group
+      p
+        label(for='number') Multiplication table of which number:<br>
+          input.form-control(id='number' name="number" required placeholder="Your number here")
+      p
+        label(for='count') Number of results to display:<br>
+          input.form-control(id='count' name="count" required placeholder="Your count here")
+      p
+        button.btn.btn-primary(type="submit")
+          i.glyphicon.glyphicon-plus Submit
+
+  if table.length === 0
+    p There's nothing to display yet.
+  else
+    ul
+      each raw in table
+        li `#{raw}`
+
+    form(method="post" action="/")
+        p
+          input(type="hidden" name="_method" value="delete")
+          button.btn.btn-primary(type="submit")
+            i.glyphicon.glyphicon-plus Clear

@@ -24,4 +24,4 @@ node step-by-step/server-jade.js
 node step-by-step/server-json.js
 ```
 
-[Build a RESTful API Using Node and Express 4](https://scotch.io/tutorials/build-a-restful-api-using-node-and-express-4)
+More info at [Build a RESTful API Using Node and Express 4](https://scotch.io/tutorials/build-a-restful-api-using-node-and-express-4).
