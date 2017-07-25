@@ -10,6 +10,7 @@ Goal: Run different actions if in node or in browser
 The dynamic solution:
 
 ```javascript
+// Don't 'use strict' or this becomes undefined
 const isNode = function () { try { return this === global } catch (e) { return false } }
 const isBrowser = function () { try { return this === window } catch (e) { return false } }
 console.log(isNode(), isBrowser())
@@ -75,7 +76,7 @@ webpack
 chrome bundle/solution2.html
 ```
 
-Webpack generates few more code than browerify.
+Webpack generates few more code than browerify.<br>
 Webpack is also much more configurable and flexible. See the other tuto [zero-to-webpack](../zero-to-webpack/README.md).
 
 Note: `webpack -p` builds and uglifies the code for the browser in ES5 and thus requires `babel` to transform the ES5+ code.
