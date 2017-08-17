@@ -49,6 +49,10 @@ source ./config-git.sh
 
 Note: If you already have a global git configuration, the script will detect and keep your settings in favor of its own ones, case by case per setting. Otherwise it will ask for your complete name (first name and last name) and your email for the git commit identity.
 
+PS: You might need to configure `curl` and add the CA cert for the remote server to the existing default CA certificate store.<br>
+See [Curl SSL Certificate Verification](https://curl.haxx.se/docs/sslcerts.html).
+One way is to create a file `curl-ca-bundle.crt` in the current directory into which you would save all the certificates in the certification chain to access the file [config-git.sh](https://raw.githubusercontent.com/deliciousinsights/support-files/master/config-git.sh).
+
 ### Result
 
 You may need to relaunch a terminal to have the new settings. Then try and create a new git repo.
