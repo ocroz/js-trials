@@ -1,0 +1,19 @@
+extend ../../_layout
+
+block content
+  div(class='line-feed')
+    | <a href="/">home</a>
+    | &gt; <a href="/issue">issue</a>
+    | &gt; <a href="/issue/#{issue.id}">#{issue.id}</a>
+    | &gt; new
+  h1
+    = pageTitle
+
+  form(method="post" action="/issue/#{issue.id}")
+    .form-group
+      label(for='body') Your comment<br>
+        textarea.form-control(id='body' name="body" rows="3" required placeholder="Your comment here")
+    button.btn.btn-primary(type="submit")
+      i.glyphicon.glyphicon-plus Add
+
+  <a href="/issue/#{issue.id}">back to issue</a>

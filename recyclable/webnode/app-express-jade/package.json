@@ -1,0 +1,25 @@
+{
+  "name": "app-express-jade",
+  "version": "1.0.0",
+  "description": "App Express Jade",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev:server": "nodemon src/server.js",
+    "debug:server": "nodemon --inspect src/server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "jade": "^1.11.0",
+    "method-override": "^2.3.9",
+    "node-fetch": "^1.7.2"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "nodemon": "^1.11.0"
+  }
+}

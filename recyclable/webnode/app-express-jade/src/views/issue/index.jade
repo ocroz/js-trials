@@ -1,0 +1,16 @@
+extend ../_layout
+
+block content
+  div(class='line-feed')
+    | <a href="/">home</a>
+    | &gt; issue
+  h1 Select your issue !
+
+  each issue in issues
+    p
+      span Reported by #{issue.fields.reporter.name}<br>
+      | <a href="/issue/#{issue.key}">#{issue.key}</a>
+      | : #{issue.fields.summary}
+
+//-
+  p <a href="/issue/new">new issue</a>

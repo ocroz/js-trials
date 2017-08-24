@@ -1,0 +1,25 @@
+extend ../../_layout
+
+block content
+  div(class='line-feed')
+    | <a href="/">home</a>
+    | &gt; <a href="/issue">issue</a>
+    | &gt; <a href="/issue/#{id}">#{id}</a>
+    | &gt; #{comment.id}
+  h1
+    = pageTitle
+
+  form(method="post" action="/issue/#{id}/#{comment.id}")
+    .form-group
+      p
+        input(type="hidden" name="_method" value="put")
+      p
+        span Update comment posted by #{comment.author.name} with:<br>
+        label(for='body')<br>
+          textarea.form-control(id='body' name="body" rows="3" required)
+            | #{comment.body}
+      p
+        button.btn.btn-primary(type="submit")
+          i.glyphicon.glyphicon-plus Submit
+
+  <a href="/issue/#{id}">back to issue</a>
