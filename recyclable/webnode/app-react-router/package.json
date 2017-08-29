@@ -1,0 +1,22 @@
+{
+  "name": "app-react-router",
+  "version": "1.0.0",
+  "description": "App React Router",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev:server": "nodemon src/server.js",
+    "debug:server": "nodemon --inspect src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.15.3",
+    "jade": "^1.11.0"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "nodemon": "^1.11.0"
+  }
+}
