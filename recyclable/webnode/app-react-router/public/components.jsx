@@ -41,11 +41,8 @@ const Main = () => (
   </div>
 )
 
-// The original value keeps reachable until React updates the DOM at the next user click
-document.getElementById('redirectUrl').value = '/'
 const Home = () => (
   <div>
-    <Redirect to={document.getElementById('redirectUrl').value} />
     <p>Home</p>
   </div>
 )
