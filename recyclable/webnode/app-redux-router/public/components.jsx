@@ -9,10 +9,20 @@ const { combineReducers, createStore } = window.Redux
 //
 
 // Reducer view
-const view = (state = 'home', action) => {
+const view = (state = '/', action) => {
   switch (action.type) {
     case 'SET_VIEW':
-      return action.view
+      switch (action.view) {
+        case '/':
+        case '/search':
+        case (action.view.match('/issue/([^/]*)') || {}).input:
+          return action.view
+        case (action.view.match('/search/([^/]*)') || {}).input:
+        case '/issue':
+          return '/search'
+        default:
+          return '/'
+      }
     default:
       return state
   }
@@ -122,11 +132,9 @@ const Main = () => (
   <div>
     <Switch>
       <Route exact path='/' component={Home} />
-      <Route path='/search' component={IssueBox} />
+      <Route exact path='/search' component={IssueBox} />
       <Route path='/issue/:key' component={CommentBox} />
-      {/* <Route path='/issue' component={IssueSwitch} /> */}
-      <Redirect from='/issue' to='/search' />
-      <Redirect to='/' />
+      <Redirect to={store.getState().view} />
     </Switch>
   </div>
 )
@@ -145,26 +153,6 @@ const IssueBox = () => (
     <li><ViewGoto view='/issue/SPLPRJ-44'>SPLPRJ-44</ViewGoto></li>
   </div>
 )
-
-/*
-const IssueSwitch = () => (
-  <div>
-    <Switch>
-      <Route exact path='/issue' component={NoIssueSelected} />
-      <Route path='/issue/:key' component={CommentBox} />
-    </Switch>
-  </div>
-)
-
-const NoIssueSelected = () => (
-  <div>
-    <p>No Issue Selected</p>
-    <ViewGoto view='/search'>
-      back
-    </ViewGoto>
-  </div>
-)
-*/
 
 const CommentBox = (props) => (
   <div>
