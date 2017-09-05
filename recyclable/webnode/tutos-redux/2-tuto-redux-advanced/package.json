@@ -1,0 +1,35 @@
+{
+  "name": "tuto-redux-advanced",
+  "version": "1.0.0",
+  "description": "Tuto Redux Advanced",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "build": "webpack",
+    "dev:build": "webpack --watch",
+    "start": "node src/server.js",
+    "dev:server": "nodemon src/server.js",
+    "debug:server": "nodemon --inspect src/server.js"
+  },
+  "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-react": "^6.24.1",
+    "express": "^4.15.3",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2",
+    "redux-logger": "^3.0.6",
+    "redux-thunk": "^2.2.0",
+    "webpack": "^3.5.5"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "nodemon": "^1.11.0"
+  }
+}
