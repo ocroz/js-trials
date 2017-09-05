@@ -1,15 +1,16 @@
 'use strict'
-/* global React ReactDOM */
+const { Component } = window.React
+const { render } = window.ReactDOM
 const { BrowserRouter, Route, Link, Switch, Redirect } = window.ReactRouterDOM
-const { Provider, connect } = window.ReactRedux
 const { combineReducers, createStore } = window.Redux
+const { Provider, connect } = window.ReactRedux
 
 //
 // Redux part - Logic
 //
 
 // Reducer view
-const view = (state = '/', action) => {
+const view = (state = window.location.pathname, action) => {
   switch (action.type) {
     case 'SET_VIEW':
       switch (action.view) {
@@ -44,13 +45,10 @@ const setView = view => {
 // Create the store
 let store = createStore(app)
 
-// Render the initial view
-store.dispatch(setView(document.getElementById('originalUrl').value))
-
 //
 // React part - UI
 //
-class Root extends React.Component {
+class Root extends Component {
   render () {
     return (
       <Provider store={store}>
@@ -160,6 +158,7 @@ const CommentBox = (props) => (
   </div>
 )
 
-ReactDOM.render(
-  <Root />, document.getElementById('root')
+render(
+  <Root />,
+  document.getElementById('root')
 )
