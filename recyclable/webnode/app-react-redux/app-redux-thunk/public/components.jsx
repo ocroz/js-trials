@@ -2,8 +2,11 @@
 const { Component } = window.React
 const { render } = window.ReactDOM
 const { BrowserRouter, Route, Link, Switch, Redirect } = window.ReactRouterDOM
-const { combineReducers, createStore } = window.Redux
+const { combineReducers, createStore, applyMiddleware } = window.Redux
 const { Provider, connect } = window.ReactRedux
+const createLogger = window.reduxLogger
+const thunkMiddleware = window.ReduxThunk.default
+const fetch = window.fetch
 
 //
 // Redux part - Logic
@@ -30,10 +33,19 @@ const view = (state = window.location.pathname, action) => {
   }
 }
 
-const url = (state = '/api', action) => {
+const url = (state = '/', action) => {
   switch (action.type) {
-    case 'GET_URL':
+    case 'SET_URL':
       return action.url
+    default:
+      return state
+  }
+}
+
+const issues = (state = [], action) => {
+  switch (action.type) {
+    case 'RECEIVE_ISSUES':
+      return action.issues
     default:
       return state
   }
@@ -42,7 +54,8 @@ const url = (state = '/api', action) => {
 // Reducers
 const app = combineReducers({
   view,
-  url
+  url,
+  issues
 })
 
 // Actions
@@ -52,15 +65,30 @@ const setView = view => {
     view
   }
 }
-const getUrl = url => {
+const setUrl = url => {
   return {
-    type: 'GET_URL',
+    type: 'SET_URL',
     url
+  }
+}
+const receiveIssues = (json) => {
+  return {
+    type: 'RECEIVE_ISSUES',
+    issues: json.issues
   }
 }
 
 // Create the store
-let store = createStore(app)
+const preloadedState = undefined
+const loggerMiddleware = createLogger()
+let store = createStore(
+  app,
+  preloadedState,
+  applyMiddleware(
+    thunkMiddleware,
+    loggerMiddleware
+  )
+)
 
 //
 // React part - UI
@@ -95,10 +123,6 @@ const Header = () => (
     <ViewGoto view='/search'>
       Search
     </ViewGoto>
-    {', '}
-    <CallApi url='/'>
-      Api
-    </CallApi>
     <IssueGoto />
   </p>
 )
@@ -135,33 +159,6 @@ const ViewGoto = connect(
   mapViewGoto.mapDispatchToProps
 )(Goto)
 
-const Api = ({ url, children, onClick }) => {
-  return <Link to={url} onClick={onClick}>{children}</Link>
-}
-
-const mapCallApi = {
-
-  mapStateToProps: (state, ownProps) => {
-    return {
-      url: ownProps.url
-    }
-  },
-
-  mapDispatchToProps: (dispatch, ownProps) => {
-    return {
-      onClick: () => {
-        dispatch(getUrl(ownProps.url))
-      }
-    }
-  }
-
-}
-
-const CallApi = connect(
-  mapCallApi.mapStateToProps,
-  mapCallApi.mapDispatchToProps
-)(Api)
-
 const IssueGoto = () => {
   const matches = store.getState().view.match('/issue/([^/]*)')
   if (matches !== null) {
@@ -182,7 +179,7 @@ const Main = () => (
   <div>
     <Switch>
       <Route exact path='/' component={Home} />
-      <Route exact path='/search' component={IssueBox} />
+      <Route exact path='/search' component={IssueBoxContainer} />
       <Route path='/issue/:key' component={CommentBox} />
       <Redirect to={store.getState().view} />
     </Switch>
@@ -195,14 +192,79 @@ const Home = () => (
   </div>
 )
 
-const IssueBox = () => (
+const Api = ({ url, children, onClick }) => {
+  return <button onClick={onClick}>{children}</button>
+}
+
+function fetchUrl (dispatch, url) {
+  return dispatch => {
+    dispatch(setUrl(url))
+    return fetch(`${window.location.origin}${url}`)
+      .then(response => response.json())
+      .then(json => dispatch(receiveIssues(json)))
+  }
+}
+
+const mapCallApi = {
+
+  mapStateToProps: (state, ownProps) => {
+    return {
+      url: ownProps.url
+    }
+  },
+
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      onClick: () => {
+        dispatch(fetchUrl(dispatch, ownProps.url))
+      }
+    }
+  }
+
+}
+
+const CallApi = connect(
+  mapCallApi.mapStateToProps,
+  mapCallApi.mapDispatchToProps
+)(Api)
+
+const Issue = ({children}) => (
   <div>
-    <p>Search</p>
-    <li><ViewGoto view='/issue/SPLPRJ-42'>SPLPRJ-42</ViewGoto></li>
-    <li><ViewGoto view='/issue/SPLPRJ-43'>SPLPRJ-43</ViewGoto></li>
-    <li><ViewGoto view='/issue/SPLPRJ-44'>SPLPRJ-44</ViewGoto></li>
+    <li><ViewGoto view={`/issue/${children}`}>{children}</ViewGoto></li>
   </div>
 )
+
+class IssueBox extends Component {
+  // componentDidMount () {
+  //   const { dispatch } = this.props
+  //   dispatch(fetchUrl(dispatch, '/api'))
+  // }
+
+  render () {
+    const { issues } = this.props
+    return (
+      <div>
+        <p>Search: <CallApi url='/api'>Refresh</CallApi></p>
+        {issues.length === 0 && <p><b>Empty.</b></p>}
+        {issues.map(issue => <Issue>{issue.key}</Issue>)}
+      </div>
+    )
+  }
+}
+
+const mapIssueBox = {
+
+  mapStateToProps: (state, ownProps) => {
+    return {
+      issues: state.issues
+    }
+  }
+
+}
+
+const IssueBoxContainer = connect(
+  mapIssueBox.mapStateToProps
+)(IssueBox)
 
 const CommentBox = (props) => (
   <div>

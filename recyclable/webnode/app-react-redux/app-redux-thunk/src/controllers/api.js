@@ -10,8 +10,8 @@ router.delete('/:key', deleteItems)
 
 module.exports = router
 
-let items = {
-  items: [
+let issues = {
+  issues: [
     {key: 'SPLPRJ-42'},
     {key: 'SPLPRJ-43'},
     {key: 'SPLPRJ-44'}
@@ -20,7 +20,7 @@ let items = {
 
 function getItems (req, res) {
   console.log('get /api')
-  res.json(items)
+  res.json(issues)
 }
 
 function postItems (req, res) {
