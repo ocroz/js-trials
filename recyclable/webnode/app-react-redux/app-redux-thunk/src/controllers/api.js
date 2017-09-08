@@ -3,39 +3,60 @@ const { Router } = require('express')
 
 const router = new Router()
 
-router.get('/', getItems)
-router.post('/', postItems)
-router.put('/:key', putItems)
-router.delete('/:key', deleteItems)
+router.get('/', getIssues)
+router.post('/', postIssue)
+router.put('/:key', putIssue)
+router.delete('/:key', deleteIssue)
 
 module.exports = router
 
-let issues = {
-  issues: [
-    {key: 'SPLPRJ-42'},
-    {key: 'SPLPRJ-43'},
-    {key: 'SPLPRJ-44'}
-  ]
-}
-
-function getItems (req, res) {
+function getIssues (req, res) {
   console.log('get /api')
-  res.json(issues)
+
+  // > For testing
+  const [issuetype, reporter, assignee, summary, description] =
+    ['Task', 'crozier', 'crozier', 'An issue', 'A description']
+  addIssue({issuetype, reporter, assignee, summary, description})
+  // < For testing
+
+  const data = { issues: issues.filter(issue => issue.active) }
+  setTimeout(() => res.json(data), 200) // Simulate a long server processing
 }
 
-function postItems (req, res) {
+function postIssue (req, res) {
   console.log(req.body)
   res.json({ status: 200, ok: true, statusText: 'OK' })
 }
 
-function putItems (req, res) {
+function putIssue (req, res) {
   const { key } = req.params
   console.log(key, req.body)
   res.json({ status: 200, ok: true, statusText: 'OK' })
 }
 
-function deleteItems (req, res) {
+function deleteIssue (req, res) {
   const { key } = req.params
-  console.log(key)
+  const issueIndex = issues.findIndex(issue => issue.key === key)
+  console.log(`Delete issue ${key} (issueIndex: ${issueIndex})`)
+  issues[issueIndex].active = false
   res.json({ status: 200, ok: true, statusText: 'OK' })
+}
+
+let issues = []
+function addIssue ({issuetype, reporter, assignee, summary, description}) {
+  const active = true
+  const status = 'Open'
+  const projectkey = 'SPLPRJ'
+  const key = `${projectkey}-${issues.length + 1}`
+  const fields = {
+    project: { key: projectkey },
+    issuetype: { name: issuetype },
+    reporter: { name: reporter },
+    assignee: { name: assignee },
+    status: { name: status },
+    summary,
+    description
+  }
+  const issue = { key, active, fields }
+  issues.push(issue)
 }

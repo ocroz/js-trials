@@ -9,6 +9,69 @@ const thunkMiddleware = window.ReduxThunk.default
 const fetch = window.fetch
 
 //
+// Model
+//
+
+/*
+----
+  Redux Store (state): view
+
+  React Container: LinkView (view ie url pathname)
+  React Component: -> LinkViewComp (view, onClick)
+  Onclick Event: linkView (view)
+  Redux Action: -> setView: SET_VIEW, view
+  Redux Reducer: --> state.view = view
+
+  React Container: LinkIssue (view ie url pathname)
+  React Component: -> LinkIssueComp (view, onClick)
+  Onclick Event: linkIssue (view)
+  Redux Action: -> setView: SET_VIEW, view
+  Redux Reducer: --> state.view = view
+----
+  Redux Store (state): data
+  -> isFetching
+  -> issues // Every issue has comments
+
+  React Container: GetIssues ()
+  React Component: -> GetIssuesComp (onClick)
+  Onclick Event: getIssues (dispatch)
+  1. Redux Action: -> fetchData: GET_ISSUES
+     Redux Reducer: --> state.isFetching = true
+  2. Redux Action: -> receiveIssues: RECEIVE_ISSUES, issues
+     Redux Reducer: --> state.isFetching = false, state.issues = issues
+
+  React Container: DeleteIssue (issuekey)
+  React Component: -> DeleteIssueComp (issuekey, onClick)
+  Onclick Event: deleteIssue (dispatch, issuekey)
+  1. Redux Action: -> fetchData: DELETE_ISSUE, issuekey
+     Redux Reducer: --> state.isFetching = true
+  2. Redux Action: -> receiveStatus: RECEIVE_STATUS, status
+     Redux Reducer: --> state.isFetching = false, state.status = status
+
+  React Container: PostIssue ()
+  React Component: -> postIssueComp (onClick)
+  Onclick Event: postIssue (dispatch, formdata)
+  1. Redux Action: -> fetchData: POST_ISSUE
+     Redux Reducer: --> state.isFetching = true
+  2. Redux Action: -> receiveStatus: RECEIVE_STATUS, status
+     Redux Reducer: --> state.isFetching = false, state.status = status
+
+  React: IssuesBox
+  React: -> GetIssues
+  React: -> n * Issue -> LinkIssue, DeleteIssue
+  React: -> PostIssue
+
+  ...
+
+  React: IssueBox
+  React: -> IssueFields -> PutIssue
+  React: -> GetComments
+  React: -> n * Comment -> DeleteComment
+  React: -> PostComment
+----
+*/
+
+//
 // Redux part - Logic
 //
 
@@ -19,7 +82,6 @@ const view = (state = window.location.pathname, action) => {
       switch (action.view) {
         case '/':
         case '/search':
-        case '/api':
         case (action.view.match('/issue/([^/]*)') || {}).input:
           return action.view
         case (action.view.match('/search/([^/]*)') || {}).input:
@@ -33,19 +95,19 @@ const view = (state = window.location.pathname, action) => {
   }
 }
 
-const url = (state = '/', action) => {
+// Reducer data
+const data = (state = {isFetching: false, issues: []}, action) => {
   switch (action.type) {
-    case 'SET_URL':
-      return action.url
-    default:
-      return state
-  }
-}
-
-const issues = (state = [], action) => {
-  switch (action.type) {
+    case 'GET_ISSUES':
+    case 'POST_ISSUES':
+      return {isFetching: true, issues: state.issues}
+    case 'DELETE_ISSUE':
+    case 'PUT_ISSUES':
+      return {isFetching: true, issues: state.issues}
+    case 'RECEIVE_STATUS':
+      return {isFetching: false, issues: state.issues, status: action.status}
     case 'RECEIVE_ISSUES':
-      return action.issues
+      return {isFetching: false, issues: action.issues}
     default:
       return state
   }
@@ -54,8 +116,7 @@ const issues = (state = [], action) => {
 // Reducers
 const app = combineReducers({
   view,
-  url,
-  issues
+  data
 })
 
 // Actions
@@ -65,16 +126,26 @@ const setView = view => {
     view
   }
 }
-const setUrl = url => {
-  return {
-    type: 'SET_URL',
-    url
+const fetchData = (type = 'GET_ISSUES', issuekey) => {
+  // type is one of GET_ISSUES, DELETE_ISSUE, POST_ISSUE, PUT_ISSUE
+  switch (type) {
+    case 'DELETE_ISSUE':
+    case 'PUT_ISSUE':
+      return {type, issuekey}
+    default:
+      return {type}
   }
 }
-const receiveIssues = (json) => {
+const receiveIssues = json => {
   return {
     type: 'RECEIVE_ISSUES',
     issues: json.issues
+  }
+}
+const receiveStatus = json => {
+  return {
+    type: 'RECEIVE_STATUS',
+    status: json
   }
 }
 
@@ -93,6 +164,7 @@ let store = createStore(
 //
 // React part - UI
 //
+
 class Root extends Component {
   render () {
     return (
@@ -116,18 +188,18 @@ const Header = () => (
   <p>
     Goto:
     {' '}
-    <ViewGoto view='/'>
+    <LinkView view='/'>
       Home
-    </ViewGoto>
+    </LinkView>
     {', '}
-    <ViewGoto view='/search'>
+    <LinkView view='/search'>
       Search
-    </ViewGoto>
-    <IssueGoto />
+    </LinkView>
+    <LinkIssue />
   </p>
 )
 
-const Goto = ({ active, view, children, onClick }) => {
+const LinkViewComp = ({ active, view, children, onClick }) => {
   if (active) {
     return <span>{children}</span>
   }
@@ -135,15 +207,13 @@ const Goto = ({ active, view, children, onClick }) => {
   return <Link to={view} onClick={onClick}>{children}</Link>
 }
 
-const mapViewGoto = {
-
+const mapLinkView = {
   mapStateToProps: (state, ownProps) => {
     return {
       active: ownProps.view === state.view,
       view: ownProps.view
     }
   },
-
   mapDispatchToProps: (dispatch, ownProps) => {
     return {
       onClick: () => {
@@ -151,23 +221,22 @@ const mapViewGoto = {
       }
     }
   }
-
 }
 
-const ViewGoto = connect(
-  mapViewGoto.mapStateToProps,
-  mapViewGoto.mapDispatchToProps
-)(Goto)
+const LinkView = connect(
+  mapLinkView.mapStateToProps,
+  mapLinkView.mapDispatchToProps
+)(LinkViewComp)
 
-const IssueGoto = () => {
+const LinkIssue = () => {
   const matches = store.getState().view.match('/issue/([^/]*)')
   if (matches !== null) {
     return (
       <span>
         {', '}
-        <ViewGoto view={matches[0]}>
+        <LinkView view={matches[0]}>
           {matches[1]}
-        </ViewGoto>
+        </LinkView>
       </span>
     )
   } else {
@@ -179,8 +248,8 @@ const Main = () => (
   <div>
     <Switch>
       <Route exact path='/' component={Home} />
-      <Route exact path='/search' component={IssueBoxContainer} />
-      <Route path='/issue/:key' component={CommentBox} />
+      <Route exact path='/search' component={IssuesBox} />
+      <Route path='/issue/:key' component={IssueBox} />
       <Redirect to={store.getState().view} />
     </Switch>
   </div>
@@ -192,81 +261,117 @@ const Home = () => (
   </div>
 )
 
-const Api = ({ url, children, onClick }) => {
-  return <button onClick={onClick}>{children}</button>
-}
-
-function fetchUrl (dispatch, url) {
-  return dispatch => {
-    dispatch(setUrl(url))
-    return fetch(`${window.location.origin}${url}`)
-      .then(response => response.json())
-      .then(json => dispatch(receiveIssues(json)))
-  }
-}
-
-const mapCallApi = {
-
-  mapStateToProps: (state, ownProps) => {
-    return {
-      url: ownProps.url
-    }
-  },
-
-  mapDispatchToProps: (dispatch, ownProps) => {
-    return {
-      onClick: () => {
-        dispatch(fetchUrl(dispatch, ownProps.url))
-      }
-    }
-  }
-
-}
-
-const CallApi = connect(
-  mapCallApi.mapStateToProps,
-  mapCallApi.mapDispatchToProps
-)(Api)
-
-const Issue = ({children}) => (
-  <div>
-    <li><ViewGoto view={`/issue/${children}`}>{children}</ViewGoto></li>
-  </div>
-)
-
-class IssueBox extends Component {
+class IssuesBoxComp extends Component {
   // componentDidMount () {
   //   const { dispatch } = this.props
-  //   dispatch(fetchUrl(dispatch, '/api'))
+  //   dispatch(getIssues(dispatch))
   // }
 
   render () {
-    const { issues } = this.props
+    const { isFetching, issues } = this.props
     return (
       <div>
-        <p>Search: <CallApi url='/api'>Refresh</CallApi></p>
-        {issues.length === 0 && <p><b>Empty.</b></p>}
-        {issues.map(issue => <Issue>{issue.key}</Issue>)}
+        <p>Search: <GetIssues>Refresh</GetIssues></p>
+        {isFetching && issues.length === 0 && <p><b>Loading...</b></p>}
+        {!isFetching && issues.length === 0 && <p><b>Empty.</b></p>}
+        {issues.length > 0 &&
+          <div style={{ opacity: isFetching ? 0.5 : 1 }}>
+            {issues.map(issue => <Issue>{issue}</Issue>)}
+          </div>
+        }
+        <IssueForm />
       </div>
     )
   }
 }
 
-const mapIssueBox = {
-
-  mapStateToProps: (state, ownProps) => {
-    return {
-      issues: state.issues
-    }
-  }
-
+const mapIssuesBox = {
+  mapStateToProps: (state, ownProps) => state.data,
+  mapDispatchToProps: (dispatch, ownProps) => undefined
 }
 
-const IssueBoxContainer = connect(
-  mapIssueBox.mapStateToProps
-)(IssueBox)
+const IssuesBox = connect(
+  mapIssuesBox.mapStateToProps,
+  mapIssuesBox.mapDispatchToProps
+)(IssuesBoxComp)
 
-const CommentBox = (props) => (
+const GetIssuesComp = ({ children, onClick }) => {
+  return <button onClick={onClick}>{children}</button>
+}
+
+function getIssues (dispatch) {
+  return dispatch => {
+    dispatch(fetchData('GET_ISSUES'))
+    return fetch(`${window.location.origin}/api`)
+      .then(response => response.json())
+      .then(json => dispatch(receiveIssues(json)))
+  }
+}
+
+const mapGetIssues = {
+  mapStateToProps: (state, ownProps) => undefined,
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      onClick: () => {
+        dispatch(getIssues(dispatch))
+      }
+    }
+  }
+}
+
+const GetIssues = connect(
+  mapGetIssues.mapStateToProps,
+  mapGetIssues.mapDispatchToProps
+)(GetIssuesComp)
+
+const Issue = ({children: issue}) => (
+  <div>
+    <li>
+      <LinkView view={`/issue/${issue.key}`}>{issue.key}</LinkView>
+      {':'}
+      {issue.fields.summary}
+      {' '}
+      (<DeleteIssue issuekey={issue.key}>Delete</DeleteIssue>)
+    </li>
+  </div>
+)
+
+const DeleteIssueComp = ({ children, onClick }) => (
+  <button onClick={onClick}>{children}</button>
+)
+
+function deleteIssue (dispatch, issuekey) {
+  return dispatch => {
+    dispatch(fetchData('DELETE_ISSUE', issuekey))
+    return fetch(`${window.location.origin}/api/${issuekey}`, {method: 'DELETE'})
+      .then(response => response.json())
+      .then(json => dispatch(receiveStatus(json)))
+  }
+}
+
+const mapDeleteIssue = {
+  mapStateToProps: (state, ownProps) => { return { issuekey: ownProps.issuekey } },
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      onClick: () => {
+        dispatch(deleteIssue(dispatch, ownProps.issuekey))
+      }
+    }
+  }
+}
+
+const DeleteIssue = connect(
+  mapDeleteIssue.mapStateToProps,
+  mapDeleteIssue.mapDispatchToProps
+)(DeleteIssueComp)
+
+const IssueForm = () => (
+  <div>
+    <p>Soon a form here</p>
+  </div>
+)
+
+const IssueBox = (props) => (
   <div>
     <p>Issue {props.match.params.key}</p>
   </div>
