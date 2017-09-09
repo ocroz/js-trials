@@ -195,25 +195,27 @@ const App = () => (
 const Header = () => {
   const matches = store.getState().view.match('/issue/([^/]*)')
   return (
-    <p>
-      Goto:
-      {' '}
-      <LinkView view='/'>
-        Home
-      </LinkView>
-      {', '}
-      <LinkView view='/search'>
-        Search
-      </LinkView>
-      {matches !== null &&
-        <span>
-          {', '}
-          <LinkView view={matches[0]}>
-            {matches[1]}
-          </LinkView>
-        </span>
-      }
-    </p>
+    <div className='container'>
+      <div className='page-header'>
+        Goto:
+        {' '}
+        <LinkView view='/'>
+          Home
+        </LinkView>
+        {', '}
+        <LinkView view='/search'>
+          Search
+        </LinkView>
+        {matches !== null &&
+          <span>
+            {', '}
+            <LinkView view={matches[0]}>
+              {matches[1]}
+            </LinkView>
+          </span>
+        }
+      </div>
+    </div>
   )
 }
 
@@ -258,7 +260,7 @@ const Main = () => (
 )
 
 const Home = () => (
-  <div>
+  <div className='container'>
     <p>Home</p>
   </div>
 )
@@ -282,13 +284,15 @@ class IssuesBoxComp extends Component {
   render () {
     const { isFetching, issues } = this.props
     return (
-      <div>
+      <div className='container'>
         <AddFakeIssue>Add Fake Issue</AddFakeIssue>
         {isFetching && issues.length === 0 && <p><b>Loading...</b></p>}
         {!isFetching && issues.length === 0 && <p><b>Empty.</b></p>}
         {issues.length > 0 &&
           <div style={{ opacity: isFetching ? 0.5 : 1 }}>
-            {issues.map(issue => <Issue>{issue}</Issue>)}
+            <ul>
+              {issues.map(issue => <Issue>{issue}</Issue>)}
+            </ul>
           </div>
         }
         <IssueForm />
@@ -342,7 +346,7 @@ const Issue = ({children: issue}) => (
   <div>
     <li>
       <LinkView view={`/issue/${issue.key}`}>{issue.key}</LinkView>
-      {':'}
+      {': '}
       {issue.fields.summary}
       {' '}
       (<DeleteIssue issuekey={issue.key}>Delete</DeleteIssue>)
@@ -351,7 +355,7 @@ const Issue = ({children: issue}) => (
 )
 
 const DeleteIssueComp = ({ children, onClick }) => (
-  <button onClick={onClick}>{children}</button>
+  <button classType='button' className='btn btn-link' onClick={onClick}>{children}</button>
 )
 
 function deleteIssue (dispatch, issuekey) {
@@ -382,13 +386,15 @@ const DeleteIssue = connect(
 )(DeleteIssueComp)
 
 const IssueForm = () => (
-  <div>
-    <p>Soon a form here</p>
+  <div className='panel panel-default'>
+    <div className='panel-body'>
+      Soon a form here
+    </div>
   </div>
 )
 
 const IssueBox = (props) => (
-  <div>
+  <div className='container'>
     <p>Issue {props.match.params.key}</p>
   </div>
 )
