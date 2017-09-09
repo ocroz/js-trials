@@ -21,12 +21,6 @@ const fetch = window.fetch
   Onclick Event: linkView (view)
   Redux Action: -> setView: SET_VIEW, view
   Redux Reducer: --> state.view = view
-
-  React Container: LinkIssue (view ie url pathname)
-  React Component: -> LinkIssueComp (view, onClick)
-  Onclick Event: linkIssue (view)
-  Redux Action: -> setView: SET_VIEW, view
-  Redux Reducer: --> state.view = view
 ----
   Redux Store (state): data
   -> isFetching
@@ -45,16 +39,16 @@ const fetch = window.fetch
   Onclick Event: deleteIssue (dispatch, issuekey)
   1. Redux Action: -> fetchData: DELETE_ISSUE, issuekey
      Redux Reducer: --> state.isFetching = true
-  2. Redux Action: -> receiveStatus: RECEIVE_STATUS, status
-     Redux Reducer: --> state.isFetching = false, state.status = status
+  2. Redux Action: -> receiveStatus: RECEIVE_OK, status
+     Redux Reducer: --> state.isFetching = false
 
   React Container: PostIssue ()
   React Component: -> postIssueComp (onClick)
   Onclick Event: postIssue (dispatch, formdata)
   1. Redux Action: -> fetchData: POST_ISSUE
      Redux Reducer: --> state.isFetching = true
-  2. Redux Action: -> receiveStatus: RECEIVE_STATUS, status
-     Redux Reducer: --> state.isFetching = false, state.status = status
+  2. Redux Action: -> receiveStatus: RECEIVE_OK, status
+     Redux Reducer: --> state.isFetching = false
 
   React: IssuesBox
   React: -> GetIssues
@@ -195,26 +189,24 @@ const App = () => (
 const Header = () => {
   const matches = store.getState().view.match('/issue/([^/]*)')
   return (
-    <div className='container'>
-      <div className='page-header'>
-        Goto:
-        {' '}
-        <LinkView view='/'>
-          Home
-        </LinkView>
-        {', '}
-        <LinkView view='/search'>
-          Search
-        </LinkView>
-        {matches !== null &&
-          <span>
-            {', '}
-            <LinkView view={matches[0]}>
-              {matches[1]}
-            </LinkView>
-          </span>
-        }
-      </div>
+    <div>
+      Goto:
+      {' '}
+      <LinkView view='/'>
+        Home
+      </LinkView>
+      {', '}
+      <LinkView view='/search'>
+        Search
+      </LinkView>
+      {matches !== null &&
+        <span>
+          {', '}
+          <LinkView view={matches[0]}>
+            {matches[1]}
+          </LinkView>
+        </span>
+      }
     </div>
   )
 }
@@ -260,7 +252,7 @@ const Main = () => (
 )
 
 const Home = () => (
-  <div className='container'>
+  <div>
     <p>Home</p>
   </div>
 )
@@ -284,7 +276,7 @@ class IssuesBoxComp extends Component {
   render () {
     const { isFetching, issues } = this.props
     return (
-      <div className='container'>
+      <div>
         <AddFakeIssue>Add Fake Issue</AddFakeIssue>
         {isFetching && issues.length === 0 && <p><b>Loading...</b></p>}
         {!isFetching && issues.length === 0 && <p><b>Empty.</b></p>}
@@ -355,7 +347,7 @@ const Issue = ({children: issue}) => (
 )
 
 const DeleteIssueComp = ({ children, onClick }) => (
-  <button classType='button' className='btn btn-link' onClick={onClick}>{children}</button>
+  <button onClick={onClick}>{children}</button>
 )
 
 function deleteIssue (dispatch, issuekey) {
@@ -386,15 +378,13 @@ const DeleteIssue = connect(
 )(DeleteIssueComp)
 
 const IssueForm = () => (
-  <div className='panel panel-default'>
-    <div className='panel-body'>
-      Soon a form here
-    </div>
-  </div>
+  <p>
+    Soon a form here
+  </p>
 )
 
 const IssueBox = (props) => (
-  <div className='container'>
+  <div>
     <p>Issue {props.match.params.key}</p>
   </div>
 )
