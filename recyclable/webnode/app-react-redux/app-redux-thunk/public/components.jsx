@@ -104,8 +104,9 @@ const data = (state = {isFetching: false, issues: []}, action) => {
     case 'DELETE_ISSUE':
     case 'PUT_ISSUES':
       return {isFetching: true, issues: state.issues}
-    case 'RECEIVE_STATUS':
-      return {isFetching: false, issues: state.issues, status: action.status}
+    case 'RECEIVE_OK':
+    case 'RECEIVE_ERROR':
+      return {isFetching: false, issues: state.issues}
     case 'RECEIVE_ISSUES':
       return {isFetching: false, issues: action.issues}
     default:
@@ -142,10 +143,17 @@ const receiveIssues = json => {
     issues: json.issues
   }
 }
-const receiveStatus = json => {
+const receiveOK = status => {
   return {
-    type: 'RECEIVE_STATUS',
-    status: json
+    type: 'RECEIVE_OK',
+    status
+  }
+}
+const receiveError = error => {
+  console.error(error)
+  return {
+    type: 'RECEIVE_ERROR',
+    error
   }
 }
 
@@ -184,20 +192,30 @@ const App = () => (
   </div>
 )
 
-const Header = () => (
-  <p>
-    Goto:
-    {' '}
-    <LinkView view='/'>
-      Home
-    </LinkView>
-    {', '}
-    <LinkView view='/search'>
-      Search
-    </LinkView>
-    <LinkIssue />
-  </p>
-)
+const Header = () => {
+  const matches = store.getState().view.match('/issue/([^/]*)')
+  return (
+    <p>
+      Goto:
+      {' '}
+      <LinkView view='/'>
+        Home
+      </LinkView>
+      {', '}
+      <LinkView view='/search'>
+        Search
+      </LinkView>
+      {matches !== null &&
+        <span>
+          {', '}
+          <LinkView view={matches[0]}>
+            {matches[1]}
+          </LinkView>
+        </span>
+      }
+    </p>
+  )
+}
 
 const LinkViewComp = ({ active, view, children, onClick }) => {
   if (active) {
@@ -228,22 +246,6 @@ const LinkView = connect(
   mapLinkView.mapDispatchToProps
 )(LinkViewComp)
 
-const LinkIssue = () => {
-  const matches = store.getState().view.match('/issue/([^/]*)')
-  if (matches !== null) {
-    return (
-      <span>
-        {', '}
-        <LinkView view={matches[0]}>
-          {matches[1]}
-        </LinkView>
-      </span>
-    )
-  } else {
-    return <span>{''}</span>
-  }
-}
-
 const Main = () => (
   <div>
     <Switch>
@@ -261,17 +263,27 @@ const Home = () => (
   </div>
 )
 
+function getIssues (dispatch) {
+  return dispatch => {
+    dispatch(fetchData('GET_ISSUES'))
+    return fetch(`${window.location.origin}/api`)
+      .then(response => response.json())
+      .then(json => dispatch(receiveIssues(json)))
+      .catch(error => dispatch(receiveError(error)))
+  }
+}
+
 class IssuesBoxComp extends Component {
-  // componentDidMount () {
-  //   const { dispatch } = this.props
-  //   dispatch(getIssues(dispatch))
-  // }
+  componentDidMount () {
+    const { dispatch } = this.props
+    dispatch(getIssues(dispatch))
+  }
 
   render () {
     const { isFetching, issues } = this.props
     return (
       <div>
-        <p>Search: <GetIssues>Refresh</GetIssues></p>
+        <AddFakeIssue>Add Fake Issue</AddFakeIssue>
         {isFetching && issues.length === 0 && <p><b>Loading...</b></p>}
         {!isFetching && issues.length === 0 && <p><b>Empty.</b></p>}
         {issues.length > 0 &&
@@ -287,7 +299,7 @@ class IssuesBoxComp extends Component {
 
 const mapIssuesBox = {
   mapStateToProps: (state, ownProps) => state.data,
-  mapDispatchToProps: (dispatch, ownProps) => undefined
+  mapDispatchToProps: undefined
 }
 
 const IssuesBox = connect(
@@ -295,34 +307,36 @@ const IssuesBox = connect(
   mapIssuesBox.mapDispatchToProps
 )(IssuesBoxComp)
 
-const GetIssuesComp = ({ children, onClick }) => {
-  return <button onClick={onClick}>{children}</button>
+const AddFakeIssueComp = ({ children, onClick }) => {
+  return <p><button onClick={onClick}>{children}</button></p>
 }
 
-function getIssues (dispatch) {
+function addFakeIssue (dispatch) {
   return dispatch => {
-    dispatch(fetchData('GET_ISSUES'))
-    return fetch(`${window.location.origin}/api`)
+    dispatch(fetchData('ADD_ISSUE'))
+    return fetch(`${window.location.origin}/api/fake`)
       .then(response => response.json())
-      .then(json => dispatch(receiveIssues(json)))
+      .then(json => dispatch(receiveOK(json)))
+      .catch(error => dispatch(receiveError(error)))
   }
 }
 
-const mapGetIssues = {
+const mapAddFakeIssue = {
   mapStateToProps: (state, ownProps) => undefined,
   mapDispatchToProps: (dispatch, ownProps) => {
     return {
       onClick: () => {
+        dispatch(addFakeIssue(dispatch))
         dispatch(getIssues(dispatch))
       }
     }
   }
 }
 
-const GetIssues = connect(
-  mapGetIssues.mapStateToProps,
-  mapGetIssues.mapDispatchToProps
-)(GetIssuesComp)
+const AddFakeIssue = connect(
+  mapAddFakeIssue.mapStateToProps,
+  mapAddFakeIssue.mapDispatchToProps
+)(AddFakeIssueComp)
 
 const Issue = ({children: issue}) => (
   <div>
@@ -345,7 +359,8 @@ function deleteIssue (dispatch, issuekey) {
     dispatch(fetchData('DELETE_ISSUE', issuekey))
     return fetch(`${window.location.origin}/api/${issuekey}`, {method: 'DELETE'})
       .then(response => response.json())
-      .then(json => dispatch(receiveStatus(json)))
+      .then(json => dispatch(receiveOK(json)))
+      .catch(error => dispatch(receiveError(error)))
   }
 }
 
@@ -355,6 +370,7 @@ const mapDeleteIssue = {
     return {
       onClick: () => {
         dispatch(deleteIssue(dispatch, ownProps.issuekey))
+        dispatch(getIssues(dispatch))
       }
     }
   }

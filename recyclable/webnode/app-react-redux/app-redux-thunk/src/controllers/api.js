@@ -5,13 +5,14 @@ const router = new Router()
 
 router.get('/', getIssues)
 router.post('/', postIssue)
+router.get('/fake', getFake)
 router.put('/:key', putIssue)
 router.delete('/:key', deleteIssue)
 
 module.exports = router
 
-function getIssues (req, res) {
-  console.log('get /api')
+function getFake (req, res) {
+  console.log('get /api/fake')
 
   // > For testing
   const [issuetype, reporter, assignee, summary, description] =
@@ -19,6 +20,11 @@ function getIssues (req, res) {
   addIssue({issuetype, reporter, assignee, summary, description})
   // < For testing
 
+  setTimeout(() => res.json({ status: 200, ok: true, statusText: 'OK' }), 200)
+}
+
+function getIssues (req, res) {
+  console.log('get /api')
   const data = { issues: issues.filter(issue => issue.active) }
   setTimeout(() => res.json(data), 200) // Simulate a long server processing
 }
