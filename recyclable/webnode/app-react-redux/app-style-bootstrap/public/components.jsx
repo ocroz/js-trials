@@ -7,6 +7,7 @@ const { Provider, connect } = window.ReactRedux
 const createLogger = window.reduxLogger
 const thunkMiddleware = window.ReduxThunk.default
 const fetch = window.fetch
+const Modal = window.ReactModal
 
 //
 // Model
@@ -122,10 +123,23 @@ const data = (state = {isFetching: false, issues: [], activeIssue: null}, action
   }
 }
 
+// Reducer view
+const modal = (state = {isOpen: false}, action) => {
+  switch (action.type) {
+    case 'OPEN_MODAL':
+      return {isOpen: true}
+    case 'CLOSE_MODAL':
+      return {isOpen: false}
+    default:
+      return state
+  }
+}
+
 // Reducers
 const app = combineReducers({
   view,
-  data
+  data,
+  modal
 })
 
 // Actions
@@ -168,6 +182,16 @@ const receiveError = error => {
   return {
     type: 'RECEIVE_ERROR',
     error
+  }
+}
+const openModal = () => {
+  return {
+    type: 'OPEN_MODAL'
+  }
+}
+const closeModal = () => {
+  return {
+    type: 'CLOSE_MODAL'
   }
 }
 
@@ -308,7 +332,12 @@ class IssuesBoxComp extends Component {
           <div className='col-lg-4'>
             <div className='panel panel-default'>
               <div className='panel-body'>
-                <AddFakeIssue>Add Fake Issue</AddFakeIssue>
+                <p>
+                  <CreateIssue>Create Issue</CreateIssue>
+                  {' '}
+                  <AddFakeIssue>Add Fake Issue</AddFakeIssue>
+                </p>
+                <CreateIssueModal />
                 {isFetching && issues.length === 0 && <p><b>Loading...</b></p>}
                 {!isFetching && issues.length === 0 && <p><b>Empty.</b></p>}
                 {issues.length > 0 &&
@@ -343,9 +372,81 @@ const IssuesBox = connect(
   mapIssuesBox.mapDispatchToProps
 )(IssuesBoxComp)
 
-const AddFakeIssueComp = ({ children, onClick }) => {
-  return <p><button onClick={onClick}>{children}</button></p>
+const CreateIssueComp = ({ children, onClick }) => {
+  return <button onClick={onClick}>{children}</button>
 }
+
+const mapCreateIssue = {
+  mapStateToProps: (state, ownProps) => undefined,
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      onClick: () => dispatch(openModal())
+    }
+  }
+}
+
+const CreateIssue = connect(
+  mapCreateIssue.mapStateToProps,
+  mapCreateIssue.mapDispatchToProps
+)(CreateIssueComp)
+
+class CreateIssueModalComp extends Component {
+  render () {
+    const { isOpen, onAfterOpen, onRequestClose, closeTimeoutMS, customStyle } = this.props
+    return (
+      <Modal
+        isOpen={isOpen}
+        onAfterOpen={onAfterOpen}
+        onRequestClose={onRequestClose}
+        closeTimeoutMS={closeTimeoutMS}
+        style={customStyle}
+        contentLabel='Modal'
+      >
+        <h1>Modal Content</h1>
+        <p>Etc.</p>
+        <form className='comment-form' onSubmit={this._handleSubmit.bind(this)}>
+          <label>Join the discussion</label>
+          <div className='comment-form-fields'>
+            <input placeholder='Name:' ref={input => (this._author = input)} required />
+            <textarea placeholder='Comment:' ref={textarea => (this._body = textarea)} required />
+          </div>
+          <div className='comment-form-actions'>
+            <button type='submit'>
+              Post comment
+            </button>
+          </div>
+        </form>
+      </Modal>
+    )
+  }
+
+  _handleSubmit (event) {
+    event.preventDefault()
+    this.props.onSubmit(this._author.value, this._body.value)
+  }
+}
+
+const mapCreateIssueModal = {
+  mapStateToProps: (state, ownProps) => state.modal,
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      onRequestClose: () => dispatch(closeModal()),
+      onSubmit: (author, body) => {
+        console.log(author, body)
+        dispatch(closeModal())
+      }
+    }
+  }
+}
+
+const CreateIssueModal = connect(
+  mapCreateIssueModal.mapStateToProps,
+  mapCreateIssueModal.mapDispatchToProps
+)(CreateIssueModalComp)
+
+const AddFakeIssueComp = ({ children, onClick }) => (
+  <button onClick={onClick}>{children}</button>
+)
 
 function addFakeIssue (dispatch) {
   return dispatch => {
