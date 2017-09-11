@@ -295,6 +295,11 @@ class IssuesBoxComp extends Component {
     dispatch(getIssues(dispatch))
   }
 
+  // componentDidUpdate () {
+  //   const { dispatch } = this.props
+  //   dispatch(getIssues(dispatch))
+  // }
+
   render () {
     const { isFetching, issues, activeIssue } = this.props
     return (
@@ -421,6 +426,7 @@ const mapDeleteIssue = {
       onClick: () => {
         dispatch(deleteIssue(dispatch, ownProps.issuekey))
         dispatch(setView('/search'))
+        store.getState().view === '/search' && dispatch(getIssues(dispatch))
       }
     }
   }
