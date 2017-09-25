@@ -28,12 +28,37 @@
     <title>TaskSPL Submit Form</title>
     <input id="improvement" name="Improvement" placeholder="What needs to be improved?" type="text"/>
     <input id="addedvalue" name="Added Value" placeholder="What would be the added value?" type="text" required="true"/>
-    <textarea id="msg" name="Description" placeholder="Any details about the desired modification?" required="true"></textarea>
+    <textarea id="description" name="Description" placeholder="Any details about the desired modification?" required="true"></textarea>
     <select id="priority" class="jira:priorities" name="Priority" placeholder="Select Priority" required="true"></select>
     <select id="issuetype" class="jira:issuetypes" name="Issue Type" placeholder="Select Issue Type"></select>
-    <select id="component" class="jira:components" name="Component" placeholder="Select Component"></select>
-    <select id="affectversion" class="jira:versions" name="Affected Version" placeholder="Select Affected Version"></select>
+    <select id="components" class="jira:components" multiple="true" data-live-search="true" name="Component" placeholder="Select Component"></select>
+    <select id="affectversions" class="jira:versions" multiple="true" name="Affected Version" placeholder="Select Affected Version"></select>
     <select id="fixversion" class="jira:versions" name="Fix Version" placeholder="Select Fix Version"></select>
+    <select id="fruit" name="Fruit" title="Select Fruit">
+      <option>Apple</option>
+      <option>Orange</option>
+      <option>Banana</option>
+    </select>
+    <div id="checkbox-1" class="checkbox" name="Checkbox 1">
+      <label class="checkbox"><input type="checkbox" value="Option 1">Option 1</label>
+      <label class="checkbox"><input type="checkbox" value="Option 2">Option 2</label>
+      <label class="checkbox"><input type="checkbox" value="Option 3">Option 3</label>
+    </div>
+    <div id="checkbox-2" class="checkbox" name="Checkbox 2">
+      <label class="checkbox-inline"><input type="checkbox" value="Option 4">Option 4</label>
+      <label class="checkbox-inline"><input type="checkbox" value="Option 5">Option 5</label>
+      <label class="checkbox-inline"><input type="checkbox" value="Option 6">Option 6</label>
+    </div>
+    <div id="radio-1" class="radio" name="Radiobox 1">
+      <label class="radio"><input type="radio" name="radio-1" value="Option 1">Option 1</label>
+      <label class="radio"><input type="radio" name="radio-1" value="Option 2">Option 2</label>
+      <label class="radio"><input type="radio" name="radio-1" value="Option 3">Option 3</label>
+    </div>
+    <div id="radio-2" class="radio" name="Radiobox 2">
+      <label class="radio-inline"><input type="radio" name="radio-2" value="Option 4">Option 4</label>
+      <label class="radio-inline"><input type="radio" name="radio-2" value="Option 5">Option 5</label>
+      <label class="radio-inline"><input type="radio" name="radio-2" value="Option 6">Option 6</label>
+    </div>
   </div>
 
   <script type="text/javascript">
@@ -49,17 +74,22 @@
           'assignee': {'name': myCIC.user},
           'issuetype': {'name': myCIC.value('issuetype')},
           'priority': {'name': myCIC.value('priority')},
-          'components': myCIC.value('component') && [ {'name': myCIC.value('component')} ],
-          'versions': myCIC.value('affectversion') && [ {'name': myCIC.value('affectversion')} ],
+          'components': myCIC.value('components') && myCIC.value('components').map(name => { return {name} }),
+          'versions': myCIC.value('affectversions') && myCIC.value('affectversions').map(name => { return {name} }),
           'fixVersions': myCIC.value('fixversion') && [ {'name': myCIC.value('fixversion')} ],
           'summary': myCIC.value('improvement'),
           'description': `
+            ${myCIC.value('fruit')}
             {panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}
             ${myCIC.value('addedvalue')}
             {panel}
             {panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}
-            ${myCIC.value('msg')}
-            {panel}`
+            ${myCIC.value('description')}
+            {panel}
+            ${myCIC.value('checkbox-1').join(', ')}
+            ${myCIC.value('checkbox-2').join(', ')}
+            ${myCIC.value('radio-1')}
+            ${myCIC.value('radio-2')}`
         }
       }
     }

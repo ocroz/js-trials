@@ -1,5 +1,5 @@
 'use strict'
-/* globals $ JIRAURL Confluence fetch Option */
+/* globals $ JIRAURL Confluence fetch alert */
 
 // Throw new error and return undefined
 const throwNewError = (message) => { throw new Error(message) }
@@ -32,7 +32,15 @@ async function fetchJira (
       const { ok, status, statusText } = resp
       const response = { ok, status, statusText }
       if (!resp.ok) {
-        reject(new Error(JSON.stringify(response)))
+        resp.json().then(json => {
+          const err = {}
+          for (let attr in json) {
+            if ((Array.isArray(json[attr]) && json[attr].length > 0) || (!Array.isArray(json[attr]) && json[attr] !== '')) {
+              err[attr] = json[attr]
+            }
+          }
+          reject(new Error(JSON.stringify(err)))
+        })
       } else if (resp.status === 204) { // means statusText === 'No Content'
         resolve(response)
       } else {
@@ -62,11 +70,34 @@ function getPriorities (jira) {
 }
 
 // Get Project data
-async function getProjectData (jira, project) {
+function getProjectData (jira, project) {
   return fetchJira(jira, 'GET', 'api/2/project/' + project)
   .then(({issueTypes, components, versions}) => {
     return {issueTypes, components, versions}
   })
+}
+
+// Send issue
+function sendIssue (that, issue) {
+  return issue.fields ? sendThatIssue() : (throwNewError('Error CIC issue fields are undefined!'), false)
+  function sendThatIssue () {
+    issue.fields.project = {'key': that.project}
+    issue.fields.labels === undefined
+      ? issue.fields.labels = [that.label]
+      : issue.fields.labels[issue.fields.labels.length] = that.label
+    console.log('SUBMITTING ISSUE...')
+    return fetchJira(that.jira, 'POST', 'api/2/issue', issue)
+    .then((resp) => {
+      console.log('ISSUE SUBMITTED:', resp)
+      showModal('New issue submitted', `<a href="${that.jira}/browse/${resp.key}">${resp.key}</a>`)
+      return true
+    })
+    .catch((err) => {
+      console.error('Fail to submit issue:', err)
+      alert(err)
+      return false
+    })
+  }
 }
 
 // Create the Custom Issue Collector class
@@ -96,15 +127,60 @@ class CIC { // eslint-disable-line no-unused-vars
     $(`#${this.modal}`).modal('show')
     $('.selectpicker').selectpicker()
   }
-  submit () {
-    console.log(this.value('addedvalue'))
-    console.log(this.value('priority'))
-    $(`#${this.modal}`).modal('hide')
+  async submit () {
+    if (mandatoryFields(this)) {
+      let issue = this.mapfields()
+      console.log(issue)
+      if (await sendIssue(this, issue)) {
+        $(`#${this.modal}`).modal('hide')
+      }
+    }
   }
   value (id, value) {
-    if (value !== undefined) { document.querySelectorAll(`#${this.modal} #${id}`)[0].value = value }
-    return document.querySelectorAll(`#${this.modal} #${id}`)[0].value
+    const element = document.querySelectorAll(`#${this.modal} #${id}`)[0]
+    if (value !== undefined) { element.value = value }
+    if (element.localName !== 'div') {
+      // Single value
+      if (!element.multiple) { return element.value !== '' ? element.value : undefined }
+      // Multiple values
+      if (element.parentNode.childNodes[0].title !== element.title) {
+        return element.parentNode.childNodes[0].title.split(', ')
+      }
+      return undefined // No  value selected
+    } else {
+      // Checkbox and Radio buttons
+      const inputs = document.querySelectorAll(`#${this.modal} #${id} input`)
+      let type = 'checkbox'
+      let values = []
+      for (let input of inputs) {
+        if (input.checked) {
+          type = input.type
+          values.push(input.value)
+        }
+      }
+      return type === 'checkbox' ? values : values[0]
+    }
   }
+}
+
+// Check mandatory fields
+function mandatoryFields (that) {
+  let needValue = []
+  for (let tag of document.querySelectorAll(`#${that.modal} [id][name]`)) {
+    if (tag.getAttribute('required')) {
+      if (that.value(tag.getAttribute('id')) === '') {
+        needValue.push(tag.getAttribute('id'))
+      }
+    }
+  }
+  if (needValue.length > 0) {
+    if (needValue.length === 1) {
+      throw new Error(`The field '${needValue[0]}' is required !`)
+    } else {
+      throw new Error(`The fields '${needValue.join(', ')}' are required !`)
+    }
+  }
+  return needValue.length === 0
 }
 
 function createModal (that) {
@@ -126,12 +202,11 @@ function createModal (that) {
       modalBody.appendChild(modalBodyContent)
       const required = childNode.getAttribute('required') ? '*' : ''
       modalBodyColumnLeft.innerHTML += `<p align="right">${childNode.getAttribute('name')}<span style="color:red">${required}<span></p>`
-      // modalBodyColumnRight.innerHTML += `<p>${childNode.outerHTML}</p>`
       const p = addElement(modalBodyColumnRight, 'p', { })
       const newNode = document.createElement(childNode.localName)
-      for (let attr of childNode.attributes) { newNode.setAttribute(attr.name, attr.value) }
-      newNode.className = `${childNode.className} form-control`
       p.appendChild(newNode)
+      newNode.outerHTML = childNode.outerHTML
+      if (childNode.localName !== 'div') { p.children[0].className = `${childNode.className} form-control` }
     }
   }
 
@@ -149,34 +224,30 @@ function createModal (that) {
 // Add JIRA options to the select lists
 function addJiraOptions (that) {
   for (let select of document.getElementById(that.modal).getElementsByTagName('select')) {
+    select.className = `${select.className} selectpicker`
     const selectType = select.className.match('jira:[^ ]*')
     if (selectType) {
       const list = selectType[0].split(':')[1]
       if (select.options.length === 0) {
-        let head = new Option(select.getAttribute('placeholder'), '')
-        head.setAttribute('disabled', true)
-        head.setAttribute('selected', true)
-        head.setAttribute('hidden', true)
-        select.options.add(head)
+        if (!select.title) { select.setAttribute('title', select.getAttribute('placeholder')) }
         if (list === 'versions') {
-          addOptionGroup(select, 'Unreleased')
+          const groupUnreleased = addElement(select, 'optgroup', { label: 'Unreleased' })
           for (let item of that[list]) {
             if (!item.archived && !item.released) { // unarchived and unreleased
-              select.options.add(new Option(item.name))
+              const attributes = { 'data-content': `${item.name}` }
+              addElement(groupUnreleased, 'option', attributes, item.name)
             }
           }
-          addOptionGroup(select, 'Released')
+          const groupReleased = addElement(select, 'optgroup', { label: 'Released' })
           for (let item of that[list]) {
             if (!item.archived && item.released) { // unarchived and released
-              select.options.add(new Option(item.name))
+              const attributes = { 'data-content': `${item.name}` }
+              addElement(groupReleased, 'option', attributes, item.name)
             }
           }
         } else {
           for (let item of that[list]) {
-            if ((list === 'issuetypes') || (list === 'priorities')) {
-              select.className = `${select.className} selectpicker`
-            }
-            let attributes = {}
+            let attributes = { 'data-content': `${item.name}` }
             if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
               if ((list === 'issuetypes') || (list === 'priorities')) {
                 attributes = { 'data-content': `<img src="${item.iconUrl}" heigth="24px" width="24px">&nbsp;&nbsp;${item.name}` }
@@ -187,11 +258,6 @@ function addJiraOptions (that) {
         }
       }
     }
-  }
-  function addOptionGroup (select, groupname) {
-    let group = document.createElement('OPTGROUP')
-    group.setAttribute('label', groupname)
-    select.insertBefore(group, select.options[select.options.length])
   }
 }
 
@@ -212,7 +278,7 @@ function createModalStructure (modalId) {
   // Create the modal structure
   const fragment = document.createDocumentFragment()
   // const container = addElement(fragment, 'div', { class: 'container' })
-  const modal = addElement(fragment, 'div', { class: 'modal fade', id: modalId, role: 'dialog' })
+  const modal = addElement(fragment, 'div', { class: 'modal fade', id: modalId, role: 'dialog', 'data-backdrop': 'static', 'data-keyboard': 'false' })
   const modalDialog = addElement(modal, 'div', { class: 'modal-dialog' })
   const modalContent = addElement(modalDialog, 'div', { class: 'modal-content' })
   const modalForm = addElement(modalContent, 'form')
