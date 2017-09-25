@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JIRA Custom Issue Collector</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- Bootstrap's JavaScript requires jQuery version 1.9.1 or higher, but lower than version 4 -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+  <link rel="stylesheet" href="https://safetest.hq.k.grp/Safetest/custom/tmp/JCIC/JCIC.css">
+  <script src="https://safetest.hq.k.grp/Safetest/custom/tmp/JCIC/JCIC.js"></script>
+  <!--
+  <script src="https://unpkg.com/babel-standalone@latest/babel.min.js"></script>
+  <script type="text/babel" src="https://safetest.hq.k.grp/Safetest/custom/tmp/JCIC/JCIC.js"></script>
+  -->
+</head>
+<body>
+  <div class=container>
+    <p></p><button id="popup" class="btn btn-default" onclick="createTask()">Submit Task into SPLPRJ</button>
+  </div>
+
+  <div id="TaskSPL" style="display: none;">
+    <title>TaskSPL Submit Form</title>
+    <input id="improvement" name="Improvement" placeholder="What needs to be improved?" type="text"/>
+    <input id="addedvalue" name="Added Value" placeholder="What would be the added value?" type="text" required="true"/>
+    <textarea id="msg" name="Description" placeholder="Any details about the desired modification?" required="true"></textarea>
+    <select id="priority" class="jira:priorities" name="Priority" placeholder="Select Priority" required="true"></select>
+    <select id="issuetype" class="jira:issuetypes" name="Issue Type" placeholder="Select Issue Type"></select>
+    <select id="component" class="jira:components" name="Component" placeholder="Select Component"></select>
+    <select id="affectversion" class="jira:versions" name="Affected Version" placeholder="Select Affected Version"></select>
+    <select id="fixversion" class="jira:versions" name="Fix Version" placeholder="Select Fix Version"></select>
+  </div>
+
+  <script type="text/javascript">
+  const JIRAURL = 'https://atlassian-test.hq.k.grp/jira'
+
+  let TaskSPL
+  async function createTask () {
+    let myCIC = TaskSPL = await new CIC('TaskSPL', 'SPLPRJ')
+    myCIC.mapfields = () => {
+      return {
+        'fields': {
+          'labels': ['platform'],
+          'assignee': {'name': myCIC.user},
+          'issuetype': {'name': myCIC.value('issuetype')},
+          'priority': {'name': myCIC.value('priority')},
+          'components': myCIC.value('component') && [ {'name': myCIC.value('component')} ],
+          'versions': myCIC.value('affectversion') && [ {'name': myCIC.value('affectversion')} ],
+          'fixVersions': myCIC.value('fixversion') && [ {'name': myCIC.value('fixversion')} ],
+          'summary': myCIC.value('improvement'),
+          'description': `
+            {panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}
+            ${myCIC.value('addedvalue')}
+            {panel}
+            {panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}
+            ${myCIC.value('msg')}
+            {panel}`
+        }
+      }
+    }
+    myCIC.show()
+  }
+  </script>
+</body>
+</html>
