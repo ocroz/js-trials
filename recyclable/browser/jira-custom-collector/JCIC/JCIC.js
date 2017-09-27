@@ -32,10 +32,12 @@ async function fetchJira (
       const { ok, status, statusText } = resp
       const response = { ok, status, statusText }
       if (!resp.ok) {
-        resp.json().then(json => {
+        resp.json()
+        .catch(() => reject(new Error(JSON.stringify(response))))
+        .then(json => {
           const err = {}
           for (let attr in json) {
-            if ((Array.isArray(json[attr]) && json[attr].length > 0) || (!Array.isArray(json[attr]) && json[attr] !== '')) {
+            if ((Array.isArray(json[attr]) && json[attr].length > 0) || (Object.keys(json[attr]).length > 0)) {
               err[attr] = json[attr]
             }
           }
@@ -188,20 +190,19 @@ function createModal (that) {
   const { modalHeader, modalBody, modalFooter } = createModalStructure(that.modal)
 
   // Modal Header
-  const tagTitle = document.getElementById(that.collector).getElementsByTagName('title')
-  const tagTitleValue = tagTitle.length > 0 ? tagTitle[0].innerText : `${that.collector} Submit Form`
-  addElement(modalHeader, 'h4', { class: 'modal-title' }, tagTitleValue)
+  addElement(modalHeader, 'h4', { class: 'modal-title' }, document.getElementById(that.collector).title)
 
   // Modal Body
   for (let childNode of document.getElementById(that.collector).childNodes) {
-    if (childNode.outerHTML && childNode.localName !== 'title') {
+    if (childNode.outerHTML) {
       const modalBodyContent = document.createDocumentFragment()
       const modalBodyRow = addElement(modalBodyContent, 'div', { class: 'row' })
       const modalBodyColumnLeft = addElement(modalBodyRow, 'div', { class: 'col-lg-3' })
       const modalBodyColumnRight = addElement(modalBodyRow, 'div', { class: 'col-lg-6' })
       modalBody.appendChild(modalBodyContent)
-      const required = childNode.getAttribute('required') ? '*' : ''
-      modalBodyColumnLeft.innerHTML += `<p align="right">${childNode.getAttribute('name')}<span style="color:red">${required}<span></p>`
+      const label = childNode.getAttribute('name') || childNode.getAttribute('title')
+      const required = childNode.required ? '*' : ''
+      modalBodyColumnLeft.innerHTML += `<p align="right">${label}<span style="color:red">${required}<span></p>`
       const p = addElement(modalBodyColumnRight, 'p', { })
       const newNode = document.createElement(childNode.localName)
       p.appendChild(newNode)
