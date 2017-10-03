@@ -233,7 +233,13 @@ function queryJira (cb, jiraurl, method, request, input) {
       } catch (err) {
          data = xhr.response;
       }
-      Object.keys(data).forEach(function(key) { if (Object.keys(data[key]).length === 0) { delete(data[key]) } });
+      if (typeof(data) === 'object') {
+         Object.keys(data).forEach(function(key) {
+            if (typeof(data[key]) === 'object' && Object.keys(data[key]).length === 0) {
+               delete(data[key])
+            }
+         })
+      }
       var response = {
          status: (xhr.statusText === 'OK' || xhr.statusText === 'Created') ? 'success' : 'error', // Keep consistent status with the $.ajax method
          data: data,
@@ -249,38 +255,6 @@ function queryJira (cb, jiraurl, method, request, input) {
    };
    xhr.send(input);
 }
-
-/*
-// This $.ajax method functions well with Chrome and Firefox but fails with Edge so why the xhr method is better
-function queryJira (cb, jiraurl, method, request, input) {
-   if (!cb) { cb = null; }
-   if (!jiraurl) { jiraurl = 'https://atlassian-test.hq.k.grp/jira'; }
-   if (!method) { method = 'GET'; }
-   if (!request) { request = 'api/2/myself'; }
-   if (input) { input = JSON.stringify(input); }
-   console.log('BEGINNING OF REST CALL');
-   $.ajax({
-      type: method,
-      url: jiraurl + '/rest/' + request,
-      dataType: 'json',
-      crossDomain: true,
-      contentType: 'application/json',
-      data: input,
-      xhrFields: {
-         withCredentials: true
-      },
-      success: function (data, status, result) {
-         cb && cb({data: data, status: status, result: result});
-      },
-      error: function (result, status, error) {
-         cb && cb({result: result, status: status, error: error});
-      },
-      complete: function (result, status) {
-         console.log('END OF REST CALL');
-      }
-   });
-}
-*/
 
 function createModal (that) {
    // Modal Structure
