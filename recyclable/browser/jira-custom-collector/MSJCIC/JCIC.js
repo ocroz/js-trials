@@ -168,7 +168,7 @@ function mandatoryFields (that) {
   for (var i = 0; i < tags.length; i++) {
     var tag = tags[i]
     if (tag.required) {
-      if (that.value(tag.getAttribute('id')) === '') {
+      if (that.value(tag.getAttribute('id')) === undefined) {
         needValue.push(tag.getAttribute('id'))
       }
     }
