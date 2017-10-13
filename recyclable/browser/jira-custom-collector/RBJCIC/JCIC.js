@@ -120,8 +120,8 @@ function submit (that) {
   // Send issue fields
   issue.fields.project = {'key': that.project}
   issue.fields.labels === undefined
-      ? issue.fields.labels = [that.label]
-      : issue.fields.labels[issue.fields.labels.length] = that.label
+    ? issue.fields.labels = [that.label]
+    : issue.fields.labels[issue.fields.labels.length] = that.label
 
   console.log('SUBMITTING ISSUE...')
   queryJira(recieveIssue, that.jira, 'POST', 'api/2/issue', issue)

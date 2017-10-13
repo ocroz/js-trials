@@ -45,8 +45,8 @@ function CIC (collector, project, mapfields) { // eslint-disable-line no-unused-
 // Get JIRA URL
 function getJira () {
   return (
-      (typeof JIRAURL !== 'undefined' && JIRAURL) ||
-      (typeof Confluence !== 'undefined' && conf2jira())
+    (typeof JIRAURL !== 'undefined' && JIRAURL) ||
+    (typeof Confluence !== 'undefined' && conf2jira())
   )
 
   function conf2jira () {
