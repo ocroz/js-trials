@@ -88,7 +88,7 @@
           '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
           myCIC.value('description') +
           '{panel}' +
-          myCIC.value('fruit') + '\n' +
+          ((myCIC.value('fruit') || '') && myCIC.value('fruit') + '\n') +
           myCIC.value('checkbox-1').join(', ') + '\n' +
           myCIC.value('checkbox-2').join(', ') + '\n' +
           myCIC.value('radio-1') + '\n' +
