@@ -35,11 +35,12 @@ function CIC (collector, project, mapfields) { // eslint-disable-line no-unused-
   this.connect = function () {
     connect(this)
   }
-  this.submit = function () {
+  this.submit = function (formValues) {
+    this.formValues = formValues
     submit(this)
   }
-  this.value = function (id, value) {
-    return formvalue(this, id, value)
+  this.value = function (id) {
+    return this.formValues[id]
   }
 }
 
@@ -187,43 +188,18 @@ function queryJira (cb, jiraurl, method, request, input) {
   xhr.send(input)
 }
 
-function formvalue (that, id, value) {
-  // toArray(document.querySelectorAll('.modal select')[2].selectedOptions).map(function(opt){return opt.value})
-  var element = document.querySelectorAll('.modal' + ' ' + '#' + id)[0]
-  if (value !== undefined) {
-    element.value = value
-  }
-  if (element.localName !== 'div') {
-    // Single value
-    if (!element.multiple) {
-      return element.value !== '' ? element.value : undefined
-    }
-    // Multiple values
-    if (element.parentNode.childNodes[0].title !== element.title) {
-      return element.parentNode.childNodes[0].title.split(', ')
-    }
-    return undefined // No  value selected
-  } else {
-    // Checkbox and Radio buttons
-    var inputs = document.querySelectorAll('.modal' + ' ' + '#' + id + ' ' + 'input')
-    var type = 'checkbox'
-    var values = []
-    for (var i = 0; i < inputs.length; i++) {
-      var input = inputs[i]
-      if (input.checked) {
-        type = input.type
-        values.push(input.value)
-      }
-    }
-    return type === 'checkbox' ? values : values[0]
-  }
-}
-
 function showMessage (title, message) {
   var modalTitle = title
-  var modalBody = crEl('div', {dangerouslySetInnerHTML: {__html: message}})
+
+  // var modalBody = crEl('div', {dangerouslySetInnerHTML: {__html: message}})
+  var ModalBody = React.createClass({
+    render: function () {
+      return crEl('div', {dangerouslySetInnerHTML: {__html: message}})
+    }
+  })
+
   var modalFooter = null
-  showModal(modalTitle, modalBody, modalFooter)
+  showModal(modalTitle, ModalBody, modalFooter)
 }
 
 function showForm (that) { // eslint-disable-line no-unused-vars
@@ -247,29 +223,6 @@ function showForm (that) { // eslint-disable-line no-unused-vars
       object[key] = value
     })
     return object
-  }
-
-  function toReact (childNode) {
-    var type = childNode.localName
-    var props = toObject(childNode.attributes)
-    var children = null
-    if (childNode.localName !== 'div') {
-      props.className = props.className ? props.className + ' form-control' : 'form-control'
-      if (childNode.localName === 'select') {
-        if (childNode.children.length > 0) {
-          children = toArray(childNode.children).map(function (child, i) {
-            return crEl(child.localName, {key: i}, child.value)
-          })
-        } else {
-          children = addJiraOptions(childNode)
-        }
-      }
-    } else {
-      if (childNode.children.length > 0) {
-        props = {dangerouslySetInnerHTML: {__html: childNode.outerHTML}}
-      }
-    }
-    return crEl(type, props, children)
   }
 
   function addJiraOptions (select) {
@@ -310,36 +263,103 @@ function showForm (that) { // eslint-disable-line no-unused-vars
         )
       }
     }
+    return null
   }
 
-  var modalBody =
-    toArray(document.getElementById(that.collector).childNodes)
-    .filter(function (childNode) { return childNode.outerHTML }) // no need to filter here if toArray does it already with i+=2
-    .map(function (childNode) {
-      return (
-        crEl(Row, {key: childNode.id},
-          crEl(Col, { lg: 3 },
-            crEl('p', {style: {textAlign: 'right'}}, [
-              childNode.getAttribute('name') || childNode.getAttribute('title'),
-              crEl('span', {key: 'redstar', style: {color: 'red'}}, childNode.required ? '*' : '')
-            ])
-          ),
-          crEl(Col, { lg: 6 },
-            toReact(childNode), crEl('p')
-          )
-        )
+  function addChildren (nodeObject, onInput) {
+    return toArray(nodeObject.children).map(function (child, i) {
+      var props = toObject(child.attributes)
+      props.key = i
+      props.onChange = child.type === 'input' ? onInput : null
+      return crEl(child.localName, props,
+        (!child.outerText && child.children.length === 0) ? null
+        : (child.outerText && child.children.length === 0) ? child.outerText
+        : (!child.outerText && child.children.length > 0) ? addChildren(child, onInput)
+        : [addChildren(child, onInput), child.outerText]
       )
     })
+  }
+
+  var FormInput = React.createClass({
+    onChange: function (event) {
+      var nodeObject = event.target
+      var nodeId = nodeObject.id ? nodeObject.id : parentDiv(nodeObject).id
+      var nodeValue = nodeObject.value
+      if (nodeObject.multiple) {
+        nodeValue =
+          toArray(nodeObject.selectedOptions)
+          .map(function (child) { return child.value })
+      } else if (nodeObject.type === 'checkbox') {
+        nodeValue =
+          toArray(parentDiv(nodeObject).getElementsByTagName('input'))
+          .filter(function (child) { return child.checked })
+          .map(function (child) { return child.value })
+      }
+      this.props.onInput(nodeId, nodeValue)
+    },
+
+    render: function () {
+      var childNode = this.props.childNode
+      var type = childNode.localName
+      var props = toObject(childNode.attributes)
+      var onChange = this.onChange
+      props.onChange = onChange
+      if (childNode.localName !== 'div') {
+        props.className = props.className ? props.className + ' form-control' : 'form-control'
+      }
+      var children = addJiraOptions(childNode)
+      if (childNode.children.length > 0) {
+        children = addChildren(childNode, onChange)
+      }
+      return crEl(type, props, children)
+    }
+  })
+
+  var ModalBody = React.createClass({
+    shouldComponentUpdate (nextProp, nextState) {
+      console.log(nextProp, this.props)
+      console.log(nextState, this.state)
+      // Workaround for https://github.com/facebook/react/issues/3610
+      // See also https://reactjs.org/docs/react-component.html#the-component-lifecycle
+      return false
+    },
+
+    render: function () {
+      var onInput = this.props.onInput
+      return (
+        crEl('div', null,
+          toArray(document.getElementById(that.collector).childNodes)
+          .filter(function (childNode) { return childNode.outerHTML }) // no need to filter here if toArray does it already with i+=2
+          .map(function (childNode) {
+            return (
+              crEl(Row, {key: childNode.id},
+                crEl(Col, { lg: 3 },
+                  crEl('p', {style: {textAlign: 'right'}}, [
+                    childNode.getAttribute('name') || childNode.getAttribute('title'),
+                    crEl('span', {key: 'redstar', style: {color: 'red'}}, childNode.required ? '*' : '')
+                  ])
+                ),
+                crEl(Col, { lg: 6 },
+                  crEl(FormInput, {childNode: childNode, onInput: onInput}), crEl('p')
+                )
+              )
+            )
+          })
+        )
+      )
+    }
+  })
 
   // Modal Footer
   var modalFooter = { onSubmit: that.submit.bind(that) }
 
-  showModal(modalTitle, modalBody, modalFooter)
+  showModal(modalTitle, ModalBody, modalFooter)
 }
 
-function showModal (modalTitle, modalBody, modalFooter) {
+function showModal (modalTitle, ModalBody, modalFooter) {
   var ModalPopup = React.createClass({
     getInitialState: function () {
+      this.formValues = {}
       return { showModal: true }
     },
 
@@ -347,9 +367,14 @@ function showModal (modalTitle, modalBody, modalFooter) {
       this.setState({ showModal: false })
     },
 
+    input: function (id, value) {
+      this.formValues[id] = value
+    },
+
     submit: function (e) {
       e.preventDefault()
-      modalFooter.onSubmit()
+      console.log(this.formValues)
+      modalFooter.onSubmit(this.formValues)
     },
 
     componentDidMount: function () {
@@ -365,7 +390,7 @@ function showModal (modalTitle, modalBody, modalFooter) {
                 crEl(Modal.Title, null, modalTitle)
               ),
               crEl(Modal.Body, null,
-                modalBody
+                crEl(ModalBody, {onInput: this.input})
               ),
               crEl(Modal.Footer, null,
                 crEl(Button, { bsStyle: 'link', onClick: this.close }, 'Close'),
@@ -382,12 +407,12 @@ function showModal (modalTitle, modalBody, modalFooter) {
   ReactDOM.render(crEl(ModalPopup), document.getElementById('root'))
 }
 
+function parentDiv (element) {
+  return element.parentNode.localName === 'div' ? element.parentNode : parentDiv(element.parentNode)
+}
+
 function setSelectPicker () {
   main()
-
-  function parentDiv (element) {
-    return element.parentNode.localName === 'div' ? element.parentNode : parentDiv(element.parentNode)
-  }
 
   function hasParentButton (element) {
     return element === document ? false

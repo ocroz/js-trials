@@ -90,10 +90,10 @@
           myCIC.value('description') +
           '{panel}' +
           ((myCIC.value('fruit') || '') && myCIC.value('fruit') + '\n') +
-          myCIC.value('checkbox-1').join(', ') + '\n' +
-          myCIC.value('checkbox-2').join(', ') + '\n' +
-          myCIC.value('radio-1') + '\n' +
-          myCIC.value('radio-2')
+          ((myCIC.value('checkbox-1') || '') && myCIC.value('checkbox-1').join(', ') + '\n') +
+          ((myCIC.value('checkbox-2') || '') && myCIC.value('checkbox-2').join(', ') + '\n') +
+          ((myCIC.value('radio-1') || '') && myCIC.value('radio-1') + '\n') +
+          ((myCIC.value('radio-2') || '') && myCIC.value('radio-2'))
         }
       }
     }
