@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JIRA Custom Issue Collector</title>
+
+  <link rel="stylesheet" href="/custom/tmp/cdn/webix/5.0.0/codebase/webix.css">
+  <script src="/custom/tmp/cdn/webix/5.0.0/codebase/webix.js"></script>
+
+  <script src="JCIC.js"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+  var JIRAURL = 'https://atlassian-test.hq.k.grp/jira' // eslint-disable-line no-unused-vars
+
+  // Buttons
+  var cicButtons = [
+    { view: 'button', label: 'Submit Bug into CMTOOLSPRCR', autowidth: true, align: 'center', click: createBug },
+    { view: 'button', label: 'Submit Task into SPLPRJ', autowidth: true, align: 'center', click: createTask }
+  ]
+  showCicButtons(cicButtons) // eslint-disable-line no-undef
+
+  // CIC BugP4CM
+  var BugP4CM = undefined // eslint-disable-line no-undef-init
+
+  function createBug () {
+    var formelems = []
+
+    function mapfields (myCIC) {
+      return {}
+    }
+
+    BugP4CM = new CIC('BugP4CM', 'CMTOOLSPRCR', formelems, mapfields) // eslint-disable-line no-undef
+    BugP4CM.connect()
+  }
+
+  // CIC TaskSPL
+  var TaskSPL = undefined // eslint-disable-line no-undef-init
+
+  function createTask () {
+    var lw = 140
+    var la = 'right'
+    /* eslint-disable object-property-newline */
+    var formelems = [
+      { view: 'text', name: 'improvement', placeholder: 'What needs to be improved?',
+        label: 'Improvement', labelWidth: lw, labelAlign: la, value: '' },
+      { view: 'text', name: 'addedvalue', placeholder: 'What would be the added value?',
+        label: 'Added Value', labelWidth: lw, labelAlign: la, required: true, value: '' },
+      { view: 'textarea', name: 'description', placeholder: 'Any details about the desired modification?',
+        label: 'Description', labelWidth: lw, labelAlign: la, required: true, value: '' },
+      { view: 'richselect', name: 'priority', placeholder: 'Select Priority',
+        label: 'Priority', labelWidth: lw, labelAlign: la, required: true, value: '', css: 'jira:priorities' },
+      { view: 'richselect', name: 'issuetype', placeholder: 'Select Issue Type',
+        label: 'Issue Type', labelWidth: lw, labelAlign: la, value: '', css: 'jira:issuetypes' },
+      { view: 'multiselect', name: 'components', placeholder: 'Select Components',
+        label: 'Components', labelWidth: lw, labelAlign: la, value: '', css: 'jira:components' },
+      { view: 'multicombo', name: 'affectversions', placeholder: 'Select Affected Versions',
+        label: 'Affected Versions', labelWidth: lw, labelAlign: la, value: '', css: 'jira:versions' },
+      { view: 'combo', name: 'fixversion', placeholder: 'Select Fix Version',
+        label: 'Fix Version', labelWidth: lw, labelAlign: la, value: '', css: 'jira:versions' },
+      { view: 'richselect', name: 'fruits', placeholder: 'Select Fruit',
+        label: 'Fruits', labelWidth: lw, labelAlign: la, value: '',
+        options: { body: { data: [
+          { id: 'Apple', value: 'Apple' },
+          { id: 'Orange', value: 'Orange' },
+          { id: 'Banana', value: 'Banana' }
+        ]}}
+      },
+      { cols: [
+        { template: '<div align="right">Checkbox 1</div>', borderless: true, align: la, width: lw },
+        { rows: [
+          { view: 'checkbox', id: 'checkbox1-1', name: 'checkbox1-1', label: 'Option 1' },
+          { view: 'checkbox', id: 'checkbox1-2', name: 'checkbox1-2', label: 'Option 2' },
+          { view: 'checkbox', id: 'checkbox1-3', name: 'checkbox1-3', label: 'Option 3' }
+        ]}
+      ]},
+      { cols: [
+        { template: '<div align="right">Checkbox 2</div>', borderless: true, align: la, width: lw },
+        { rows: [
+          { cols: [
+            { view: 'checkbox', id: 'checkbox2-1', name: 'checkbox2-1', label: 'Option 4' },
+            { view: 'checkbox', id: 'checkbox2-2', name: 'checkbox2-2', label: 'Option 5' },
+            { view: 'checkbox', id: 'checkbox2-3', name: 'checkbox2-3', label: 'Option 6' }
+          ]}
+        ]}
+      ]},
+      { view: 'radio', name: 'radio1', label: 'Radio 1', labelWidth: lw, labelAlign: la, vertical: true, options: ['Option 1', 'Option 2', 'Option 3'] },
+      { view: 'radio', name: 'radio2', label: 'Radio 2', labelWidth: lw, labelAlign: la, options: ['Option 4', 'Option 5', 'Option 6'] }
+    ]
+    /* eslint-disable object-property-newline */
+
+    function mapfields (myCIC) {
+      return {
+        'fields': {
+          'labels': ['platform'],
+          'assignee': {'name': myCIC.user},
+          'issuetype': {'name': myCIC.value('issuetype')},
+          'priority': {'name': myCIC.value('priority')},
+          'components': myCIC.value('components') && myCIC.value('components').map(function (name) {
+            return {name: name}
+          }),
+          // 'versions': myCIC.value('affectversions') && myCIC.value('affectversions').map(function (name) {
+          //   return {name: name}
+          // }),
+          'versions': myCIC.value('affectversions') && [{'name': myCIC.value('affectversions')}],
+          'fixVersions': myCIC.value('fixversion') && [{'name': myCIC.value('fixversion')}],
+          'summary': myCIC.value('improvement'),
+          'description':
+          '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
+          myCIC.value('addedvalue') +
+          '{panel}' +
+          '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
+          myCIC.value('description') +
+          '{panel}' +
+          ((myCIC.value('fruit') || '') && myCIC.value('fruit') + '\n') +
+          ((myCIC.value('checkbox-1') || '') && myCIC.value('checkbox-1').join(', ') + '\n') +
+          ((myCIC.value('checkbox-2') || '') && myCIC.value('checkbox-2').join(', ') + '\n') +
+          ((myCIC.value('radio-1') || '') && myCIC.value('radio-1') + '\n') +
+          ((myCIC.value('radio-2') || '') && myCIC.value('radio-2'))
+        }
+      }
+    }
+
+    TaskSPL = new CIC('TaskSPL', 'SPLPRJ', formelems, mapfields) // eslint-disable-line no-undef
+    TaskSPL.connect()
+  }
+</script>
+
+<div id="root"></div>
+<div id="root1" style="width:200px;height:200px;margin:20px"></div>
+
+</body>
+</html>
