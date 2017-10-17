@@ -392,12 +392,12 @@ function showModal (modalTitle, modalBody, modalForm) {
   ReactDOM.render(crEl(ModalPopup), document.getElementById('root'))
 }
 
-function parentDiv (element) {
-  return element.parentNode.localName === 'div' ? element.parentNode : parentDiv(element.parentNode)
-}
-
 function setSelectPicker () {
   main()
+
+  function parentDiv (element) {
+    return element.parentNode.localName === 'div' ? element.parentNode : parentDiv(element.parentNode)
+  }
 
   function hasParentButton (element) {
     return element === document ? false
