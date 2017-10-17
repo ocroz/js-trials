@@ -237,29 +237,85 @@ function showForm (that) {
     var selectType = that.formelems[i].css && that.formelems[i].css.match(/jira:[^ ]*/)
     if (selectType) {
       var list = selectType[0].split(':')[1]
+
       if (list === 'versions') {
+        // JIRA versions
+
+        // Unreleased versions
         var unreleasedVersions = that.versions.filter(function (version) {
-          return (!version.archived && !version.released)
+          return (!version.archived && !version.released) // unarchived and unreleased
         }).map(function (selected) {
           return { id: selected.name, value: selected.name }
         })
+
+        // Released versions
         var releasedVersions = that.versions.filter(function (version) {
-          return (!version.archived && version.released)
+          return (!version.archived && version.released) // unarchived and released
         }).map(function (selected) {
           return { id: selected.name, value: selected.name }
         })
-        var unreleasedVersionsGroup = unreleasedVersions.length > 0 ? [ {id: 1, value: 'Unreleased', data: unreleasedVersions} ] : []
-        var releasedVersionsGroup = releasedVersions.length > 0 ? [ {id: 2, value: 'Released', data: releasedVersions} ] : []
-        var versions = unreleasedVersionsGroup.concat(releasedVersionsGroup)
-        that.formelems[i] = Object.assign(that.formelems[i], {
-          view: 'richselect',
-          options: {
-            view: 'treesuggest',
-            height: 260,
-            data: versions
+
+        // Version optgroups
+        var unreleasedVersionsGroupHeader = {id: 'optgroup-1', disabled: true, value: 'Unreleased'}
+        var releasedVersionsGroupHeader = {id: 'optgroup-2', disabled: true, value: 'Released'}
+
+        // Webix default version data
+        var unreleasedVersionsGroup = []
+        if (unreleasedVersions.length > 0) {
+          unreleasedVersionsGroup = unreleasedVersionsGroupHeader
+          unreleasedVersionsGroup.data = unreleasedVersions
+        }
+        var releasedVersionsGroup = []
+        if (releasedVersions.length > 0) {
+          releasedVersionsGroup = releasedVersionsGroupHeader
+          releasedVersionsGroup.data = releasedVersions
+        }
+        var defaultVersions =
+          [unreleasedVersionsGroup].concat(
+          releasedVersionsGroup)
+
+        // Webix multicombo version data
+        var multicomboVersions =
+          [unreleasedVersionsGroupHeader].concat(
+          unreleasedVersions,
+          [releasedVersionsGroupHeader],
+          releasedVersions)
+
+        // Webix view for versions
+        that.formelems[i] = Object.assign(that.formelems[i],
+          (that.formelems[i].view === 'multicombo')
+          ? {
+            view: 'multicombo',
+            suggest: {
+              body: {
+                scheme: {
+                  $init: optionDisabledInit
+                },
+                data: multicomboVersions
+              }
+            },
+            on: {
+              onChange: optionDisabledOnChange
+            }
+          } : {
+            // Works for richselect, combo, and multiselect
+            view: that.formelems[i].view,
+            options: {
+              view: 'treesuggest',
+              height: 260,
+              scheme: {
+                $init: optionDisabledInit
+              },
+              data: defaultVersions
+            },
+            on: {
+              onChange: optionDisabledOnChange
+            }
           }
-        })
+        )
       } else {
+        // Other JIRA lists: issuetypes, priorities and components
+
         that.formelems[i].options = {
           body: {
             data: that[list].filter(function (item) {
@@ -279,6 +335,23 @@ function showForm (that) {
     }
   }
 
+  // Webix views and events for JIRA versions
+  function optionDisabledInit (obj) {
+    if (obj.disabled) {
+      obj.$css = 'disabled'
+    }
+  }
+  function optionDisabledOnChange (newIds, oldIds) {
+    if (newIds) {
+      var newId = newIds.split(',').pop()
+      if (newId && this.getList().getItem(newId).disabled) {
+        // prevents re-calling onChange from itself
+        this.blockEvent()
+        oldIds ? this.setValue(oldIds) : this.setValue('')
+        this.unblockEvent()
+      }
+    }
+  }
   webix.protoUI({
     name: 'treesuggest',
     defaults: {
@@ -296,7 +369,6 @@ function showForm (that) {
         on: {
           onAfterSelect: function (id, e) {
             if (this.getItem(id).$count) {
-              this.getParentView().setMasterValue('')
               this.show($$(this.getParentView().config.master).getInputNode())
             }
           }
@@ -305,6 +377,7 @@ function showForm (that) {
     }
   }, webix.ui.suggest)
 
+  // Webix form
   var formelems = that.formelems.concat({
     cols: [
       { view: 'button',
@@ -318,7 +391,35 @@ function showForm (that) {
         click: onSubmit}
     ]
   })
+  var form = {
+    view: 'form',
+    id: that.modal,
+    borderless: true,
+    rows: formelems
+  }
 
+  // Webix modal
+  var modalTitle = that.collector + ' Submit Form'
+
+  webix.ui({
+    view: 'window',
+    id: 'modal',
+    width: 600,
+    position: 'center',
+    modal: true,
+    head: modalTitle,
+    body: webix.copy(form)
+  })
+
+  function showModal (id) {
+    $$(id).getBody().clear()
+    $$(id).show()
+    $$(id).getBody().focus()
+  }
+
+  showModal('modal')
+
+  // Webix form onSubmit
   function onSubmit () {
     var formValues = $$(that.modal).getValues()
     if (this.getFormView().validate()) { // validate form
@@ -348,31 +449,4 @@ function showForm (that) {
       webix.message({ type: 'error', text: 'Form data is invalid' })
     }
   }
-
-  var modalTitle = that.collector + ' Submit Form'
-
-  var form = {
-    view: 'form',
-    id: that.modal,
-    borderless: true,
-    rows: formelems
-  }
-
-  webix.ui({
-    view: 'window',
-    id: 'modal',
-    width: 600,
-    position: 'center',
-    modal: true,
-    head: modalTitle,
-    body: webix.copy(form)
-  })
-
-  function showModal (id) {
-    $$(id).getBody().clear()
-    $$(id).show()
-    $$(id).getBody().focus()
-  }
-
-  showModal('modal')
 }
