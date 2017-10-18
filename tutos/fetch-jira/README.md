@@ -25,6 +25,6 @@ npm run build && npm run deploy && npm run start:browser # F12 > Console
 
 * Cors is always activated with `mode: 'cors'` as it is required for the browser and it is simply ignored in node.
 * Same for the credentials with `credentials: 'include'`, the browser will send the authentication cookie if one exists.
-* Node uses a *basic authentication*. It works with or without a *certificate*.
-* The agent used for the certification uses the node module `https`. This module is pure node and thus it does not function in the browser so it must be removed from the dist bundle.
+* Node uses a *basic authentication*. For `http` nothing more is required.
+* For `https` it works with or without a *certificate*. The agent used for the certification uses the node module `https`.<br />This module is pure node and thus it does not function in the browser so it must be removed from the dist bundle.
 * Similarily the npm module `node-fetch` must be removed from the dist bundle so as to use the native method `fetch`.

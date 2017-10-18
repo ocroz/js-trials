@@ -16,7 +16,7 @@ function getEnvAuth () {
   const credentials = (username !== undefined && password !== undefined)
     ? 'Basic ' + base64Encode(username + ':' + password)
     : undefined
-  const agent = getAgent(kgcerts)
+  const agent = getAgent(jira, kgcerts)
   return {getFetch, jira, credentials, agent}
 }
 
@@ -28,8 +28,10 @@ function base64Encode (string) {
   return Buffer.from(string, 'binary').toString('base64')
 }
 
-function getAgent (ca) {
-  return ca !== undefined
+function getAgent (url, ca) {
+  return !url.match(/^https:/)
+    ? undefined
+    : ca !== undefined
     ? new https.Agent({ ca, rejectUnauthorized: true })
     : new https.Agent({ rejectUnauthorized: false })
 }
