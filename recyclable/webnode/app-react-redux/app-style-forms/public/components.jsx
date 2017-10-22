@@ -12,6 +12,7 @@ const Form = window.ReactBootstrap.Form
 const Row = window.ReactBootstrap.Row
 const Col = window.ReactBootstrap.Col
 const Button = window.ReactBootstrap.Button
+const moment = window.moment
 
 //
 // Model
@@ -53,9 +54,20 @@ const Button = window.ReactBootstrap.Button
   2. Redux Action: -> receiveStatus: RECEIVE_STATUS, status
      Redux Reducer: --> state.isFetching = false, state.status = status
 
-  React Container: PostIssue ()
-  React Component: -> postIssueComp (onClick)
-  Onclick Event: postIssue (dispatch, formdata)
+  React Container: CreateIssue ()
+  React Component: -> CreateIssueComp (onClick)
+  Onclick Event: openModal ()
+  Redux Action: -> openModal: OPEN_MODAL
+  Redux Reducer: --> state.isOpen = true
+
+  React Container: CreateIssueModal () and IssueForm ()
+  React Component: -> CreateIssueModalComp (isOpen, onClose, onSubmit) and IssueFormComp (onSubmit)
+  -
+  Onclose Event: closeModal ()
+  Redux Action: -> closeModal: CLOSE_MODAL
+  Redux Reducer: --> state.isOpen = false
+  -
+  Onsubmit Event: submitIssue (dispatch, formdata) -> postIssue (dispatch, issue)
   1. Redux Action: -> fetchData: POST_ISSUE
      Redux Reducer: --> state.isFetching = true
   2. Redux Action: -> receiveStatus: RECEIVE_STATUS, status
@@ -109,10 +121,13 @@ const data = (state = {isFetching: false, issues: [], activeIssue: null}, action
         ? state.issues[0].key : action.issuekey
       return {isFetching: state.isFetching, issues: state.issues, activeIssue}
     case 'GET_ISSUES':
-    case 'POST_ISSUES':
+    case 'POST_ISSUE':
+    case 'POST_COMMENT':
       return {isFetching: true, issues: state.issues, activeIssue: state.activeIssue}
     case 'DELETE_ISSUE':
-    case 'PUT_ISSUES':
+    case 'DELETE_COMMENT':
+    case 'PUT_ISSUE':
+    case 'PUT_COMMENT':
     case 'RECEIVE_OK':
     case 'RECEIVE_ERROR':
       return {isFetching: false, issues: state.issues, activeIssue: state.activeIssue}
@@ -139,11 +154,24 @@ const modal = (state = {isOpen: false}, action) => {
   }
 }
 
+// Reducer view
+const comment = (state = {isOpen: false}, action) => {
+  switch (action.type) {
+    case 'OPEN_COMMENT':
+      return {isOpen: true}
+    case 'CLOSE_COMMENT':
+      return {isOpen: false}
+    default:
+      return state
+  }
+}
+
 // Reducers
 const app = combineReducers({
   view,
   data,
-  modal
+  modal,
+  comment
 })
 
 // Actions
@@ -196,6 +224,16 @@ const openModal = () => {
 const closeModal = () => {
   return {
     type: 'CLOSE_MODAL'
+  }
+}
+const openComment = () => {
+  return {
+    type: 'OPEN_COMMENT'
+  }
+}
+const closeComment = () => {
+  return {
+    type: 'CLOSE_COMMENT'
   }
 }
 
@@ -323,11 +361,6 @@ class IssuesBoxComp extends Component {
     dispatch(getIssues(dispatch))
   }
 
-  // componentDidUpdate () {
-  //   const { dispatch } = this.props
-  //   dispatch(getIssues(dispatch))
-  // }
-
   render () {
     const { isFetching, issues, activeIssue } = this.props
     return (
@@ -435,7 +468,6 @@ class CreateIssueModalComp extends Component {
 
 function submitIssue (dispatch, {summary, description}) {
   dispatch(closeModal())
-  // console.log(summary.value, description.value)
   const fields = {
     project: { key: 'SPLPRJ' },
     issuetype: { name: 'Bug' },
@@ -620,7 +652,9 @@ class IssueBoxComp extends Component {
     const issuekey = this.props.issuekey || this.props.match.params.key
     const issueIndex = store.getState().data.issues.findIndex(issue => issue.key === issuekey)
     const issue = store.getState().data.issues[issueIndex]
-    const { isFetching, issues } = this.props
+    const comments = issue && issue.fields.comment.comments
+    const { isFetching, issues } = this.props.data
+    const { isOpen } = this.props.comment
     return (
       <div>
         {isFetching && issues.length === 0 && <p><b>Loading...</b></p>}
@@ -668,24 +702,141 @@ class IssueBoxComp extends Component {
           </div>
           <div className={container}><hr /></div>
           <div className={container}>
-            No comment yet
+            {isFetching && comments.length === 0 && <p><b>Loading...</b></p>}
+            {!isFetching && comments.length === 0 && <p><b>No comment yet</b></p>}
+            {comments.length > 0 &&
+              <div><b>Comments:</b><p>{''}</p>
+                {comments.map(comment => <CommentBox issuekey={issue.key}>{comment}</CommentBox>)}
+              </div>}
+            <p>{''}</p>
+            <Form onSubmit={this._handleSubmit.bind(this)} onBlur={this._handleBlur.bind(this)}>
+              <textarea
+                className='form-control' rows={1} placeholder='Add comment:' ref='comment'
+                onFocus={this._handleFocus.bind(this)} />
+              {isOpen && <Button bsStyle='primary' type='submit'>Submit</Button>}
+            </Form>
           </div>
         </div>}
       </div>
     )
   }
+
+  _closeComment () {
+    this.refs.comment.value = ''
+    this.refs.comment.rows = this.rows
+    this.props.onBlur()
+  }
+
+  _handleFocus (event) {
+    this.rows = event.target.rows
+    event.target.rows = 3
+    this.props.onFocus()
+  }
+
+  _handleBlur (event) {
+    if (!event.relatedTarget || event.relatedTarget.type !== 'submit') {
+      this._closeComment()
+    }
+  }
+
+  _handleSubmit (event) {
+    event.preventDefault()
+    const issuekey = this.props.issuekey || this.props.match.params.key
+    this.props.onSubmit(issuekey, this.refs.comment.value)
+    this._closeComment()
+  }
+}
+
+function submitComment (dispatch, issuekey, comment) {
+  dispatch(postComment(dispatch, issuekey, {body: comment}))
+  dispatch(getIssues(dispatch))
+}
+
+function postComment (dispatch, issuekey, input) {
+  return dispatch => {
+    dispatch(fetchData('POST_COMMENT'))
+    const headers = { 'Content-Type': 'application/json' }
+    const method = 'POST'
+    const body = JSON.stringify(input)
+    return fetch(`${window.location.origin}/api/${issuekey}/comment`, {headers, method, body})
+      .then(response => response.json())
+      .then(json => dispatch(receiveOK(json)))
+      .catch(error => dispatch(receiveError(error)))
+  }
 }
 
 const mapIssueBox = {
-  mapStateToProps: (state, ownProps) => state.data,
-  // mapStateToProps: undefined,
-  mapDispatchToProps: undefined
+  mapStateToProps: (state, ownProps) => { return { data: state.data, comment: state.comment } },
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      dispatch,
+      onFocus: () => dispatch(openComment()),
+      onBlur: () => dispatch(closeComment()),
+      onSubmit: (issuekey, comment) => submitComment(dispatch, issuekey, comment)
+    }
+  }
 }
 
 const IssueBox = connect(
   mapIssueBox.mapStateToProps,
   mapIssueBox.mapDispatchToProps
 )(IssueBoxComp)
+
+class CommentBoxComp extends Component {
+  render () {
+    const comment = this.props.children
+    return (
+      <div>
+        <i>
+          Posted by {comment.author.name}{' '}
+          <span title={moment(comment.created).format('YYYY/MM/DD HH:mm:ss')}>
+            {moment(comment.created).fromNow()}</span>
+          {/* new Date(comment.created).toISOString().substr(0, 19).replace(/-/g, '/').replace(/T/, ' ') */}
+        </i>
+        {' '}
+        (<Link to={window.location.pathname} onClick={this._handleClick.bind(this)}>Delete</Link>)
+        <br />
+        {comment.body}
+        <p>{''}</p>
+      </div>
+    )
+  }
+
+  _handleClick (event) {
+    this.props.onDelete(this.props.issuekey, this.props.children.id)
+  }
+}
+
+function deleteComment (dispatch, issuekey, commentid) {
+  dispatch(_deleteComment(dispatch, issuekey, commentid))
+  dispatch(getIssues(dispatch))
+
+  function _deleteComment (dispatch, issuekey, commentid) {
+    return dispatch => {
+      dispatch(fetchData('DELETE_COMMENT'))
+      const headers = { 'Content-Type': 'application/json' }
+      const method = 'DELETE'
+      return fetch(`${window.location.origin}/api/${issuekey}/comment/${commentid}`, {headers, method})
+        .then(response => response.json())
+        .then(json => dispatch(receiveOK(json)))
+        .catch(error => dispatch(receiveError(error)))
+    }
+  }
+}
+
+const mapCommentBox = {
+  mapStateToProps: undefined,
+  mapDispatchToProps: (dispatch, ownProps) => {
+    return {
+      onDelete: (issuekey, commentid) => deleteComment(dispatch, issuekey, commentid)
+    }
+  }
+}
+
+const CommentBox = connect(
+  mapCommentBox.mapStateToProps,
+  mapCommentBox.mapDispatchToProps
+)(CommentBoxComp)
 
 render(
   <Root />,
