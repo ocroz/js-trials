@@ -39,6 +39,7 @@ async function jiraFetch (auth = {}, method = 'GET', request = 'api/2/myself', i
         if (resp.status === 204) { // means statusText === 'No Content'
           resolve(response)
         } else {
+          console.log(resp)
           resp.json().then(json => { resolve(json) })
         }
       }

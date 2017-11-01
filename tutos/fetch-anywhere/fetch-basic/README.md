@@ -1,9 +1,6 @@
-# Use fetch everywhere in the browser or in node
+# Use fetch in the browser or in node with basic auth
 
-Why would it be different in the browser or in node for URL methods `GET`, `POST`, `PUT`, `DELETE` ?
-
-The browser has a native method `fetch`.
-Let's use the same API in node thanks to the npm package `node-fetch`.
+Let's take an example with Atlassian JIRA *on premise* which uses a `basic` authentication with node.
 
 ### Let's try the code in node
 

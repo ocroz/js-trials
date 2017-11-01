@@ -10,7 +10,7 @@
     "./src/env/index.js": "./src/env/browser.js"
   },
   "scripts": {
-    "build": "browserify src/jira-calls.js -o dist/jira-calls-bundle.js",
+    "build": "browserify src/jira-errors.js -o dist/jira-calls-bundle.js",
     "deploy": "cp dist/* //safetest.hq.k.grp/custom/tmp/",
     "start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/jira-calls.html",
     "start:node": "node src/jira-calls.js"
