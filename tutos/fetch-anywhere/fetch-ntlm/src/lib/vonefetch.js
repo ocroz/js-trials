@@ -36,19 +36,21 @@ async function voneFetch (auth = {}, method = 'GET', request = '', input) {
           reject(new Error(JSON.stringify(err)))
         })
       } else {
+        const myself = resp.headers.get('V1-MemberID')
         if (resp.status === 204) { // means statusText === 'No Content'
-          resolve(response)
+          resolve({myself, data: response})
         } else {
           // resp.json().then(json => { resolve(json) })
           // resp.text().then(text => { resolve(text) })
           resp.json()
           .catch(() => {
             if (resp._raw.length > 0) {
-              resolve(resp._raw.toString())
+              const data = resp._raw.toString()
+              resolve({myself, data})
             } else {
-              resolve(response)
+              resolve({myself, data: response})
             }
-          }).then(json => { resolve(json) })
+          }).then(data => { resolve({myself, data}) })
         }
       }
     })
