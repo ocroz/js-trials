@@ -1,0 +1,24 @@
+{
+  "name": "vone",
+  "version": "1.0.0",
+  "description": "VersionOne Authentication",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "browser": {
+    "./src/env/index.js": "./src/env/browser.js"
+  },
+  "scripts": {
+    "build": "browserify src/vone-calls.js -o dist/vone-calls-bundle.js",
+    "deploy": "cp dist/* //safetest.hq.k.grp/custom/tmp/",
+    "start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/vone-calls.html",
+    "start:node": "node src/vone-calls.js"
+  },
+  "dependencies": {
+    "browserify": "^14.5.0",
+    "colors": "^1.1.2",
+    "httpntlm": "^1.7.5",
+    "node-fetch": "^1.7.3"
+  }
+}
