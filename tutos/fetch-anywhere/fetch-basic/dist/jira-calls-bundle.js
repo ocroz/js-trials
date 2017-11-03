@@ -35,214 +35,65 @@ const { getEnvAuth } = require('./env/index')
 const { jiraFetch } = require('./lib/jirafetch')
 const { trycatch } = require('./lib/trycatch')
 
-// Errors from fetch()
-// Errors without a response json
-// Errors with an errorMessages[] array in the response json
-// Errors with an errors{} object in the response json
+// https://atlassian-test.hq.k.grp/jira/plugins/servlet/restbrowser
+// GET priorities (OK as anonymous, as long as no credentials is passed)
+// GET myself (must be logged in)
+// POST new issue
+// POST new comment
+// GET new comment
+// PUT update to comment
+// GET updated comment
+// DELETE comment
 
-const auth = getEnvAuth()
-let priorities, myself
+async function main () {
+  'use strict'
+  const auth = getEnvAuth()
 
-async function connect () {
-  priorities = await jiraFetch(auth, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
+  const priorities = await jiraFetch(auth, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
   console.log('JIRA priorities are:', priorities)
 
-  const { name } = await jiraFetch(auth)
-  myself = name
+  const { name: myself } = await jiraFetch(auth)
   console.log('I am', myself)
 
-  errors()
-}
-
-async function error1 () {
-  let myauth = getEnvAuth()
-  myauth.jira = 'http://atlassian-fake.com/jira' // bad url
-  myauth.agent = undefined
-
-  const { name: myself } = await jiraFetch(myauth)
-  console.log('I am', myself)
-}
-
-async function error2 () {
-  let myauth = getEnvAuth()
-  myauth.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
-  myauth.agent = undefined // missing agent for https (or extra agent for http)
-
-  const { name: myself } = await jiraFetch(myauth)
-  console.log('I am', myself)
-}
-
-async function error3 () {
-  let myauth = getEnvAuth()
-  myauth.credentials = 'undefined' // bad credentials
-
-  const { name: myself } = await jiraFetch(myauth)
-  console.log('I am', myself)
-}
-
-async function error4 () {
-  const { key: projectkey } = await jiraFetch(auth, 'GET', 'api/2/_project_') // bad api
-  console.log('queried project:', projectkey, auth.jira + '/projects/' + projectkey)
-}
-
-async function error5 () {
-  const { key: projectkey } = await jiraFetch(auth, 'GET', 'api/2/project/_WEIRD_') // bad project key
-  console.log('queried project:', projectkey, auth.jira + '/projects/' + projectkey)
-}
-
-async function error6 () {
-  const { key: issuekey } = await jiraFetch(auth, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
-  console.log('queried issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-async function error7 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      // 'project': {'key': 'SPLPRJ'}, // no project
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-async function error8 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': myself},
-      // 'issuetype': {'name': 'Task'}, // no issue type
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-async function error9 () {
   const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
       'issuetype': {'name': 'Task'},
       'priority': {'name': priorities[1]},
-      // 'summary': 'Submit issue through fetch', // no summary
-      'description': ''
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-async function error10 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': '_Blocker_'}, // bad priority
       'summary': 'Submit issue through fetch',
-      'description': ''
+      'description':
+        '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
+        'fetch is available both at client and server sides' +
+        '{panel}' +
+        '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
+        'npm i node-fetch' +
+        '{panel}'
     }
   })
   console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
 
-async function error11 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': '_myself_'}, // bad assignee
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
+  const { id: commentid } = await jiraFetch(auth, 'POST', 'api/2/issue/' + issuekey + '/comment', {
+    'body': 'nice comment submitted through fetch'
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
+  console.log('submitted comment:', commentid)
 
-async function error12 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'project': {'key': 'SPLPRJ'},
-      '_project_': {'key': 'SPLPRJ'}, // bad attribute key
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
+  const { id: cid, body: cbody } = await jiraFetch(auth, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  console.log('comment is:', cid, cbody)
+
+  const { id: pid, body: pbody } = await jiraFetch(auth, 'PUT', 'api/2/issue/' + issuekey + '/comment/' + commentid, {
+    'body': 'nice comment updated through fetch'
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('comment is:', pid, pbody)
+
+  const { id: uid, body: ubody } = await jiraFetch(auth, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  console.log('comment is:', uid, ubody)
+
+  const res = await jiraFetch(auth, 'DELETE', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  console.log('comment deleted with status:', res)
 }
 
-async function error13 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': priorities[1], // bad attribute value
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-async function error14 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'label': {'_key_': 'weird'}, // bad attribute value
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-async function error15 () {
-  const { key: issuekey } = await jiraFetch(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'version': {'_key_': 'weird'}, // bad attribute value
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description': ''
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-}
-
-trycatch(connect)
-
-function errors () {
-  trycatch(error1)
-  trycatch(error2)
-  trycatch(error3)
-  trycatch(error4)
-  trycatch(error5)
-  trycatch(error6)
-  trycatch(error7)
-  trycatch(error8)
-  trycatch(error9)
-  trycatch(error10)
-  trycatch(error11)
-  trycatch(error12)
-  trycatch(error13)
-  trycatch(error14)
-  trycatch(error15)
-}
+trycatch(main)
 
 },{"./env/index":1,"./lib/jirafetch":3,"./lib/trycatch":4}],3:[function(require,module,exports){
 'use strict'
