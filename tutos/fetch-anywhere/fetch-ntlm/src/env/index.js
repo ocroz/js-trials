@@ -8,10 +8,10 @@ const https = require('https')
 const { ntlm } = require('httpntlm')
 const { kgcerts } = require('../lib/kgcerts')
 
-async function getEnvAuth () {
+async function getEnvAuth (url) {
   console.log('Running under node.js')
   const [vone, username, password, domain, workstation] = [
-    process.argv[2] || 'https://safetest.hq.k.grp/Safetest',
+    url || process.argv[2] || 'https://safetest.hq.k.grp/Safetest',
     process.argv[3] || process.env.USERNAME || '',
     process.argv[4] || process.env.pw || '',
     process.argv[3] || process.env.USERDOMAIN || '',
@@ -29,7 +29,7 @@ function getFetch () {
 
 function getAgent (url, ca) {
   return !url.match(/^https:/)
-    ? new http.Agent({ keepAlive: true })
+    ? new http.Agent({ keepAlive: true }) // http agent
     : ca === undefined
     ? new https.Agent({ keepAlive: true, rejectUnauthorized: false })
     : new https.Agent({ keepAlive: true, rejectUnauthorized: true, ca })
@@ -45,8 +45,14 @@ async function handshake (url, authOpts, agent) {
       },
       agent
     })
-    .then(response => response.headers.get('www-authenticate'))
-    .then(type1 => {
+    .then(resp => {
+      const { ok, status, statusText } = resp
+      const response = { ok, status, statusText }
+      if (!resp.ok && resp.status !== 401) {
+        reject(new Error(JSON.stringify(response)))
+      }
+
+      const type1 = resp.headers.get('www-authenticate')
       if (!type1) {
         reject(new Error('Stage 1 NTLM handshake failed.'))
       }
@@ -55,6 +61,7 @@ async function handshake (url, authOpts, agent) {
       const type3 = ntlm.createType3Message(type2, authOpts)
       resolve(type3)
     })
+    .catch(err => reject(err))
     .then(() => {
       console.log('END OF NTLM CALL')
     })

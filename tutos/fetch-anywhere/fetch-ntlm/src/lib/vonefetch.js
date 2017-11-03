@@ -1,6 +1,6 @@
 'use strict'
 
-async function voneFetch (auth = {}, method = 'GET', request = '', input) {
+async function _voneFetch (auth = {}, method = 'GET', request = 'rest-1.v1/Data/Scope/0', input) {
   // auth = {getFetch, vone, credentials, agent}
   if (auth.getFetch === undefined) { throw new Error('voneFetch: getFetch() is undefined') }
   if (auth.vone === undefined) { auth.vone = 'https://safetest.hq.k.grp/Safetest' }
@@ -10,8 +10,8 @@ async function voneFetch (auth = {}, method = 'GET', request = '', input) {
   const url = auth.vone + '/' + request
   const body = input && JSON.stringify(input)
   const headers = auth.credentials
-    ? { 'Accept': 'application/json', 'Content-Type': 'text/xml', 'Connection': 'keep-alive', 'Authorization': auth.credentials }
-    : { 'Accept': 'application/json', 'Content-Type': 'text/xml' }
+    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': auth.credentials }
+    : { 'Accept': 'application/json', 'Content-Type': 'application/json' }
   const [mode, credentials, agent] = ['cors', 'include', auth.agent]
   // console.log(url, method, body, headers, mode, credentials, agent)
 
@@ -19,7 +19,7 @@ async function voneFetch (auth = {}, method = 'GET', request = '', input) {
   console.log('BEGINNING OF REST CALL')
   return new Promise((resolve, reject) => {
     fetch(url, {method, body, headers, mode, credentials, agent})
-    .then((resp) => {
+    .then(resp => {
       const { ok, status, statusText } = resp
       const response = { ok, status, statusText }
       if (!resp.ok) {
@@ -36,9 +36,9 @@ async function voneFetch (auth = {}, method = 'GET', request = '', input) {
           reject(new Error(JSON.stringify(err)))
         })
       } else {
-        const myself = resp.headers.get('V1-MemberID')
+        const whoami = resp.headers.get('V1-MemberID')
         if (resp.status === 204) { // means statusText === 'No Content'
-          resolve({myself, data: response})
+          resolve({whoami, data: response})
         } else {
           // resp.json().then(json => { resolve(json) })
           // resp.text().then(text => { resolve(text) })
@@ -46,19 +46,27 @@ async function voneFetch (auth = {}, method = 'GET', request = '', input) {
           .catch(() => {
             if (resp._raw.length > 0) {
               const data = resp._raw.toString()
-              resolve({myself, data})
+              resolve({whoami, data})
             } else {
-              resolve({myself, data: response})
+              resolve({whoami, data: response})
             }
-          }).then(data => { resolve({myself, data}) })
+          }).then(data => resolve({whoami, data}))
         }
       }
     })
-    .catch(err => { reject(err) })
+    .catch(err => reject(err))
     .then(() => {
       console.log('END OF REST CALL')
     })
   })
 }
 
-module.exports = { voneFetch }
+async function getWhoAmI (auth, method, request, input) {
+  return _voneFetch(auth, method, request, input).then(res => res.whoami)
+}
+
+async function voneFetch (auth, method, request, input) {
+  return _voneFetch(auth, method, request, input).then(res => res.data)
+}
+
+module.exports = { voneFetch, getWhoAmI }

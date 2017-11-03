@@ -2,9 +2,9 @@
 /* globals fetch */
 
 async function getEnvAuth () {
-  console.log('Running under node.js')
+  console.log('Running under browser')
   const [vone, credentials, agent] = [
-    'https://safeuat.hq.k.grp/Safeuat', undefined, undefined
+    'https://safetest.hq.k.grp/Safetest', undefined, undefined
   ]
   return {getFetch, vone, credentials, agent}
 }

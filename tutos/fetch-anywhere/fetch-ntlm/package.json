@@ -1,7 +1,7 @@
 {
-  "name": "vone",
+  "name": "fetch-ntlm",
   "version": "1.0.0",
-  "description": "VersionOne Authentication",
+  "description": "use fetch with ntlm in node.js",
   "license": "ISC",
   "repository": {
     "type": "git"
