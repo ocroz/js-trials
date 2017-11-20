@@ -17,6 +17,7 @@
     "start": "npm run sol1:start:server",
     "build": "npm run sol2:build:webpack:dev",
     "test": "npm run sol3:test:server && npm run sol4:test:browser",
+    "sol1:debug:server": "node --inspect-brk src/solution1.js",
     "sol1:start:server": "node src/solution1.js",
     "sol1:start:browser": "chrome bundle/solution1.html",
     "sol2:start:server": "node src/solution2.js",

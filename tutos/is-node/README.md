@@ -166,7 +166,7 @@ See also [Acceptance Testing React Apps with Jest and Nightmare](https://www.vig
 
 See [Debugging Node.js Apps](https://nodejs.org/en/docs/inspector/)
 
-Debug a browser version under in chrome is easy.
+Debug a browser version in chrome is easy.
 
 ```bash
 npm run sol1:start:browser # chrome bundle/solution1.html
@@ -176,7 +176,13 @@ Then F12 > Console > `console.log(isBrowser(),isNode())` returns `true false`.
 
 Debug a node version in chrome is possible too.
 
-The script must be waiting for something so we are able to debug it before it exits.
+Either run the script with `--inspect-brk`.
+
+```bash
+npm run sol1:debug:server # node --inspect-brk src/solution1.js
+```
+
+Or the script must be waiting for something so we are able to debug it before it exits.
 Let's write a simple server application which listens to [http://localhost:7000/].
 
 Then run it with `--inspect`.
