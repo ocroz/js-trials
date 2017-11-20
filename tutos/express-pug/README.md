@@ -9,6 +9,9 @@ Steps:
 - [pug forms and methods](#render-dynamic-html-pages-with-pug)
 - [router info/ and table/](#forward-the-request-to-appropriate-controller)
 
+Then:
+- [recommanded express directory structure](#structure-your-express-app)
+
 ## Server without express
 
 Try it:
@@ -348,4 +351,92 @@ router.delete('/', deleteTable)
 module.exports = router
 
 // Then implement the functions
+```
+
+## Structure your express app
+
+See the official documentation at: [Express application generator](http://expressjs.com/en/starter/generator.html).
+
+The initial releases of express came with a command line.
+Now we need to install an additional package.
+
+First install `express-generator` globally:
+
+```bash
+npm install express-generator -g
+```
+
+Now create an express application named 'express-pug-app-skeleton'.
+
+```bash
+express --view=pug express-pug-app-skeleton
+```
+
+Then follow the instructions.
+
+```bash
+cd express-pug-app-skeleton && npm install
+DEBUG=express-pug-app-skeleton:* npm start
+```
+
+The server is now running at http://localhost:4000/.
+
+The created directory structure is:
+
+```
+$ tree express-pug-app-skeleton/
+express-pug-app-skeleton/
+|-- app.js
+|-- bin
+|   `-- www
+|-- package.json
+|-- public
+|   |-- images
+|   |-- javascripts
+|   `-- stylesheets
+|       `-- style.css
+|-- routes
+|   |-- index.js
+|   `-- users.js
+`-- views
+    |-- error.pug
+    |-- index.pug
+    `-- layout.pug
+```
+
+Another interresting recommanded express directory structure is available at [Best practices for Express app structure](https://www.terlici.com/2014/08/25/best-practices-express-structure.html).
+
+```
+project/
+  controllers/
+    comments.js
+    index.js
+    users.js
+  helpers/
+    dates.js
+  middlewares/
+    auth.js
+    users.js
+  models/
+    comment.js
+    user.js
+  public/
+    libs/
+    css/
+    img/
+  views/
+    comments/
+      comment.jade
+    users/
+      index.jade
+  tests/
+    controllers/
+    models/
+      comment.js
+    middlewares/
+    integration/
+    ui/
+  .gitignore
+  app.js
+  package.json
 ```
