@@ -1,0 +1,349 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+
+
+
+<!-----------------------------------------------------------------------------
+    CUSTOM PART:
+    - The form with the questions to ask
+    - The behaviour for the received answers (mandatory/optional)
+    - How to value the JIRA fields (fixed info/received answers/formatting)
+------------------------------------------------------------------------------>
+
+
+
+<script type="text/javascript">
+//Check the form fields and submit the issue
+function check_form_and_submit() {
+  //Validating the empty fields
+  //if (document.getElementById('improvement').value == "" || document.getElementById('addedvalue').value == "" || document.getElementById('msg').value == "") {
+  if (document.getElementById('addedvalue').value == "" || document.getElementById('msg').value == "") {
+    alert("Fill All Fields !");
+  } else {
+    //Create the issue data and submit it
+    var issue = {
+      "fields": {
+        "project": {"key": "SPLPRJ"},
+        "issuetype": {"name": "Bug"},
+        "labels": ["custom_collector"],
+        "summary": document.getElementById('improvement').value,
+        "description":
+            "{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}"
+              +document.getElementById('addedvalue').value +
+            "{panel}" +
+            "{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}"
+              +document.getElementById('msg').value +
+            "{panel}",
+      }
+    };
+    submit_new_issue(issue);
+  }
+}
+</script>
+<div id="abc">
+  <!-- Popup Div Starts Here -->
+  <div id="popupContact">
+    <!-- Contact Us Form -->
+    <form action="#" id="form" method="post" name="form">
+      <img id="close" src="images/3.png" onclick ="div_hide()">
+      <h2>Contact Us</h2>
+      <hr>
+      <input id="improvement" placeholder="What needs to be improved?" type="text">
+      <input id="addedvalue" placeholder="What would be the added value?" type="text">
+      <textarea id="msg" placeholder="Any details about the desired modification?"></textarea>
+      <a href="javascript:%20check_form_and_submit()" id="submit">Send</a>
+    </form>
+  </div>
+  <!-- Popup Div Ends Here -->
+</div>
+<!-- Display Popup Button -->
+<p>Click Button To Popup Form Using Javascript.<br/>Then Submit Form to Create New Issue in JIRA Using REST API.</p>
+<button id="popup" onclick="div_show()">Submit Your Issue</button>
+
+
+
+<!-----------------------------------------------------------------------------
+    GENERIC PART:
+    - The style for the form
+    - The REST API calls to the JIRA server
+    - The post-processing on success or error
+------------------------------------------------------------------------------>
+
+
+
+<script src="https://atlassian-test.hq.k.grp/jira/static-assets/jquery-1.7.2.min.js"></script>
+<style>
+/*----------------------------------------------
+CSS settings for HTML div Exact Center
+------------------------------------------------*/
+ 
+/* The Modal (background) */
+#myModal {
+  display:none;
+}
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 20%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#abc {
+  width:100%;
+  height:100%;
+  opacity:.95;
+  top:0;
+  left:0;
+  display:none;
+  position:fixed;
+  background-color:#313131;
+  overflow:auto
+}
+div#popupContact img#close {
+  position:absolute;
+  right:-14px;
+  top:-14px;
+  cursor:pointer
+}
+div#popupContact {
+  position:absolute;
+  left:50%;
+  top:17%;
+  margin-left:-202px;
+  font-family:'Raleway',sans-serif
+}
+div#popupContact form {
+  max-width:300px;
+  min-width:250px;
+  padding:10px 50px;
+  border:2px solid gray;
+  border-radius:10px;
+  font-family:raleway;
+  background-color:#fff
+}
+div#popupContact p {
+  margin-top:30px
+}
+div#popupContact h2 {
+  background-color:#FEFFED;
+  padding:20px 35px;
+  margin:-10px -50px;
+  text-align:center;
+  border-radius:10px 10px 0 0
+}
+div#popupContact hr {
+  margin:10px -50px;
+  border:0;
+  border-top:1px solid #ccc
+}
+div#popupContact input[type=text] {
+  width:82%;
+  padding:10px;
+  margin-top:30px;
+  border:1px solid #ccc;
+  padding-left:40px;
+  font-size:16px;
+  font-family:raleway
+}
+div#popupContact #name {
+  background-image:url(../images/name.jpg);
+  background-repeat:no-repeat;
+  background-position:5px 7px
+}
+div#popupContact #email {
+  background-image:url(../images/email.png);
+  background-repeat:no-repeat;
+  background-position:5px 7px
+}
+div#popupContact textarea {
+  background-image:url(../images/msg.png);
+  background-repeat:no-repeat;
+  background-position:5px 7px;
+  width:82%;
+  height:95px;
+  padding:10px;
+  resize:none;
+  margin-top:30px;
+  border:1px solid #ccc;
+  padding-left:40px;
+  font-size:16px;
+  font-family:raleway;
+  margin-bottom:30px
+}
+div#popupContact #submit {
+  text-decoration:none;
+  width:100%;
+  text-align:center;
+  display:block;
+  background-color:#FFBC00;
+  color:#fff;
+  border:1px solid #FFCB00;
+  padding:10px 0;
+  font-size:20px;
+  cursor:pointer;
+  border-radius:5px
+}
+div#popupContact span {
+  color:red;
+  font-weight:700
+}
+button {
+  width:15%;
+  height:45px;
+  border-radius:3px;
+  background-color:#cd853f;
+  color:#fff;
+  font-family:'Raleway',sans-serif;
+  font-size:18px;
+  cursor:pointer
+}
+</style>
+<script type="text/javascript">
+//Get priority values
+function get_priorities () {
+  $.ajax({
+    type: "GET",
+    url: "https://atlassian-test.hq.k.grp/jira/rest/api/2/priority/",
+    dataType: "json",
+    crossDomain: true,
+    contentType: "application/json",
+    async:false,
+    xhrFields: {
+      withCredentials: true,
+    },
+    success: function (data, status, result) {
+      console.log("ajax call succeeded", data, status, result);
+      alert("ALL JIRA PRIORITIES:\n"+JSON.stringify(data));
+      alert("Priority "+ data[0].id +" = "+ data[0].name +".");
+    },
+    error: function (result, status, error) {
+      console.log("Internal Error ajax call", result, status, error);
+      alert("Error:" +JSON.stringify(result) +"," +status +"," +error +".");
+    },
+    complete: function (result, status) {
+      console.log("ajax call completed", result, status);
+    },
+  });
+}
+//Get project data:
+//-All the issuetypes: id,name
+//-All the components: id,name
+//-All the versions: id,name,archived,released
+function get_project_data (project) {
+  $.ajax({
+    type: "GET",
+    url: "https://atlassian-test.hq.k.grp/jira/rest/api/2/project/" +project,
+    dataType: "json",
+    crossDomain: true,
+    contentType: "application/json",
+    async:false,
+    xhrFields: {
+      withCredentials: true
+    },
+    success: function (data, status, result) {
+      console.log("ajax call succeeded", data, status, result);
+      alert("ALL "+project+" DATA:\n"+JSON.stringify(data));
+      alert("Component "+ data.components[0].id +" = "+ data.components[0].name +".");
+      alert("Version "+ data.versions[7].id +" = "+ data.versions[7].name +" (archived="+data.versions[7].archived+", released="+data.versions[7].released+").");
+    },
+    error: function (result, status, error) {
+      console.log("Internal Error ajax call", result, status, error);
+      alert("Error:" +JSON.stringify(result) +"," +status +"," +error +".");
+    },
+    complete: function (result, status) {
+      console.log("ajax call completed", result, status);
+    },
+  });
+}
+//Submit the issue via REST
+function submit_new_issue (issue) {
+  $.ajax({
+    type: "POST",
+    url: "https://atlassian-test.hq.k.grp/jira/rest/api/2/issue/",
+    dataType: "json",
+    crossDomain: true,
+    contentType: "application/json",
+    async:false,
+    data: JSON.stringify(issue),
+    xhrFields: {
+      withCredentials: true
+    },
+    success: function (data, status, result) {
+      console.log("ajax call succeeded", data, status, result);
+      popup_message(data.key);
+    },
+    error: function (result, status, error) {
+      console.log("Internal Error ajax call", result, status, error);
+      alert("Error:" +JSON.stringify(result) +"," +status +"," +error +".");
+    },
+    complete: function (result, status) {
+      console.log("ajax call completed", result, status);
+    },
+  });
+}
+//Function to Display Popup
+function div_show() {
+  document.getElementById('abc').style.display = "block";
+}
+//Function to Hide Popup
+function div_hide(){
+  //alert("Confluence Base URL = "+Confluence.getBaseUrl());
+  get_priorities();
+  //get_project_data("CMTOOLSPRCR");
+  document.getElementById('abc').style.display = "none";
+}
+//Function to popup a message box with the issue link
+function popup_message(issue){
+  document.getElementById("myModalContent").innerHTML = '<span class="close">&times;</span><p>New issue submitted: <a href="https://atlassian-test.hq.k.grp/jira/browse/' +issue +'">' +issue +'</a></p>';
+  var modal = document.getElementById('myModal');
+  var span = document.getElementsByClassName("close")[0];
+  modal.style.display = "block";
+  span.onclick = function() {
+    modal.style.display = "none";
+    document.getElementById('form').submit();
+  };
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+      document.getElementById('form').submit();
+    }
+  };
+}
+</script>
+<!-- The Modal -->
+<div id="myModal" class="modal">
+  <div id="myModalContent" class="modal-content"></div>
+</div>
+
+</body>
+</html>
