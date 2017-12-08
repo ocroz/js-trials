@@ -24,7 +24,7 @@ async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', inp
       const data = xhr.response && JSON.parse(xhr.response)
       if (xhr.statusText !== 'OK' && xhr.statusText !== 'Created' && xhr.statusText !== 'No Content') {
         reject(new Error(JSON.stringify(nonVoids(data))))
-      } else if (xhr.status === 204) {
+      } else if (xhr.status === 204) { // means statusText === 'No Content'
         const { status, statusText } = xhr
         resolve({ success: true, status, statusText })
       } else {

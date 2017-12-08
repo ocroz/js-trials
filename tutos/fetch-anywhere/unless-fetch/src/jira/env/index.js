@@ -1,12 +1,10 @@
-// index.js
-// https://nolanlawson.com/2017/01/09/how-to-write-a-javascript-package-for-both-node-and-the-browser/
 'use strict'
 
 const fetch = require('node-fetch')
 const https = require('https')
 const { kgcerts } = require('../../common/lib/kgcerts')
 const { trycatch } = require('../../common/lib/trycatch')
-const { anyFetch } = require('../lib/anywhere-fetch')
+const { fetchJira } = require('../lib/anywhere-fetch')
 
 const altFetchCase = process.argv[2] || 0 // 0=fetch, 1=http, 2=https, 3=request
 
@@ -40,12 +38,13 @@ function getAgent (url, ca) {
     : new https.Agent({ rejectUnauthorized: false })
 }
 
-function altFetch (...args) {
+function contactJira (...args) {
   switch (altFetchCase) {
     case 0:
     default:
-      return anyFetch(...args)
+      console.log('Contacting JIRA via fetchJira()...')
+      return fetchJira(...args)
   }
 }
 
-module.exports = { getEnvAuth, altFetch, trycatch }
+module.exports = { getEnvAuth, contactJira, trycatch }

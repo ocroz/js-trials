@@ -104,6 +104,7 @@ trycatch(main)
 const { trycatch } = require('../../common/lib/trycatch')
 const { fetchJira } = require('../lib/anywhere-fetch')
 const { jqueryJira } = require('../lib/browser-jquery')
+const { webixJira } = require('../lib/browser-webix')
 const { xhrJira } = require('../lib/browser-xhr')
 
 const altFetchCase = 0 // 0=fetch, 1=jquery, 2=xhr, 3=webix
@@ -128,6 +129,9 @@ function contactJira (...args) {
     case 2:
       console.log('Contacting JIRA via xhrJira()...')
       return xhrJira(...args)
+    case 3:
+      console.log('Contacting JIRA via webixJira()...')
+      return webixJira(...args)
     case 0:
     default:
       console.log('Contacting JIRA via fetchJira()...')
@@ -137,7 +141,7 @@ function contactJira (...args) {
 
 module.exports = { getEnvAuth, contactJira, trycatch }
 
-},{"../../common/lib/trycatch":1,"../lib/anywhere-fetch":5,"../lib/browser-jquery":6,"../lib/browser-xhr":7}],5:[function(require,module,exports){
+},{"../../common/lib/trycatch":1,"../lib/anywhere-fetch":5,"../lib/browser-jquery":6,"../lib/browser-webix":7,"../lib/browser-xhr":8}],5:[function(require,module,exports){
 'use strict'
 
 const { nonVoids } = require('../../common/lib/utils')
@@ -248,6 +252,61 @@ module.exports = { jqueryJira }
 },{}],7:[function(require,module,exports){
 'use strict'
 
+/* globals webix */
+
+const { nonVoids } = require('../../common/lib/utils')
+
+async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
+  // auth = {jira, credentials, agent}
+  if (auth.jira === undefined) { auth.jira = 'https://atlassian-test.hq.k.grp/jira' }
+
+  // webix parameters
+  const url = auth.jira + '/rest/' + request
+  const body = input && JSON.stringify(input)
+
+  // webix promise
+  console.log('BEGINNING OF REST CALL')
+  return new Promise((resolve, reject) => {
+    function onBeforeAjax (mode, url, data, request, headers, files, promise) {
+      request.withCredentials = true // request = xhr
+      headers['Content-type'] = 'application/json'
+    }
+    function success (text, data, ajax) {
+      text && resolve(data.json())
+      const { status, statusText } = ajax
+      resolve({ success: true, status, statusText })
+    }
+    function error (text, data, ajax) {
+      text && reject(new Error(JSON.stringify(nonVoids(data.json()))))
+      reject(new Error('Internal webix error'))
+    }
+    function complete () {
+      console.log('END OF REST CALL')
+    }
+    webix.attachEvent('onBeforeAjax', onBeforeAjax)
+    switch (method) {
+      case 'POST':
+        webix.ajax().post(url, body, {error, success}).then(complete)
+        break
+      case 'PUT':
+        webix.ajax().put(url, body, {error, success}).then(complete)
+        break
+      case 'DELETE':
+        webix.ajax().del(url, body, {error, success}).then(complete)
+        break
+      case 'GET':
+      default:
+        webix.ajax(url, body, {error, success}).then(complete)
+        break
+    }
+  })
+}
+
+module.exports = { webixJira }
+
+},{"../../common/lib/utils":2}],8:[function(require,module,exports){
+'use strict'
+
 /* globals XMLHttpRequest */
 
 const { nonVoids } = require('../../common/lib/utils')
@@ -272,7 +331,7 @@ async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', inp
       const data = xhr.response && JSON.parse(xhr.response)
       if (xhr.statusText !== 'OK' && xhr.statusText !== 'Created' && xhr.statusText !== 'No Content') {
         reject(new Error(JSON.stringify(nonVoids(data))))
-      } else if (xhr.status === 204) {
+      } else if (xhr.status === 204) { // means statusText === 'No Content'
         const { status, statusText } = xhr
         resolve({ success: true, status, statusText })
       } else {
