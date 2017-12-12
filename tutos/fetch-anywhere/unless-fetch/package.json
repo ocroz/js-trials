@@ -11,18 +11,21 @@
     "./src/vone/env/index.js": "./src/vone/env/browser.js"
   },
   "scripts": {
-    "jira:build": "browserify src/jira/calls.js -o dist/jira-calls-bundle.js",
-    "jira:deploy": "cp dist/* //safetest.hq.k.grp/custom/tmp/",
-    "jira:start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/jira-calls.html",
-    "jira:start:node": "node src/jira/errors.js",
-    "vone:build": "browserify src/vone/errors.js -o dist/vone-calls-bundle.js",
-    "vone:deploy": "cp dist/* //safetest.hq.k.grp/custom/tmp/",
-    "vone:start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/vone-calls.html",
-    "vone:start:node": "node src/vone/errors.js"
+    "jira:build": "browserify src/jira/main.js -t [ envify purge ] -o dist/js/jira-main-bundle.js",
+    "jira:deploy": "cp -rf dist/* //safetest.hq.k.grp/custom/tmp/",
+    "jira:start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/jira-stories.html",
+    "jira:start:node": "node src/jira/main.js",
+    "vone:build": "browserify src/vone/main.js -t [ envify purge ] -o dist/js/vone-main-bundle.js",
+    "vone:deploy": "cp -rf dist/* //safetest.hq.k.grp/custom/tmp/",
+    "vone:start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/vone-stories.html",
+    "vone:start:node": "node src/vone/main.js"
   },
   "dependencies": {
     "browserify": "^14.5.0",
+    "envify": "^4.1.0",
     "httpntlm": "^1.7.5",
-    "node-fetch": "^1.7.3"
+    "nconf": "^0.9.1",
+    "node-fetch": "^1.7.3",
+    "request": "^2.83.0"
   }
 }

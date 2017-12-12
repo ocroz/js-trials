@@ -6,7 +6,7 @@ const { nonVoids } = require('../../common/lib/utils')
 
 async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
   // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { auth.jira = 'https://atlassian-test.hq.k.grp/jira' }
+  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
 
   // xhr parameters
   const url = auth.jira + '/rest/' + request
@@ -18,17 +18,19 @@ async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', inp
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open(method, url, xasync)
+    xhr.setRequestHeader('Accept', 'application/json')
     xhr.setRequestHeader('Content-Type', 'application/json')
     xhr.withCredentials = true
     xhr.onload = function () {
+      const { status, statusText } = xhr
+      const success = (status >= 200 && status < 300)
       const data = xhr.response && JSON.parse(xhr.response)
-      if (xhr.statusText !== 'OK' && xhr.statusText !== 'Created' && xhr.statusText !== 'No Content') {
-        reject(new Error(JSON.stringify(nonVoids(data))))
-      } else if (xhr.status === 204) { // means statusText === 'No Content'
-        const { status, statusText } = xhr
-        resolve({ success: true, status, statusText })
-      } else {
+      if (xhr.status === 204) { // means statusText === 'No Content'
+        resolve({ success, status, statusText })
+      } else if (success) {
         resolve(data)
+      } else {
+        reject(new Error(JSON.stringify(nonVoids(data))))
       }
     }
     xhr.onerror = function () {

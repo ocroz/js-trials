@@ -1,6 +1,6 @@
 'use strict'
 
-const { getEnvAuth, contactJira, trycatch } = require('./env/index')
+const { getEnvAuth, contactJira, trycatch } = require('../env/index')
 
 // https://atlassian-test.hq.k.grp/jira/plugins/servlet/restbrowser
 // GET priorities (OK as anonymous, as long as no credentials is passed)
@@ -12,7 +12,7 @@ const { getEnvAuth, contactJira, trycatch } = require('./env/index')
 // GET updated comment
 // DELETE comment
 
-async function main () {
+async function calls () {
   'use strict'
   const auth = getEnvAuth()
 
@@ -60,4 +60,8 @@ async function main () {
   console.log('comment deleted with status:', res)
 }
 
-trycatch(main)
+function main () {
+  trycatch(calls)
+}
+
+module.exports = { main }

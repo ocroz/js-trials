@@ -8,14 +8,21 @@ const { jqueryJira } = require('../lib/browser-jquery')
 const { webixJira } = require('../lib/browser-webix')
 const { xhrJira } = require('../lib/browser-xhr')
 
-const altFetchCase = 0 // 0=fetch, 1=jquery, 2=xhr, 3=webix
+const jiraConfig = require('../cfg/jira-config.json')
+
+console.log('Running under browser')
+
+// const story = 0 // 0=calls.js, 1=errors.js
+// const altFetchCase = 0 // 0=fetch, 1=jquery, 2=xhr, 3=webix
+const [ story, altFetchCase, jiraUrl ] = [ // browserify uses envify for process.env
+  Number(process.env.story) || jiraConfig.story,
+  Number(process.env.altFetchCase) || jiraConfig.altFetchCase,
+  process.env.jiraUrl || jiraConfig.jiraUrl
+]
+console.log({story, altFetchCase, jiraUrl})
 
 function getEnvAuth () {
-  console.log('Running under browser')
-  const [jira, credentials, agent] = [
-    'https://atlassian-test.hq.k.grp/jira', undefined, undefined
-  ]
-  return {getFetch, jira, credentials, agent}
+  return {getFetch, jira: jiraUrl}
 }
 
 function getFetch () {
@@ -40,4 +47,4 @@ function contactJira (...args) {
   }
 }
 
-module.exports = { getEnvAuth, contactJira, trycatch }
+module.exports = { story, getEnvAuth, contactJira, trycatch }

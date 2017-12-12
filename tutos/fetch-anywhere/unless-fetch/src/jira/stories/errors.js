@@ -1,6 +1,6 @@
 'use strict'
 
-const { getEnvAuth, contactJira, trycatch } = require('./env/index')
+const { getEnvAuth, contactJira, trycatch } = require('../env/index')
 
 // Errors from fetch()
 // Errors without a response json
@@ -191,7 +191,9 @@ async function error15 () {
   console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
 }
 
-trycatch(connect)
+function main () {
+  trycatch(connect)
+}
 
 function errors () {
   trycatch(error1)
@@ -210,3 +212,5 @@ function errors () {
   trycatch(error14)
   trycatch(error15)
 }
+
+module.exports = { main }

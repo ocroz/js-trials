@@ -6,7 +6,7 @@ const { nonVoids } = require('../../common/lib/utils')
 
 async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
   // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { auth.jira = 'https://atlassian-test.hq.k.grp/jira' }
+  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
 
   // webix parameters
   const url = auth.jira + '/rest/' + request
@@ -17,6 +17,7 @@ async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', i
   return new Promise((resolve, reject) => {
     function onBeforeAjax (mode, url, data, request, headers, files, promise) {
       request.withCredentials = true // request = xhr
+      headers['Accept'] = 'application/json'
       headers['Content-type'] = 'application/json'
     }
     function success (text, data, ajax) {

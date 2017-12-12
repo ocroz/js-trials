@@ -4,14 +4,13 @@
 
 async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
   // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { auth.jira = 'https://atlassian-test.hq.k.grp/jira' }
+  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
 
   // jquery parameters
   const url = auth.jira + '/rest/' + request
-  const type = method
   const data = input && JSON.stringify(input)
-  const [dataType, crossDomain, contentType, async, xhrFields] =
-    ['json', true, 'application/json', true, {withCredentials: true}]
+  const [type, crossDomain, contentType, dataType, async, xhrFields] = // use dataType over accept
+    [method, true, 'application/json', 'json', true, {withCredentials: true}]
 
   // jquery promise
   console.log('BEGINNING OF REST CALL')
@@ -35,7 +34,7 @@ async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', 
     function complete (result, textStatus) {
       console.log('END OF REST CALL')
     }
-    $.ajax({type, url, dataType, crossDomain, contentType, async, data, xhrFields, success, error, complete})
+    $.ajax({type, url, crossDomain, contentType, dataType, async, data, xhrFields, success, error, complete})
   })
 }
 
