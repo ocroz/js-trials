@@ -1,54 +1,44 @@
 'use strict'
 
-const fs = require('fs')
 const http = require('http')
 const https = require('https')
-const path = require('path')
-const nconf = require('nconf')
 const fetch = require('node-fetch')
 const { trycatch } = require('../../common/lib/trycatch')
 const { fetchJira } = require('../lib/anywhere-fetch')
 const { httpJira } = require('../lib/node-http')
 const { httpsJira } = require('../lib/node-https')
 const { requestJira } = require('../lib/node-request')
+const { getOAuth1Header } = require('../lib/oauth1-for-node')
 
 console.log('Running under node.js')
 
-// Setup nconf to use (in-order):
-//   1. Command-line arguments
-//   2. Environment variables
-//   3. A file located at 'path/to/config.json'
-const cfgFile = path.resolve(__dirname, '../cfg/jira-config.json')
-nconf.argv().env().file({file: cfgFile})
+const jiraConfig = require('./node-config')
 
-// const story = 0 // 0=calls.js, 1=errors.js
-// const altFetchCase = 0 // 0=fetch, 1=http, 2=https, 3=request
-const [story, altFetchCase, jiraUrl] =
-  [Number(nconf.get('story')), Number(nconf.get('altFetchCase')), nconf.get('jiraUrl')]
-
-// Load ca.cer for https requests
-const caFile = path.resolve(__dirname, '../cfg/ca.cer')
-const ca = fs.existsSync(caFile)
-  ? fs.readFileSync(caFile)
-  : undefined
-
-console.log({story, altFetchCase, jiraUrl, ca: ca && '...'})
-
-function getEnvAuth () {
-  const [username, password] = [nconf.get('USERNAME'), nconf.get('pw')]
-  const credentials = (username && password)
-    ? 'Basic ' + base64Encode(username + ':' + password)
-    : undefined
-  const agent = getAgent(jiraUrl, ca)
-  return {getFetch, jira: jiraUrl, credentials, agent}
+function getJiraConfig () {
+  const { jiraUrl, nonVoids } = jiraConfig
+  const agent = getAgent(jiraConfig.jiraUrl, jiraConfig.ca)
+  return {jiraUrl, getFetch, getAuthHeader, agent, nonVoids}
 }
 
 function getFetch () {
   return fetch
 }
 
-function base64Encode (string) {
-  return Buffer.from(string, 'binary').toString('base64')
+function getAuthHeader (url, method) {
+  switch (jiraConfig.authMethod) {
+    case 'Cookie':
+      console.log('Using Cookie authentication...')
+      return { name: 'Cookie', data: jiraConfig.cookie }
+    case 'OAuth1':
+      console.log('Using OAuth1 authentication...')
+      const {consumerKey, privateKey, oauthToken, oauthTokenSecret} = jiraConfig
+      const oauth1Header = getOAuth1Header(url, method, consumerKey, privateKey, oauthToken, oauthTokenSecret)
+      return { name: 'Authorization', data: oauth1Header }
+    case 'Basic':
+    default:
+      console.log('Using Basic authentication...')
+      return { name: 'Authorization', data: jiraConfig.basicCredentials }
+  }
 }
 
 function getAgent (url, ca) {
@@ -60,7 +50,7 @@ function getAgent (url, ca) {
 }
 
 function contactJira (...args) {
-  switch (altFetchCase) {
+  switch (jiraConfig.altFetchCase) {
     case 1:
       console.log('Contacting JIRA via httpJira()...')
       return httpJira(...args)
@@ -77,4 +67,4 @@ function contactJira (...args) {
   }
 }
 
-module.exports = { story, getEnvAuth, contactJira, trycatch }
+module.exports = { story: jiraConfig.story, getJiraConfig, contactJira, trycatch }

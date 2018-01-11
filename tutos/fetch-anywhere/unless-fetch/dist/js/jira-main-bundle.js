@@ -22,7 +22,7 @@ module.exports = { trycatch }
 function nonVoids (input) {
   let output = {}
   for (let attr in input) {
-    if (Object.keys(input[attr]).length > 0) { // input[attr] is either array or object
+    if (input[attr] && Object.keys(input[attr]).length > 0) { // if defined, input[attr] is either array or object or string
       output[attr] = input[attr]
     }
   }
@@ -35,7 +35,7 @@ module.exports = { nonVoids }
 module.exports={
   "story": 0,
   "altFetchCase": 0,
-  "jiraUrl": "https://atlassian-test.hq.k.grp/jira"
+  "jiraUrl": "https://atlassian.mycompagny/jira"
 }
 
 },{}],4:[function(require,module,exports){
@@ -44,30 +44,70 @@ module.exports={
 /* global fetch */
 
 const { trycatch } = require('../../common/lib/trycatch')
+const { nonVoids } = require('../../common/lib/utils')
 const { fetchJira } = require('../lib/anywhere-fetch')
 const { jqueryJira } = require('../lib/browser-jquery')
 const { webixJira } = require('../lib/browser-webix')
 const { xhrJira } = require('../lib/browser-xhr')
+// const { getOAuth1Header } = require('../lib/oauth1-for-node')
 
 const jiraConfig = require('../cfg/jira-config.json')
 
 console.log('Running under browser')
 
-// const story = 0 // 0=calls.js, 1=errors.js
+// const story = 0 // 0=errors.js, 1=issue.js
 // const altFetchCase = 0 // 0=fetch, 1=jquery, 2=xhr, 3=webix
 const [ story, altFetchCase, jiraUrl ] = [ // browserify uses envify for process.env
   Number(undefined) || jiraConfig.story,
-  Number("0") || jiraConfig.altFetchCase,
+  Number(undefined) || jiraConfig.altFetchCase,
   undefined || jiraConfig.jiraUrl
 ]
 console.log({story, altFetchCase, jiraUrl})
 
-function getEnvAuth () {
-  return {getFetch, jira: jiraUrl}
+// const [authMethod, basicCredentials, cookie] = [
+//   process.env.authMethod || jiraConfig.authMethod,
+//   process.env.basicCredentials || jiraConfig.basicCredentials,
+//   process.env.cookie || jiraConfig.cookie
+// ]
+// const [consumerKey, privateKey, oauthToken, oauthTokenSecret] = [
+//   process.env.consumerKey || jiraConfig.consumerKey,
+//   process.env.privateKey || jiraConfig.privateKey,
+//   process.env.oauthToken || jiraConfig.oauthToken,
+//   process.env.oauthTokenSecret || jiraConfig.oauthTokenSecret
+// ]
+// const credentials = nonVoids({authMethod, basicCredentials, cookie, consumerKey, oauthToken, oauthTokenSecret})
+// credentials.privateKey = privateKey && '...'
+// console.log(credentials)
+
+function getJiraConfig () {
+  return {getFetch, jiraUrl, getAuthHeader, nonVoids}
 }
 
 function getFetch () {
   return fetch
+}
+
+function getAuthHeader (url, method) {
+  // Only the Cookie authentication works in the browser
+  // Because the header 'Authorization' is not allowed
+
+  // switch (authMethod) {
+  //   case 'Basic':
+  //     console.log('Using Basic authentication...')
+  //     return { name: 'Authorization', data: basicCredentials }
+  //   case 'OAuth1':
+  //     console.log('Using OAuth1 authentication...')
+  //     const oauth1Header = getOAuth1Header(url, method, consumerKey, privateKey, oauthToken, oauthTokenSecret)
+  //     return { name: 'Authorization', data: oauth1Header }
+  //   case 'Cookie':
+  //     console.log('Using Cookie authentication...')
+  //     return { name: 'Cookie', data: cookie }
+  //   default:
+  //     console.log('Using browser Cookie authentication...')
+  //     return undefined
+  // }
+
+  return undefined
 }
 
 function contactJira (...args) {
@@ -88,26 +128,26 @@ function contactJira (...args) {
   }
 }
 
-module.exports = { story, getEnvAuth, contactJira, trycatch }
+module.exports = { story, getJiraConfig, contactJira, trycatch }
 
-},{"../../common/lib/trycatch":1,"../cfg/jira-config.json":3,"../lib/anywhere-fetch":5,"../lib/browser-jquery":6,"../lib/browser-webix":7,"../lib/browser-xhr":8}],5:[function(require,module,exports){
+},{"../../common/lib/trycatch":1,"../../common/lib/utils":2,"../cfg/jira-config.json":3,"../lib/anywhere-fetch":5,"../lib/browser-jquery":6,"../lib/browser-webix":7,"../lib/browser-xhr":8}],5:[function(require,module,exports){
 'use strict'
 
-const { nonVoids } = require('../../common/lib/utils')
-
-async function fetchJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {getFetch, jira, credentials, agent} // credentials and agent are undefined in browser
-  if (auth.getFetch === undefined) { throw new Error('fetchJira: getFetch() is undefined') }
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function fetchJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'getFetch', 'getAuthHeader', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`fetchJira: ${attr} is undefined`) }
+  }
 
   // fetch parameters
-  const fetch = auth.getFetch()
-  const url = auth.jira + '/rest/' + request
+  const fetch = jiraConfig.getFetch()
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
-  const headers = auth.credentials // to support both browser and node
-    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': auth.credentials }
-    : { 'Accept': 'application/json', 'Content-Type': 'application/json' }
-  const [mode, credentials, agent] = ['cors', 'include', auth.agent] // to support both browser and node
+  const authHeader = jiraConfig.getAuthHeader(url, method)
+  const headers = authHeader // undefined in browser by default
+    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', [authHeader.name]: authHeader.data }
+    : { 'Accept': 'application/json', 'Content-Type': 'application/json' } // +by default { Cookie: <cookie> }
+  const [mode, credentials, agent] = ['cors', 'include', jiraConfig.agent] // to support both browser and node
   // console.log(url, method, body, headers, mode, credentials, agent)
 
   // fetch promise
@@ -122,7 +162,7 @@ async function fetchJira (auth = {}, method = 'GET', request = 'api/2/myself', i
         resp.json().then(data => { resolve(data) })
       } else {
         resp.json().then(data => {
-          const err = nonVoids(data)
+          const err = jiraConfig.nonVoids(data)
           reject(new Error(JSON.stringify(err)))
         })
       }
@@ -136,17 +176,19 @@ async function fetchJira (auth = {}, method = 'GET', request = 'api/2/myself', i
 
 module.exports = { fetchJira }
 
-},{"../../common/lib/utils":2}],6:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict'
 
 /* globals $ */
 
-async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function jqueryJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`jqueryJira: ${attr} is undefined`) }
+  }
 
   // jquery parameters
-  const url = auth.jira + '/rest/' + request
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const data = input && JSON.stringify(input)
   const [type, crossDomain, contentType, dataType, async, xhrFields] = // use dataType over accept
     [method, true, 'application/json', 'json', true, {withCredentials: true}]
@@ -166,7 +208,7 @@ async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', 
       if (result.status === 0) {
         reject(new Error('Internal jquery error'))
       } else {
-        const data = nonVoids(JSON.parse(result.responseText))
+        const data = jiraConfig.nonVoids(JSON.parse(result.responseText))
         reject(new Error(JSON.stringify(data)))
       }
     }
@@ -177,18 +219,6 @@ async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', 
   })
 }
 
-// Paste this utils function here as well to workaround a browserify problem
-function nonVoids (input) {
-  let output = {}
-  for (let attr in input) {
-    if (Object.keys(input[attr]).length > 0) { // input[attr] is either array or object
-      output[attr] = input[attr]
-    }
-  }
-  return output
-}
-// Paste this utils function here as well to workaround a browserify problem
-
 module.exports = { jqueryJira }
 
 },{}],7:[function(require,module,exports){
@@ -196,14 +226,14 @@ module.exports = { jqueryJira }
 
 /* globals webix */
 
-const { nonVoids } = require('../../common/lib/utils')
-
-async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function webixJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`webixJira: ${attr} is undefined`) }
+  }
 
   // webix parameters
-  const url = auth.jira + '/rest/' + request
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
 
   // webix promise
@@ -220,7 +250,7 @@ async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', i
       resolve({ success: true, status, statusText })
     }
     function error (text, data, ajax) {
-      text && reject(new Error(JSON.stringify(nonVoids(data.json()))))
+      text && reject(new Error(JSON.stringify(jiraConfig.nonVoids(data.json()))))
       reject(new Error('Internal webix error'))
     }
     function complete () {
@@ -247,19 +277,19 @@ async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', i
 
 module.exports = { webixJira }
 
-},{"../../common/lib/utils":2}],8:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict'
 
 /* globals XMLHttpRequest */
 
-const { nonVoids } = require('../../common/lib/utils')
-
-async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`xhrJira: ${attr} is undefined`) }
+  }
 
   // xhr parameters
-  const url = auth.jira + '/rest/' + request
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
   const xasync = true
 
@@ -280,7 +310,7 @@ async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', inp
       } else if (success) {
         resolve(data)
       } else {
-        reject(new Error(JSON.stringify(nonVoids(data))))
+        reject(new Error(JSON.stringify(jiraConfig.nonVoids(data))))
       }
     }
     xhr.onerror = function () {
@@ -295,18 +325,18 @@ async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', inp
 
 module.exports = { xhrJira }
 
-},{"../../common/lib/utils":2}],9:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict'
 
 const { story } = require('./env/index')
-const { main: calls } = require('./stories/calls')
 const { main: errors } = require('./stories/errors')
+const { main: issue } = require('./stories/issue')
 
 function runStory () {
   switch (story) {
     case 1:
-      console.log('Running calls()...')
-      return calls()
+      console.log('Running issue()...')
+      return issue()
     case 0:
     default:
       console.log('Running errors()...')
@@ -316,93 +346,24 @@ function runStory () {
 
 runStory()
 
-},{"./env/index":4,"./stories/calls":10,"./stories/errors":11}],10:[function(require,module,exports){
+},{"./env/index":4,"./stories/errors":10,"./stories/issue":11}],10:[function(require,module,exports){
 'use strict'
 
-const { getEnvAuth, contactJira, trycatch } = require('../env/index')
-
-// https://atlassian-test.hq.k.grp/jira/plugins/servlet/restbrowser
-// GET priorities (OK as anonymous, as long as no credentials is passed)
-// GET myself (must be logged in)
-// POST new issue
-// POST new comment
-// GET new comment
-// PUT update to comment
-// GET updated comment
-// DELETE comment
-
-async function calls () {
-  'use strict'
-  const auth = getEnvAuth()
-
-  const priorities = await contactJira(auth, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
-  console.log('JIRA priorities are:', priorities)
-
-  const { name: myself } = await contactJira(auth)
-  console.log('I am', myself)
-
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
-    'fields': {
-      'project': {'key': 'SPLPRJ'},
-      'assignee': {'name': myself},
-      'issuetype': {'name': 'Task'},
-      'priority': {'name': priorities[1]},
-      'summary': 'Submit issue through fetch',
-      'description':
-        '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
-        'fetch is available both at client and server sides' +
-        '{panel}' +
-        '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
-        'npm i node-fetch' +
-        '{panel}'
-    }
-  })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
-
-  const { id: commentid } = await contactJira(auth, 'POST', 'api/2/issue/' + issuekey + '/comment', {
-    'body': 'nice comment submitted through fetch'
-  })
-  console.log('submitted comment:', commentid)
-
-  const { id: cid, body: cbody } = await contactJira(auth, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
-  console.log('comment is:', cid, cbody)
-
-  const { id: pid, body: pbody } = await contactJira(auth, 'PUT', 'api/2/issue/' + issuekey + '/comment/' + commentid, {
-    'body': 'nice comment updated through fetch'
-  })
-  console.log('comment is:', pid, pbody)
-
-  const { id: uid, body: ubody } = await contactJira(auth, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
-  console.log('comment is:', uid, ubody)
-
-  const res = await contactJira(auth, 'DELETE', 'api/2/issue/' + issuekey + '/comment/' + commentid)
-  console.log('comment deleted with status:', res)
-}
-
-function main () {
-  trycatch(calls)
-}
-
-module.exports = { main }
-
-},{"../env/index":4}],11:[function(require,module,exports){
-'use strict'
-
-const { getEnvAuth, contactJira, trycatch } = require('../env/index')
+const { getJiraConfig, contactJira, trycatch } = require('../env/index')
 
 // Errors from fetch()
 // Errors without a response json
 // Errors with an errorMessages[] array in the response json
 // Errors with an errors{} object in the response json
 
-const auth = getEnvAuth()
+const jiraConfig = getJiraConfig()
 let priorities, myself
 
 async function connect () {
-  priorities = await contactJira(auth, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
+  priorities = await contactJira(jiraConfig, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
   console.log('JIRA priorities are:', priorities)
 
-  const { name } = await contactJira(auth)
+  const { name } = await contactJira(jiraConfig)
   myself = name
   console.log('I am', myself)
 
@@ -410,48 +371,48 @@ async function connect () {
 }
 
 async function error1 () {
-  let myauth = getEnvAuth()
-  myauth.jira = 'http://atlassian-fake.com/jira' // bad url
-  myauth.agent = undefined
+  let myJiraConfig = getJiraConfig()
+  myJiraConfig.jira = 'http://atlassian-fake.com/jira' // bad url
+  myJiraConfig.agent = undefined
 
-  const { name: myself } = await contactJira(myauth)
+  const { name: myself } = await contactJira(myJiraConfig)
   console.log('I am', myself)
 }
 
 async function error2 () {
-  let myauth = getEnvAuth()
-  myauth.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
-  myauth.agent = undefined // missing agent for https (or extra agent for http)
+  let myJiraConfig = getJiraConfig()
+  myJiraConfig.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
+  myJiraConfig.agent = undefined // missing agent for https (or extra agent for http)
 
-  const { name: myself } = await contactJira(myauth)
+  const { name: myself } = await contactJira(myJiraConfig)
   console.log('I am', myself)
 }
 
 async function error3 () {
-  let myauth = getEnvAuth()
-  myauth.credentials = 'undefined' // bad credentials
+  let myjiraConfig = getJiraConfig()
+  myjiraConfig.credentials = 'undefined' // bad credentials
 
-  const { name: myself } = await contactJira(myauth)
+  const { name: myself } = await contactJira(myjiraConfig)
   console.log('I am', myself)
 }
 
 async function error4 () {
-  const { key: projectkey } = await contactJira(auth, 'GET', 'api/2/_project_') // bad api
-  console.log('queried project:', projectkey, auth.jira + '/projects/' + projectkey)
+  const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/_project_') // bad api
+  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
 }
 
 async function error5 () {
-  const { key: projectkey } = await contactJira(auth, 'GET', 'api/2/project/_WEIRD_') // bad project key
-  console.log('queried project:', projectkey, auth.jira + '/projects/' + projectkey)
+  const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/project/_WEIRD_') // bad project key
+  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
 }
 
 async function error6 () {
-  const { key: issuekey } = await contactJira(auth, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
-  console.log('queried issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  const { key: issuekey } = await contactJira(jiraConfig, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
+  console.log('queried issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error7 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       // 'project': {'key': 'SPLPRJ'}, // no project
       'assignee': {'name': myself},
@@ -461,11 +422,11 @@ async function error7 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error8 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -475,11 +436,11 @@ async function error8 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error9 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -489,11 +450,11 @@ async function error9 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error10 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -503,11 +464,11 @@ async function error10 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error11 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': '_myself_'}, // bad assignee
@@ -517,11 +478,11 @@ async function error11 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error12 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       '_project_': {'key': 'SPLPRJ'}, // bad attribute key
@@ -532,11 +493,11 @@ async function error12 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error13 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -546,11 +507,11 @@ async function error13 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error14 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'label': {'_key_': 'weird'}, // bad attribute value
       'project': {'key': 'SPLPRJ'},
@@ -561,11 +522,11 @@ async function error14 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error15 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'version': {'_key_': 'weird'}, // bad attribute value
       'project': {'key': 'SPLPRJ'},
@@ -576,7 +537,7 @@ async function error15 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 function main () {
@@ -599,6 +560,75 @@ function errors () {
   trycatch(error13)
   trycatch(error14)
   trycatch(error15)
+}
+
+module.exports = { main }
+
+},{"../env/index":4}],11:[function(require,module,exports){
+'use strict'
+
+const { getJiraConfig, contactJira, trycatch } = require('../env/index')
+
+// https://atlassian-test.hq.k.grp/jira/plugins/servlet/restbrowser
+// GET priorities (OK as anonymous, as long as no credentials is passed)
+// GET myself (must be logged in)
+// POST new issue
+// POST new comment
+// GET new comment
+// PUT update to comment
+// GET updated comment
+// DELETE comment
+
+async function calls () {
+  'use strict'
+  const jiraConfig = getJiraConfig()
+
+  const priorities = await contactJira(jiraConfig, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
+  console.log('JIRA priorities are:', priorities)
+
+  const { name: myself } = await contactJira(jiraConfig)
+  console.log('I am', myself)
+
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
+    'fields': {
+      'project': {'key': 'SPLPRJ'},
+      'assignee': {'name': myself},
+      'issuetype': {'name': 'Task'},
+      'priority': {'name': priorities[1]},
+      'summary': 'Submit issue through fetch',
+      'description':
+        '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
+        'fetch is available both at client and server sides' +
+        '{panel}' +
+        '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
+        'npm i node-fetch' +
+        '{panel}'
+    }
+  })
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
+
+  const { id: commentid } = await contactJira(jiraConfig, 'POST', 'api/2/issue/' + issuekey + '/comment', {
+    'body': 'nice comment submitted through fetch'
+  })
+  console.log('submitted comment:', commentid)
+
+  const { id: cid, body: cbody } = await contactJira(jiraConfig, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  console.log('comment is:', cid, cbody)
+
+  const { id: pid, body: pbody } = await contactJira(jiraConfig, 'PUT', 'api/2/issue/' + issuekey + '/comment/' + commentid, {
+    'body': 'nice comment updated through fetch'
+  })
+  console.log('comment is:', pid, pbody)
+
+  const { id: uid, body: ubody } = await contactJira(jiraConfig, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  console.log('comment is:', uid, ubody)
+
+  const res = await contactJira(jiraConfig, 'DELETE', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  console.log('comment deleted with status:', res)
+}
+
+function main () {
+  trycatch(calls)
 }
 
 module.exports = { main }

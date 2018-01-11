@@ -2,14 +2,14 @@
 
 /* globals XMLHttpRequest */
 
-const { nonVoids } = require('../../common/lib/utils')
-
-async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`xhrJira: ${attr} is undefined`) }
+  }
 
   // xhr parameters
-  const url = auth.jira + '/rest/' + request
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
   const xasync = true
 
@@ -30,7 +30,7 @@ async function xhrJira (auth = {}, method = 'GET', request = 'api/2/myself', inp
       } else if (success) {
         resolve(data)
       } else {
-        reject(new Error(JSON.stringify(nonVoids(data))))
+        reject(new Error(JSON.stringify(jiraConfig.nonVoids(data))))
       }
     }
     xhr.onerror = function () {

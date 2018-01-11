@@ -7,7 +7,7 @@
 Update the default configuration at [src/jira/cfg/jira-config.json](src/jira/cfg/jira-config.json).
 ```javascript
 {
-  // 0=errors.js, 1=calls.js
+  // 0=errors.js, 1=issue.js
   "story": 0,
   // 0=fetch
   // browser: 1=jquery, 2=xhr, 3=webix
@@ -58,12 +58,12 @@ In the `browser` we use the `authentication cookie`.<br />You should first login
 
 Use default configuration:
 ```bash
-run jira:build;npm run jira:deploy;npm run jira:start:browser
+npm run jira:build;npm run jira:deploy;npm run jira:start:browser
 ```
 
 Use another configuration:
 ```bash
-altFetchCase=1 run jira:build;npm run jira:deploy;npm run jira:start:browser
+altFetchCase=1 npm run jira:build;npm run jira:deploy;npm run jira:start:browser
 ```
 
 PS:

@@ -1,6 +1,6 @@
 'use strict'
 
-const { getEnvAuth, contactJira, trycatch } = require('../env/index')
+const { getJiraConfig, contactJira, trycatch } = require('../env/index')
 
 // https://atlassian-test.hq.k.grp/jira/plugins/servlet/restbrowser
 // GET priorities (OK as anonymous, as long as no credentials is passed)
@@ -14,15 +14,15 @@ const { getEnvAuth, contactJira, trycatch } = require('../env/index')
 
 async function calls () {
   'use strict'
-  const auth = getEnvAuth()
+  const jiraConfig = getJiraConfig()
 
-  const priorities = await contactJira(auth, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
+  const priorities = await contactJira(jiraConfig, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
   console.log('JIRA priorities are:', priorities)
 
-  const { name: myself } = await contactJira(auth)
+  const { name: myself } = await contactJira(jiraConfig)
   console.log('I am', myself)
 
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -38,25 +38,25 @@ async function calls () {
         '{panel}'
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 
-  const { id: commentid } = await contactJira(auth, 'POST', 'api/2/issue/' + issuekey + '/comment', {
+  const { id: commentid } = await contactJira(jiraConfig, 'POST', 'api/2/issue/' + issuekey + '/comment', {
     'body': 'nice comment submitted through fetch'
   })
   console.log('submitted comment:', commentid)
 
-  const { id: cid, body: cbody } = await contactJira(auth, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  const { id: cid, body: cbody } = await contactJira(jiraConfig, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
   console.log('comment is:', cid, cbody)
 
-  const { id: pid, body: pbody } = await contactJira(auth, 'PUT', 'api/2/issue/' + issuekey + '/comment/' + commentid, {
+  const { id: pid, body: pbody } = await contactJira(jiraConfig, 'PUT', 'api/2/issue/' + issuekey + '/comment/' + commentid, {
     'body': 'nice comment updated through fetch'
   })
   console.log('comment is:', pid, pbody)
 
-  const { id: uid, body: ubody } = await contactJira(auth, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  const { id: uid, body: ubody } = await contactJira(jiraConfig, 'GET', 'api/2/issue/' + issuekey + '/comment/' + commentid)
   console.log('comment is:', uid, ubody)
 
-  const res = await contactJira(auth, 'DELETE', 'api/2/issue/' + issuekey + '/comment/' + commentid)
+  const res = await contactJira(jiraConfig, 'DELETE', 'api/2/issue/' + issuekey + '/comment/' + commentid)
   console.log('comment deleted with status:', res)
 }
 

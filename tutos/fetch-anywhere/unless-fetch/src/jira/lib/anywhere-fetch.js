@@ -1,20 +1,20 @@
 'use strict'
 
-const { nonVoids } = require('../../common/lib/utils')
-
-async function fetchJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {getFetch, jira, credentials, agent} // credentials and agent are undefined in browser
-  if (auth.getFetch === undefined) { throw new Error('fetchJira: getFetch() is undefined') }
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function fetchJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'getFetch', 'getAuthHeader', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`fetchJira: ${attr} is undefined`) }
+  }
 
   // fetch parameters
-  const fetch = auth.getFetch()
-  const url = auth.jira + '/rest/' + request
+  const fetch = jiraConfig.getFetch()
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
-  const headers = auth.credentials // to support both browser and node
-    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': auth.credentials }
-    : { 'Accept': 'application/json', 'Content-Type': 'application/json' }
-  const [mode, credentials, agent] = ['cors', 'include', auth.agent] // to support both browser and node
+  const authHeader = jiraConfig.getAuthHeader(url, method)
+  const headers = authHeader // undefined in browser by default
+    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', [authHeader.name]: authHeader.data }
+    : { 'Accept': 'application/json', 'Content-Type': 'application/json' } // +by default { Cookie: <cookie> }
+  const [mode, credentials, agent] = ['cors', 'include', jiraConfig.agent] // to support both browser and node
   // console.log(url, method, body, headers, mode, credentials, agent)
 
   // fetch promise
@@ -29,7 +29,7 @@ async function fetchJira (auth = {}, method = 'GET', request = 'api/2/myself', i
         resp.json().then(data => { resolve(data) })
       } else {
         resp.json().then(data => {
-          const err = nonVoids(data)
+          const err = jiraConfig.nonVoids(data)
           reject(new Error(JSON.stringify(err)))
         })
       }

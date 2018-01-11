@@ -1,18 +1,21 @@
 'use strict'
 
 const https = require('https')
-const url = require('url')
-const { nonVoids } = require('../../common/lib/utils')
+const _url = require('url')
 
-async function httpsJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function httpsJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getAuthHeader, agent, nonVoids}
+  for (let attr of ['jiraUrl', 'getAuthHeader', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`httpsJira: ${attr} is undefined`) }
+  }
 
   // https parameters
-  const {protocol, hostname, port, path} = url.parse(auth.jira + '/rest/' + request)
+  const url = jiraConfig.jiraUrl + '/rest/' + request
+  const {protocol, hostname, port, path} = _url.parse(url)
   const body = input && JSON.stringify(input)
-  const headers = auth.credentials
-    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': auth.credentials }
+  const authHeader = jiraConfig.getAuthHeader(url, method)
+  const headers = authHeader
+    ? { 'Accept': 'application/json', 'Content-Type': 'application/json', [authHeader.name]: authHeader.data }
     : { 'Accept': 'application/json', 'Content-Type': 'application/json' }
 
   // https promise
@@ -32,14 +35,14 @@ async function httpsJira (auth = {}, method = 'GET', request = 'api/2/myself', i
         } else if (success) {
           resolve(JSON.parse(data))
         } else {
-          const err = nonVoids(JSON.parse(data))
+          const err = jiraConfig.nonVoids(JSON.parse(data))
           reject(new Error(JSON.stringify(err)))
         }
         console.log('END OF REST CALL')
       })
     }
 
-    const req = https.request({protocol, hostname, port, path, method, headers, agent: auth.agent}, receive)
+    const req = https.request({protocol, hostname, port, path, method, headers, agent: jiraConfig.agent}, receive)
 
     req.on('error', (err) => {
       reject(new Error(`Internal http error: ${err.message}`))

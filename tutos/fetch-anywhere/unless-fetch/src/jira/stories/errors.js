@@ -1,20 +1,20 @@
 'use strict'
 
-const { getEnvAuth, contactJira, trycatch } = require('../env/index')
+const { getJiraConfig, contactJira, trycatch } = require('../env/index')
 
 // Errors from fetch()
 // Errors without a response json
 // Errors with an errorMessages[] array in the response json
 // Errors with an errors{} object in the response json
 
-const auth = getEnvAuth()
+const jiraConfig = getJiraConfig()
 let priorities, myself
 
 async function connect () {
-  priorities = await contactJira(auth, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
+  priorities = await contactJira(jiraConfig, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
   console.log('JIRA priorities are:', priorities)
 
-  const { name } = await contactJira(auth)
+  const { name } = await contactJira(jiraConfig)
   myself = name
   console.log('I am', myself)
 
@@ -22,48 +22,48 @@ async function connect () {
 }
 
 async function error1 () {
-  let myauth = getEnvAuth()
-  myauth.jira = 'http://atlassian-fake.com/jira' // bad url
-  myauth.agent = undefined
+  let myJiraConfig = getJiraConfig()
+  myJiraConfig.jira = 'http://atlassian-fake.com/jira' // bad url
+  myJiraConfig.agent = undefined
 
-  const { name: myself } = await contactJira(myauth)
+  const { name: myself } = await contactJira(myJiraConfig)
   console.log('I am', myself)
 }
 
 async function error2 () {
-  let myauth = getEnvAuth()
-  myauth.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
-  myauth.agent = undefined // missing agent for https (or extra agent for http)
+  let myJiraConfig = getJiraConfig()
+  myJiraConfig.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
+  myJiraConfig.agent = undefined // missing agent for https (or extra agent for http)
 
-  const { name: myself } = await contactJira(myauth)
+  const { name: myself } = await contactJira(myJiraConfig)
   console.log('I am', myself)
 }
 
 async function error3 () {
-  let myauth = getEnvAuth()
-  myauth.credentials = 'undefined' // bad credentials
+  let myjiraConfig = getJiraConfig()
+  myjiraConfig.credentials = 'undefined' // bad credentials
 
-  const { name: myself } = await contactJira(myauth)
+  const { name: myself } = await contactJira(myjiraConfig)
   console.log('I am', myself)
 }
 
 async function error4 () {
-  const { key: projectkey } = await contactJira(auth, 'GET', 'api/2/_project_') // bad api
-  console.log('queried project:', projectkey, auth.jira + '/projects/' + projectkey)
+  const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/_project_') // bad api
+  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
 }
 
 async function error5 () {
-  const { key: projectkey } = await contactJira(auth, 'GET', 'api/2/project/_WEIRD_') // bad project key
-  console.log('queried project:', projectkey, auth.jira + '/projects/' + projectkey)
+  const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/project/_WEIRD_') // bad project key
+  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
 }
 
 async function error6 () {
-  const { key: issuekey } = await contactJira(auth, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
-  console.log('queried issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  const { key: issuekey } = await contactJira(jiraConfig, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
+  console.log('queried issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error7 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       // 'project': {'key': 'SPLPRJ'}, // no project
       'assignee': {'name': myself},
@@ -73,11 +73,11 @@ async function error7 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error8 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -87,11 +87,11 @@ async function error8 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error9 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -101,11 +101,11 @@ async function error9 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error10 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -115,11 +115,11 @@ async function error10 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error11 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': '_myself_'}, // bad assignee
@@ -129,11 +129,11 @@ async function error11 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error12 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       '_project_': {'key': 'SPLPRJ'}, // bad attribute key
@@ -144,11 +144,11 @@ async function error12 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error13 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'project': {'key': 'SPLPRJ'},
       'assignee': {'name': myself},
@@ -158,11 +158,11 @@ async function error13 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error14 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'label': {'_key_': 'weird'}, // bad attribute value
       'project': {'key': 'SPLPRJ'},
@@ -173,11 +173,11 @@ async function error14 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 async function error15 () {
-  const { key: issuekey } = await contactJira(auth, 'POST', 'api/2/issue', {
+  const { key: issuekey } = await contactJira(jiraConfig, 'POST', 'api/2/issue', {
     'fields': {
       'version': {'_key_': 'weird'}, // bad attribute value
       'project': {'key': 'SPLPRJ'},
@@ -188,7 +188,7 @@ async function error15 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, auth.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
 }
 
 function main () {

@@ -2,12 +2,14 @@
 
 /* globals $ */
 
-async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function jqueryJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`jqueryJira: ${attr} is undefined`) }
+  }
 
   // jquery parameters
-  const url = auth.jira + '/rest/' + request
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const data = input && JSON.stringify(input)
   const [type, crossDomain, contentType, dataType, async, xhrFields] = // use dataType over accept
     [method, true, 'application/json', 'json', true, {withCredentials: true}]
@@ -27,7 +29,7 @@ async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', 
       if (result.status === 0) {
         reject(new Error('Internal jquery error'))
       } else {
-        const data = nonVoids(JSON.parse(result.responseText))
+        const data = jiraConfig.nonVoids(JSON.parse(result.responseText))
         reject(new Error(JSON.stringify(data)))
       }
     }
@@ -37,17 +39,5 @@ async function jqueryJira (auth = {}, method = 'GET', request = 'api/2/myself', 
     $.ajax({type, url, crossDomain, contentType, dataType, async, data, xhrFields, success, error, complete})
   })
 }
-
-// Paste this utils function here as well to workaround a browserify problem
-function nonVoids (input) {
-  let output = {}
-  for (let attr in input) {
-    if (Object.keys(input[attr]).length > 0) { // input[attr] is either array or object
-      output[attr] = input[attr]
-    }
-  }
-  return output
-}
-// Paste this utils function here as well to workaround a browserify problem
 
 module.exports = { jqueryJira }

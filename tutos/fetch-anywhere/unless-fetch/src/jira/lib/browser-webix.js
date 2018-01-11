@@ -2,14 +2,14 @@
 
 /* globals webix */
 
-const { nonVoids } = require('../../common/lib/utils')
-
-async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', input) {
-  // auth = {jira, credentials, agent}
-  if (auth.jira === undefined) { throw new Error('jira url is undefined') }
+async function webixJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'nonVoids']) {
+    if (!jiraConfig[attr]) { throw new Error(`webixJira: ${attr} is undefined`) }
+  }
 
   // webix parameters
-  const url = auth.jira + '/rest/' + request
+  const url = jiraConfig.jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
 
   // webix promise
@@ -26,7 +26,7 @@ async function webixJira (auth = {}, method = 'GET', request = 'api/2/myself', i
       resolve({ success: true, status, statusText })
     }
     function error (text, data, ajax) {
-      text && reject(new Error(JSON.stringify(nonVoids(data.json()))))
+      text && reject(new Error(JSON.stringify(jiraConfig.nonVoids(data.json()))))
       reject(new Error('Internal webix error'))
     }
     function complete () {
