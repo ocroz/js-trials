@@ -1,0 +1,8 @@
+{
+  "jiraUrl": "https://atlassian.mycompagny/jira",
+  "request": "api/2/myself",
+  "method": "GET",
+  "consumerKey": "myapp-mycompagny",
+  "oauthToken": "MyOAuthT0k3N",
+  "oauthTokenSecret": "MyOAuthT0k3NS3cr3T"
+}

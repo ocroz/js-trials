@@ -1,0 +1,8 @@
+{
+  "jiraUrl": "https://atlassian-test.hq.k.grp/jira",
+  "request": "api/2/myself",
+  "method": "GET",
+  "consumerKey": "myapp-hq.k.grp",
+  "oauthToken": "KD8mwWNHoJhWeZh9ojvj9D4xI0EfUTtN",
+  "oauthTokenSecret": "QMdyOVc7kFKNS8MncPd70VPjejrTZU7Y"
+}

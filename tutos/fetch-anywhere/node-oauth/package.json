@@ -1,0 +1,15 @@
+{
+  "name": "node-oauth",
+  "version": "1.0.0",
+  "description": "oauth1 headers",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "dependencies": {
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "nconf": "^0.10.0",
+    "oauth": "^0.9.15"
+  }
+}
