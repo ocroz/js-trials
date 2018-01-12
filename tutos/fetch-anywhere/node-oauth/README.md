@@ -1,5 +1,9 @@
 # OAuth1 for JIRA
 
+## References
+
+See tuto [JIRA REST API OAuth authentication in Node.js](https://devup.co/jira-rest-api-oauth-authentication-in-node-js-2f8d226a493a) (`OAuth 1.0` protocol).
+
 ## Summary of the steps
 
 An oauth connection is established between a JIRA server and a user of a **local application**.
