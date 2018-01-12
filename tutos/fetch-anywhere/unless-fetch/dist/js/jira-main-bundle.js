@@ -43,13 +43,13 @@ module.exports={
 
 /* global fetch */
 
-const { trycatch } = require('../../common/lib/trycatch')
-const { nonVoids } = require('../../common/lib/utils')
+const { trycatch } = require('../../common/trycatch')
+const { nonVoids } = require('../../common/utils')
 const { fetchJira } = require('../lib/anywhere-fetch')
 const { jqueryJira } = require('../lib/browser-jquery')
 const { webixJira } = require('../lib/browser-webix')
 const { xhrJira } = require('../lib/browser-xhr')
-// const { getOAuth1Header } = require('../lib/oauth1-for-node')
+// const { getOAuth1Header } = require('../oauth/oauth1-headers')
 
 const jiraConfig = require('../cfg/jira-config.json')
 
@@ -130,7 +130,7 @@ function contactJira (...args) {
 
 module.exports = { story, getJiraConfig, contactJira, trycatch }
 
-},{"../../common/lib/trycatch":1,"../../common/lib/utils":2,"../cfg/jira-config.json":3,"../lib/anywhere-fetch":5,"../lib/browser-jquery":6,"../lib/browser-webix":7,"../lib/browser-xhr":8}],5:[function(require,module,exports){
+},{"../../common/trycatch":1,"../../common/utils":2,"../cfg/jira-config.json":3,"../lib/anywhere-fetch":5,"../lib/browser-jquery":6,"../lib/browser-webix":7,"../lib/browser-xhr":8}],5:[function(require,module,exports){
 'use strict'
 
 async function fetchJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {

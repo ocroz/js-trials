@@ -2,13 +2,13 @@
 
 /* global fetch */
 
-const { trycatch } = require('../../common/lib/trycatch')
-const { nonVoids } = require('../../common/lib/utils')
+const { trycatch } = require('../../common/trycatch')
+const { nonVoids } = require('../../common/utils')
 const { fetchJira } = require('../lib/anywhere-fetch')
 const { jqueryJira } = require('../lib/browser-jquery')
 const { webixJira } = require('../lib/browser-webix')
 const { xhrJira } = require('../lib/browser-xhr')
-// const { getOAuth1Header } = require('../lib/oauth1-for-node')
+// const { getOAuth1Header } = require('../oauth/oauth1-headers')
 
 const jiraConfig = require('../cfg/jira-config.json')
 

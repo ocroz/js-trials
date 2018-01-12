@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 const nconf = require('nconf')
-const { nonVoids } = require('../../common/lib/utils')
+const { nonVoids } = require('../../common/utils')
 
 // Setup nconf to use (in-order):
 //   1. Command-line arguments

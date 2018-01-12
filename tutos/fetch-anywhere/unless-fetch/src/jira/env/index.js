@@ -3,12 +3,12 @@
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
-const { trycatch } = require('../../common/lib/trycatch')
+const { trycatch } = require('../../common/trycatch')
 const { fetchJira } = require('../lib/anywhere-fetch')
 const { httpJira } = require('../lib/node-http')
 const { httpsJira } = require('../lib/node-https')
 const { requestJira } = require('../lib/node-request')
-const { getOAuth1Header } = require('../lib/oauth1-for-node')
+const { getOAuth1Header } = require('../oauth/oauth1-headers')
 
 console.log('Running under node.js')
 
