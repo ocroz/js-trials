@@ -23,18 +23,15 @@ See:
 - [fetch-ntlm/](fetch-ntlm/README.md)
 
 Other authentications mechanisms exist such as `OAuth`.
-See [node-oauth/](node-oauth/README.md).
+See [OAuth1 for JIRA](unless-fetch/src/jira/oauth/token/README.md).
 
 ### Let's try other alternatives
 
-In node.js:
-- http
-- https
-- request
-
-In the browser:
-- XmlHttpRequest aka xhr
-- jQuery $.ajax
-- Webix
+|In node.js|In the browser|
+|---|---|
+|- fetch|- fetch|
+|- http|- XmlHttpRequest aka xhr|
+|- https|- jQuery $.ajax|
+|- request|- Webix|
 
 See [unless-fetch/](unless-fetch/README.md).

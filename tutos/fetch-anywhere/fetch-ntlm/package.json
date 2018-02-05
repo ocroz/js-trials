@@ -11,8 +11,8 @@
   },
   "scripts": {
     "build": "browserify src/vone-calls.js -o dist/vone-calls-bundle.js",
-    "deploy": "cp dist/* //safetest.hq.k.grp/custom/tmp/",
-    "start:browser": "chrome https://safetest.hq.k.grp/Safetest/custom/tmp/vone-calls.html",
+    "deploy": "cp dist/* //versionone.mycompany/playground/",
+    "start:browser": "chrome https://versionone.mycompany/playground/vone-calls.html",
     "start:node": "node src/vone-calls.js"
   },
   "dependencies": {

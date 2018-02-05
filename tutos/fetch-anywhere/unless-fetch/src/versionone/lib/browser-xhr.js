@@ -2,15 +2,15 @@
 
 /* globals XMLHttpRequest */
 
-async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
-  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
-  for (let attr of ['jiraUrl', 'nonVoids']) {
-    if (!jiraConfig[attr]) { throw new Error(`xhrJira: ${attr} is undefined`) }
+async function _xhrVone (voneConfig = {}, method = 'GET', request = 'rest-1.v1/Data/Scope/0', input) {
+  // voneConfig = {voneUrl, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['voneUrl', 'nonVoids']) {
+    if (!voneConfig[attr]) { throw new Error(`xhrVone: ${attr} is undefined`) }
   }
-  const { jiraUrl, nonVoids } = jiraConfig
+  const { voneUrl, nonVoids } = voneConfig
 
   // xhr parameters
-  const url = jiraUrl + '/rest/' + request
+  const url = voneUrl + '/' + request
   const body = input && JSON.stringify(input)
   const xasync = true
 
@@ -27,8 +27,9 @@ async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself
       const success = (status >= 200 && status < 300)
       const body = xhr.response && JSON.parse(xhr.response)
       const data = (xhr.status === 204) ? { success, status, statusText } : body // 204 means statusText === 'No Content'
+      const whoami = xhr.getResponseHeader('v1-memberid')
       if (success) {
-        resolve(data)
+        resolve({whoami, data})
       } else {
         reject(new Error(JSON.stringify(nonVoids(data))))
       }
@@ -43,4 +44,10 @@ async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself
   })
 }
 
-module.exports = { xhrJira }
+function xhrVone (voneConfig, method, request, input) {
+  return (method && request)
+    ? _xhrVone(voneConfig, method, request, input).then(res => res.data)
+    : _xhrVone(voneConfig, method, request, input).then(res => res.whoami)
+}
+
+module.exports = { xhrVone }

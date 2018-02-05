@@ -3,18 +3,18 @@
 const https = require('https')
 const _url = require('url')
 
-async function httpsJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
-  // jiraConfig = {jiraUrl, getAuthHeader, logError, agent, nonVoids}
-  for (let attr of ['jiraUrl', 'getAuthHeader', 'logError', 'nonVoids']) {
-    if (!jiraConfig[attr]) { throw new Error(`httpsJira: ${attr} is undefined`) }
+async function _httpsVone (voneConfig = {}, method = 'GET', request = 'rest-1.v1/Data/Scope/0', input) {
+  // voneConfig = {voneUrl, getAuthHeader, fixUrl, logError, agent, nonVoids}
+  for (let attr of ['voneUrl', 'getAuthHeader', 'fixUrl', 'logError', 'nonVoids']) {
+    if (!voneConfig[attr]) { throw new Error(`httpsVone: ${attr} is undefined`) }
   }
-  const { jiraUrl, getAuthHeader, logError, agent, nonVoids } = jiraConfig
+  const { voneUrl, getAuthHeader, fixUrl, logError, agent, nonVoids } = voneConfig
 
   // https parameters
-  const url = jiraUrl + '/rest/' + request
-  const {protocol, hostname, port, path} = _url.parse(url)
+  const url = voneUrl + '/' + fixUrl(request)
+  const { protocol, hostname, port, path } = _url.parse(url)
   const body = input && JSON.stringify(input)
-  const authHeader = getAuthHeader(url, method)
+  const authHeader = await getAuthHeader()
   const headers = authHeader
     ? { 'Accept': 'application/json', 'Content-Type': 'application/json', [authHeader.name]: authHeader.data }
     : { 'Accept': 'application/json', 'Content-Type': 'application/json' }
@@ -27,19 +27,20 @@ async function httpsJira (jiraConfig = {}, method = 'GET', request = 'api/2/myse
       const {statusCode, statusMessage} = res
       const success = (statusCode >= 200 && statusCode < 300)
       const response = {success, statusCode, statusMessage}
+      const whoami = res.headers['v1-memberid']
       res.setEncoding('utf8')
       res.on('data', chunk => { data += chunk })
       res.on('end', () => {
         try {
           const json = (statusCode === 204) ? response : JSON.parse(data) // 204 means statusMessage === 'No Content'
           if (success) {
-            resolve(json)
+            resolve({whoami, data: json})
           } else {
             const err = nonVoids(json)
             logError(method, url, statusCode, statusMessage)
             reject(new Error(JSON.stringify(err)))
           }
-        } catch (err) {
+        } catch (err) { // VersionOne sends an html page on unauthorized requests
           logError(method, url, statusCode, statusMessage)
           reject(new Error(JSON.stringify(response)))
         }
@@ -66,4 +67,10 @@ async function httpsJira (jiraConfig = {}, method = 'GET', request = 'api/2/myse
   })
 }
 
-module.exports = { httpsJira }
+function httpsVone (voneConfig, method, request, input) {
+  return (method && request)
+    ? _httpsVone(voneConfig, method, request, input).then(res => res.data)
+    : _httpsVone(voneConfig, method, request, input).then(res => res.whoami)
+}
+
+module.exports = { httpsVone }

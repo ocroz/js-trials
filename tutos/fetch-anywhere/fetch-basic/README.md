@@ -2,6 +2,12 @@
 
 Let's take an example with Atlassian JIRA *on premise* which uses a `basic` authentication with node.
 
+### Configurations
+
+- Update the JIRA URL in [src/env/*.js](src/env/).
+- Configure the other host from where the html file will be ran over CORS in the browser.<br />
+=> Update the host path and URL for the deploy and start:browser scripts in [package.json](package.json).
+
 ### Let's try the code in node
 
 ```bash

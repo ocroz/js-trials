@@ -39,11 +39,7 @@ console.log({story, altFetchCase, jiraUrl})
 // console.log(credentials)
 
 function getJiraConfig () {
-  return {getFetch, jiraUrl, getAuthHeader, nonVoids}
-}
-
-function getFetch () {
-  return fetch
+  return {getFetch, jiraUrl, getAuthHeader, logError, nonVoids}
 }
 
 function getAuthHeader (url, method) {
@@ -66,6 +62,14 @@ function getAuthHeader (url, method) {
   //     return undefined
   // }
 
+  return undefined
+}
+
+function getFetch () {
+  return fetch
+}
+
+function logError () {
   return undefined
 }
 

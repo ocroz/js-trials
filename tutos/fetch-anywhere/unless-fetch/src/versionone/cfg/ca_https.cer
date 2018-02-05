@@ -1,0 +1,9 @@
+-----BEGIN CERTIFICATE-----
+(Your Primary SSL certificate: your_domain_name.crt) // This one is not needed
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+(Your Intermediate certificate: DigiCertCA.crt)
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+(Your Root certificate: TrustedRoot.crt)
+-----END CERTIFICATE-----

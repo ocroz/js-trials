@@ -3,7 +3,7 @@
 async function _voneFetch (auth = {}, method = 'GET', request = 'rest-1.v1/Data/Scope/0', input) {
   // auth = {getFetch, vone, credentials, agent}
   if (auth.getFetch === undefined) { throw new Error('voneFetch: getFetch() is undefined') }
-  if (auth.vone === undefined) { auth.vone = 'https://safetest.hq.k.grp/Safetest' }
+  if (auth.vone === undefined) { throw new Error('voneFetch: VersionOne URL is undefined') }
 
   // fetch parameters
   const fetch = auth.getFetch()

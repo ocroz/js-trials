@@ -2,6 +2,11 @@
 
 Let's take an example with VersionOne which uses a `NTLM` authentication with node.
 
+### Configurations
+
+- Update the VersionOne URL in [src/env/*.js](src/env/).
+- Update the VersionOne path and URL for the deploy and start:browser scripts in [package.json](package.json).
+
 ### Let's try the code in node
 
 ```bash

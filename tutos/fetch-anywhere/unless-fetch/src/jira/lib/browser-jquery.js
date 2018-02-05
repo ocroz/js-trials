@@ -7,9 +7,10 @@ async function jqueryJira (jiraConfig = {}, method = 'GET', request = 'api/2/mys
   for (let attr of ['jiraUrl', 'nonVoids']) {
     if (!jiraConfig[attr]) { throw new Error(`jqueryJira: ${attr} is undefined`) }
   }
+  const { jiraUrl, nonVoids } = jiraConfig
 
   // jquery parameters
-  const url = jiraConfig.jiraUrl + '/rest/' + request
+  const url = jiraUrl + '/rest/' + request
   const data = input && JSON.stringify(input)
   const [type, crossDomain, contentType, dataType, async, xhrFields] = // use dataType over accept
     [method, true, 'application/json', 'json', true, {withCredentials: true}]
@@ -29,7 +30,7 @@ async function jqueryJira (jiraConfig = {}, method = 'GET', request = 'api/2/mys
       if (result.status === 0) {
         reject(new Error('Internal jquery error'))
       } else {
-        const data = jiraConfig.nonVoids(JSON.parse(result.responseText))
+        const data = nonVoids(JSON.parse(result.responseText))
         reject(new Error(JSON.stringify(data)))
       }
     }

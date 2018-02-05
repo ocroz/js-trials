@@ -1,5 +1,6 @@
 'use strict'
 
+require('colors')
 const http = require('http')
 const https = require('https')
 const fetch = require('node-fetch')
@@ -15,9 +16,9 @@ console.log('Running under node.js')
 const jiraConfig = require('./node-config')
 
 function getJiraConfig () {
-  const { jiraUrl, nonVoids } = jiraConfig
-  const agent = getAgent(jiraConfig.jiraUrl, jiraConfig.ca)
-  return {jiraUrl, getFetch, getAuthHeader, agent, nonVoids}
+  const { jiraUrl, ca, nonVoids } = jiraConfig
+  const agent = getAgent(jiraUrl, ca)
+  return {jiraUrl, getFetch, getAuthHeader, logError, agent, nonVoids}
 }
 
 function getFetch () {
@@ -47,6 +48,10 @@ function getAgent (url, ca) {
     : !ca
     ? new https.Agent({ rejectUnauthorized: false })
     : new https.Agent({ ca, rejectUnauthorized: true })
+}
+
+function logError (...args) {
+  console.error(args.join(' ').red)
 }
 
 function contactJira (...args) {

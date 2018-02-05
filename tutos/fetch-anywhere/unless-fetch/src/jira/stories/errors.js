@@ -9,6 +9,7 @@ const { getJiraConfig, contactJira, trycatch } = require('../env/index')
 
 const jiraConfig = getJiraConfig()
 let priorities, myself
+let runErrors = false
 
 async function connect () {
   priorities = await contactJira(jiraConfig, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
@@ -18,13 +19,12 @@ async function connect () {
   myself = name
   console.log('I am', myself)
 
-  errors()
+  runErrors = true
 }
 
 async function error1 () {
   let myJiraConfig = getJiraConfig()
-  myJiraConfig.jira = 'http://atlassian-fake.com/jira' // bad url
-  myJiraConfig.agent = undefined
+  myJiraConfig.jiraUrl = 'https://atlassian-fake.com/jira' // bad url
 
   const { name: myself } = await contactJira(myJiraConfig)
   console.log('I am', myself)
@@ -32,7 +32,7 @@ async function error1 () {
 
 async function error2 () {
   let myJiraConfig = getJiraConfig()
-  myJiraConfig.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
+  myJiraConfig.jiraUrl = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
   myJiraConfig.agent = undefined // missing agent for https (or extra agent for http)
 
   const { name: myself } = await contactJira(myJiraConfig)
@@ -49,17 +49,17 @@ async function error3 () {
 
 async function error4 () {
   const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/_project_') // bad api
-  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
+  console.log('queried project:', projectkey, jiraConfig.jiraUrl + '/projects/' + projectkey)
 }
 
 async function error5 () {
   const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/project/_WEIRD_') // bad project key
-  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
+  console.log('queried project:', projectkey, jiraConfig.jiraUrl + '/projects/' + projectkey)
 }
 
 async function error6 () {
   const { key: issuekey } = await contactJira(jiraConfig, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
-  console.log('queried issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('queried issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error7 () {
@@ -73,7 +73,7 @@ async function error7 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error8 () {
@@ -87,7 +87,7 @@ async function error8 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error9 () {
@@ -101,7 +101,7 @@ async function error9 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error10 () {
@@ -115,7 +115,7 @@ async function error10 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error11 () {
@@ -129,7 +129,7 @@ async function error11 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error12 () {
@@ -144,7 +144,7 @@ async function error12 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error13 () {
@@ -158,7 +158,7 @@ async function error13 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error14 () {
@@ -173,7 +173,7 @@ async function error14 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error15 () {
@@ -188,29 +188,30 @@ async function error15 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 function main () {
-  trycatch(connect)
+  trycatch(connect, errors)
 }
 
 function errors () {
-  trycatch(error1)
-  trycatch(error2)
-  trycatch(error3)
-  trycatch(error4)
-  trycatch(error5)
-  trycatch(error6)
-  trycatch(error7)
-  trycatch(error8)
-  trycatch(error9)
-  trycatch(error10)
-  trycatch(error11)
-  trycatch(error12)
-  trycatch(error13)
-  trycatch(error14)
-  trycatch(error15)
+  const tcerr1 = () => trycatch(error1, tcerr2)
+  const tcerr2 = () => trycatch(error2, tcerr3)
+  const tcerr3 = () => trycatch(error3, tcerr4)
+  const tcerr4 = () => trycatch(error4, tcerr5)
+  const tcerr5 = () => trycatch(error5, tcerr6)
+  const tcerr6 = () => trycatch(error6, tcerr7)
+  const tcerr7 = () => trycatch(error7, tcerr8)
+  const tcerr8 = () => trycatch(error8, tcerr9)
+  const tcerr9 = () => trycatch(error9, tcerr10)
+  const tcerr10 = () => trycatch(error10, tcerr11)
+  const tcerr11 = () => trycatch(error11, tcerr12)
+  const tcerr12 = () => trycatch(error12, tcerr13)
+  const tcerr13 = () => trycatch(error13, tcerr14)
+  const tcerr14 = () => trycatch(error14, tcerr15)
+  const tcerr15 = () => trycatch(error15)
+  if (runErrors) { tcerr1() }
 }
 
 module.exports = { main }

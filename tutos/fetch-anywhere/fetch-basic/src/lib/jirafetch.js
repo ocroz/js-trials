@@ -3,7 +3,7 @@
 async function jiraFetch (auth = {}, method = 'GET', request = 'api/2/myself', input) {
   // auth = {getFetch, jira, credentials, agent}
   if (auth.getFetch === undefined) { throw new Error('jiraFetch: getFetch() is undefined') }
-  if (auth.jira === undefined) { auth.jira = 'https://atlassian-test.hq.k.grp/jira' }
+  if (auth.jira === undefined) { throw new Error('jiraFetch: JIRA URL is undefined') }
 
   // fetch parameters
   const fetch = auth.getFetch()

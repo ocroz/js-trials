@@ -1,17 +1,18 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-function trycatch (cb) {
+function trycatch (...args) {
   console.log('launching async processes')
-  _trycatch(cb)
+  _trycatch(...args)
   console.log('async processes launched')
 }
 
-async function _trycatch (cb) {
+async function _trycatch (fn, cb) {
   try {
-    await cb()
+    await fn()
     console.log('async processes succeeded, nothing more to do, leaving script')
   } catch (err) {
     console.error('async processes failed with error:', err.message)
   }
+  cb && cb()
 }
 
 module.exports = { trycatch }
@@ -80,11 +81,7 @@ console.log({story, altFetchCase, jiraUrl})
 // console.log(credentials)
 
 function getJiraConfig () {
-  return {getFetch, jiraUrl, getAuthHeader, nonVoids}
-}
-
-function getFetch () {
-  return fetch
+  return {getFetch, jiraUrl, getAuthHeader, logError, nonVoids}
 }
 
 function getAuthHeader (url, method) {
@@ -107,6 +104,14 @@ function getAuthHeader (url, method) {
   //     return undefined
   // }
 
+  return undefined
+}
+
+function getFetch () {
+  return fetch
+}
+
+function logError () {
   return undefined
 }
 
@@ -134,35 +139,42 @@ module.exports = { story, getJiraConfig, contactJira, trycatch }
 'use strict'
 
 async function fetchJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
-  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
-  for (let attr of ['jiraUrl', 'getFetch', 'getAuthHeader', 'nonVoids']) {
+  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, logError, agent, nonVoids} // header and agent are undefined in browser
+  for (let attr of ['jiraUrl', 'getFetch', 'getAuthHeader', 'logError', 'nonVoids']) {
     if (!jiraConfig[attr]) { throw new Error(`fetchJira: ${attr} is undefined`) }
   }
+  const { jiraUrl, getFetch, getAuthHeader, logError, agent, nonVoids } = jiraConfig
 
   // fetch parameters
-  const fetch = jiraConfig.getFetch()
-  const url = jiraConfig.jiraUrl + '/rest/' + request
+  const fetch = getFetch()
+  const url = jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
-  const authHeader = jiraConfig.getAuthHeader(url, method)
+  const authHeader = getAuthHeader(url, method)
   const headers = authHeader // undefined in browser by default
     ? { 'Accept': 'application/json', 'Content-Type': 'application/json', [authHeader.name]: authHeader.data }
     : { 'Accept': 'application/json', 'Content-Type': 'application/json' } // +by default { Cookie: <cookie> }
-  const [mode, credentials, agent] = ['cors', 'include', jiraConfig.agent] // to support both browser and node
+  const [mode, credentials] = ['cors', 'include'] // to support both browser and node
   // console.log(url, method, body, headers, mode, credentials, agent)
 
   // fetch promise
   console.log('BEGINNING OF REST CALL')
   return new Promise((resolve, reject) => {
     fetch(url, {method, body, headers, mode, credentials, agent})
+    .catch(err => {
+      logError(method, url, 'internal fetch error')
+      reject(err)
+    })
     .then(resp => {
       const { ok, status, statusText } = resp
+      const response = { ok, status, statusText }
       if (status === 204) { // means statusText === 'No Content'
-        resolve({ ok, status, statusText })
+        resolve(response)
       } else if (ok) {
         resp.json().then(data => { resolve(data) })
       } else {
-        resp.json().then(data => {
-          const err = jiraConfig.nonVoids(data)
+        resp.json().catch(() => response).then(data => {
+          const err = nonVoids(data)
+          logError(method, url, status, statusText)
           reject(new Error(JSON.stringify(err)))
         })
       }
@@ -186,9 +198,10 @@ async function jqueryJira (jiraConfig = {}, method = 'GET', request = 'api/2/mys
   for (let attr of ['jiraUrl', 'nonVoids']) {
     if (!jiraConfig[attr]) { throw new Error(`jqueryJira: ${attr} is undefined`) }
   }
+  const { jiraUrl, nonVoids } = jiraConfig
 
   // jquery parameters
-  const url = jiraConfig.jiraUrl + '/rest/' + request
+  const url = jiraUrl + '/rest/' + request
   const data = input && JSON.stringify(input)
   const [type, crossDomain, contentType, dataType, async, xhrFields] = // use dataType over accept
     [method, true, 'application/json', 'json', true, {withCredentials: true}]
@@ -208,7 +221,7 @@ async function jqueryJira (jiraConfig = {}, method = 'GET', request = 'api/2/mys
       if (result.status === 0) {
         reject(new Error('Internal jquery error'))
       } else {
-        const data = jiraConfig.nonVoids(JSON.parse(result.responseText))
+        const data = nonVoids(JSON.parse(result.responseText))
         reject(new Error(JSON.stringify(data)))
       }
     }
@@ -227,13 +240,14 @@ module.exports = { jqueryJira }
 /* globals webix */
 
 async function webixJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself', input) {
-  // jiraConfig = {jiraUrl, getFetch, getAuthHeader, agent, nonVoids} // header and agent are undefined in browser
+  // jiraConfig = {jiraUrl, nonVoids} // header and agent are undefined in browser
   for (let attr of ['jiraUrl', 'nonVoids']) {
     if (!jiraConfig[attr]) { throw new Error(`webixJira: ${attr} is undefined`) }
   }
+  const { jiraUrl, nonVoids } = jiraConfig
 
   // webix parameters
-  const url = jiraConfig.jiraUrl + '/rest/' + request
+  const url = jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
 
   // webix promise
@@ -250,28 +264,14 @@ async function webixJira (jiraConfig = {}, method = 'GET', request = 'api/2/myse
       resolve({ success: true, status, statusText })
     }
     function error (text, data, ajax) {
-      text && reject(new Error(JSON.stringify(jiraConfig.nonVoids(data.json()))))
+      text && reject(new Error(JSON.stringify(nonVoids(data.json()))))
       reject(new Error('Internal webix error'))
     }
     function complete () {
       console.log('END OF REST CALL')
     }
     webix.attachEvent('onBeforeAjax', onBeforeAjax)
-    switch (method) {
-      case 'POST':
-        webix.ajax().post(url, body, {error, success}).then(complete)
-        break
-      case 'PUT':
-        webix.ajax().put(url, body, {error, success}).then(complete)
-        break
-      case 'DELETE':
-        webix.ajax().del(url, body, {error, success}).then(complete)
-        break
-      case 'GET':
-      default:
-        webix.ajax(url, body, {error, success}).then(complete)
-        break
-    }
+    webix.ajax()[method.toLowerCase()](url, body, {error, success}).then(complete)
   })
 }
 
@@ -287,9 +287,10 @@ async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself
   for (let attr of ['jiraUrl', 'nonVoids']) {
     if (!jiraConfig[attr]) { throw new Error(`xhrJira: ${attr} is undefined`) }
   }
+  const { jiraUrl, nonVoids } = jiraConfig
 
   // xhr parameters
-  const url = jiraConfig.jiraUrl + '/rest/' + request
+  const url = jiraUrl + '/rest/' + request
   const body = input && JSON.stringify(input)
   const xasync = true
 
@@ -304,13 +305,12 @@ async function xhrJira (jiraConfig = {}, method = 'GET', request = 'api/2/myself
     xhr.onload = function () {
       const { status, statusText } = xhr
       const success = (status >= 200 && status < 300)
-      const data = xhr.response && JSON.parse(xhr.response)
-      if (xhr.status === 204) { // means statusText === 'No Content'
-        resolve({ success, status, statusText })
-      } else if (success) {
+      const body = xhr.response && JSON.parse(xhr.response)
+      const data = (xhr.status === 204) ? { success, status, statusText } : body // 204 means statusText === 'No Content'
+      if (success) {
         resolve(data)
       } else {
-        reject(new Error(JSON.stringify(jiraConfig.nonVoids(data))))
+        reject(new Error(JSON.stringify(nonVoids(data))))
       }
     }
     xhr.onerror = function () {
@@ -358,6 +358,7 @@ const { getJiraConfig, contactJira, trycatch } = require('../env/index')
 
 const jiraConfig = getJiraConfig()
 let priorities, myself
+let runErrors = false
 
 async function connect () {
   priorities = await contactJira(jiraConfig, 'GET', 'api/2/priority').then((json) => { return json.map(o => o.name) })
@@ -367,13 +368,12 @@ async function connect () {
   myself = name
   console.log('I am', myself)
 
-  errors()
+  runErrors = true
 }
 
 async function error1 () {
   let myJiraConfig = getJiraConfig()
-  myJiraConfig.jira = 'http://atlassian-fake.com/jira' // bad url
-  myJiraConfig.agent = undefined
+  myJiraConfig.jiraUrl = 'https://atlassian-fake.com/jira' // bad url
 
   const { name: myself } = await contactJira(myJiraConfig)
   console.log('I am', myself)
@@ -381,7 +381,7 @@ async function error1 () {
 
 async function error2 () {
   let myJiraConfig = getJiraConfig()
-  myJiraConfig.jira = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
+  myJiraConfig.jiraUrl = 'https://atlassian-test.hq.k.grp/jira' // this url must be valid
   myJiraConfig.agent = undefined // missing agent for https (or extra agent for http)
 
   const { name: myself } = await contactJira(myJiraConfig)
@@ -398,17 +398,17 @@ async function error3 () {
 
 async function error4 () {
   const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/_project_') // bad api
-  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
+  console.log('queried project:', projectkey, jiraConfig.jiraUrl + '/projects/' + projectkey)
 }
 
 async function error5 () {
   const { key: projectkey } = await contactJira(jiraConfig, 'GET', 'api/2/project/_WEIRD_') // bad project key
-  console.log('queried project:', projectkey, jiraConfig.jira + '/projects/' + projectkey)
+  console.log('queried project:', projectkey, jiraConfig.jiraUrl + '/projects/' + projectkey)
 }
 
 async function error6 () {
   const { key: issuekey } = await contactJira(jiraConfig, 'GET', 'api/2/issue/_WEIRD-0_') // bad issue key
-  console.log('queried issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('queried issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error7 () {
@@ -422,7 +422,7 @@ async function error7 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error8 () {
@@ -436,7 +436,7 @@ async function error8 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error9 () {
@@ -450,7 +450,7 @@ async function error9 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error10 () {
@@ -464,7 +464,7 @@ async function error10 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error11 () {
@@ -478,7 +478,7 @@ async function error11 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error12 () {
@@ -493,7 +493,7 @@ async function error12 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error13 () {
@@ -507,7 +507,7 @@ async function error13 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error14 () {
@@ -522,7 +522,7 @@ async function error14 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 async function error15 () {
@@ -537,29 +537,30 @@ async function error15 () {
       'description': ''
     }
   })
-  console.log('submitted issue:', issuekey, jiraConfig.jira + '/browse/' + issuekey)
+  console.log('submitted issue:', issuekey, jiraConfig.jiraUrl + '/browse/' + issuekey)
 }
 
 function main () {
-  trycatch(connect)
+  trycatch(connect, errors)
 }
 
 function errors () {
-  trycatch(error1)
-  trycatch(error2)
-  trycatch(error3)
-  trycatch(error4)
-  trycatch(error5)
-  trycatch(error6)
-  trycatch(error7)
-  trycatch(error8)
-  trycatch(error9)
-  trycatch(error10)
-  trycatch(error11)
-  trycatch(error12)
-  trycatch(error13)
-  trycatch(error14)
-  trycatch(error15)
+  const tcerr1 = () => trycatch(error1, tcerr2)
+  const tcerr2 = () => trycatch(error2, tcerr3)
+  const tcerr3 = () => trycatch(error3, tcerr4)
+  const tcerr4 = () => trycatch(error4, tcerr5)
+  const tcerr5 = () => trycatch(error5, tcerr6)
+  const tcerr6 = () => trycatch(error6, tcerr7)
+  const tcerr7 = () => trycatch(error7, tcerr8)
+  const tcerr8 = () => trycatch(error8, tcerr9)
+  const tcerr9 = () => trycatch(error9, tcerr10)
+  const tcerr10 = () => trycatch(error10, tcerr11)
+  const tcerr11 = () => trycatch(error11, tcerr12)
+  const tcerr12 = () => trycatch(error12, tcerr13)
+  const tcerr13 = () => trycatch(error13, tcerr14)
+  const tcerr14 = () => trycatch(error14, tcerr15)
+  const tcerr15 = () => trycatch(error15)
+  if (runErrors) { tcerr1() }
 }
 
 module.exports = { main }

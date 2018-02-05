@@ -1,16 +1,17 @@
-function trycatch (cb) {
+function trycatch (...args) {
   console.log('launching async processes')
-  _trycatch(cb)
+  _trycatch(...args)
   console.log('async processes launched')
 }
 
-async function _trycatch (cb) {
+async function _trycatch (fn, cb) {
   try {
-    await cb()
+    await fn()
     console.log('async processes succeeded, nothing more to do, leaving script')
   } catch (err) {
     console.error('async processes failed with error:', err.message)
   }
+  cb && cb()
 }
 
 module.exports = { trycatch }

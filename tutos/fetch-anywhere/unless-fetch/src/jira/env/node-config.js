@@ -14,16 +14,22 @@ nconf.argv().env().file({file: cfgFile})
 
 // const story = 0 // 0=errors.js, 1=issue.js
 // const altFetchCase = 0 // 0=fetch, 1=http, 2=https, 3=request
-const [story, altFetchCase, jiraUrl] =
-  [Number(nconf.get('story')), Number(nconf.get('altFetchCase')), nconf.get('jiraUrl')]
+const [story, altFetchCase] = [Number(nconf.get('story')), Number(nconf.get('altFetchCase'))]
 
+// const jiraUrl
 // const authMethod = 'Cookie', 'Basic', 'OAuth1'
-const [authMethod, consumerKey, oauthToken, oauthTokenSecret, cookie] =
-  [nconf.get('authMethod'), nconf.get('consumerKey'), nconf.get('oauthToken'), nconf.get('oauthTokenSecret'), nconf.get('cookie')]
+const [jiraUrl, authMethod] = [nconf.get('jiraUrl'), nconf.get('authMethod')]
 
-// Basic credentials in case no other auth method is provided
+// 'Cookie' data
+const cookie = nconf.get('cookie')
+
+// 'Basic' data - default credentials in case no other auth method is provided
 const [username, password] = [nconf.get('USERNAME'), nconf.get('pw')]
 const basicCredentials = (username && password) && 'Basic ' + base64Encode(username + ':' + password)
+
+// 'OAuth1' data
+const consumerKey = nconf.get('consumerKey')
+const [oauthToken, oauthTokenSecret] = [nconf.get('oauthToken'), nconf.get('oauthTokenSecret')]
 
 // Load consumer.pem for OAuth1 requests
 const pemFile = path.resolve(__dirname, '../cfg/consumer.pem')
