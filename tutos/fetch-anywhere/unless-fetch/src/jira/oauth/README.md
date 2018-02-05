@@ -1,6 +1,6 @@
 # OAuth 1.0 for JIRA
 
-See [node-oauth](../../../../node-oauth/README.md).
+First get a oauth token / secret pair: See [token/](token/README.md).
 
 Then update the default configuration in [../cfg/jira-config.json](../cfg/).
 ```javascript

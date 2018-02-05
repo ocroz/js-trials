@@ -98,7 +98,7 @@ Then start the node server for the oauth dance.
 
 ```bash
 # We launch the node server for the oauth dance
-NODE_TLS_REJECT_UNAUTHORIZED=0 node src/createOAuth1Token.js
+node src/createOAuth1Token.js
 ```
 
 First verify the node server at http://localhost:1337.

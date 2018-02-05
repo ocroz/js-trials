@@ -8,6 +8,7 @@ const session = require('express-session')
 const OAuth = require('oauth').OAuth
 
 function createOAuth1Token (port, jiraUrl, consumerKey, consumerSecret) {
+  // console.log(port, jiraUrl, consumerKey, consumerSecret.toString('utf8'))
   const app = express()
   const localUrl = 'http://localhost:' + port
 
@@ -28,7 +29,7 @@ function createOAuth1Token (port, jiraUrl, consumerKey, consumerSecret) {
     oa.getOAuthRequestToken(function (error, oauthToken, oauthTokenSecret) {
       if (error) {
         console.log('Error:', error)
-        res.send('STEP 1: Error getting OAuth access token')
+        res.send('STEP 1: Error requesting OAuth access token')
       } else {
         req.session.oa = oa
         req.session.oauth_token = oauthToken
@@ -39,6 +40,10 @@ function createOAuth1Token (port, jiraUrl, consumerKey, consumerSecret) {
   })
 
   app.get('/jira/callback', function (req, res) {
+    if (req.query.oauth_verifier === 'denied') {
+      console.log('Error:', {'oauth_verifier': 'denied'})
+      return res.send('STEP 2: Error authorizing OAuth access token')
+    }
     const oa = new OAuth(
       req.session.oa._requestUrl,
       req.session.oa._accessUrl,
@@ -56,7 +61,7 @@ function createOAuth1Token (port, jiraUrl, consumerKey, consumerSecret) {
       function (error, oauthAccessToken, oauthAccessTokenSecret, results2) {
         if (error) {
           console.log('Error:', error)
-          res.send('STEP 2: Error verifying OAuth access token')
+          res.send('STEP 3: Error accessing OAuth access token')
         } else {
           // store the access token in the session
           req.session.oauth_access_token = oauthAccessToken

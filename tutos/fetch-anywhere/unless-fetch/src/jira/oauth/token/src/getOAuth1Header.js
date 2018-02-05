@@ -1,13 +1,9 @@
-// NODE_TLS_REJECT_UNAUTHORIZED=0 node createOAuth1Token.js
-
 'use strict'
 
 const fs = require('fs')
 const path = require('path')
 const nconf = require('nconf')
-const { createOAuth1Token } = require('./lib/oauth1-dance.js')
-
-const port = process.env.PORT || 1337
+const { getOAuth1Header } = require('../../oauth1-headers')
 
 // Setup nconf to use (in-order):
 //   1. Command-line arguments
@@ -16,11 +12,17 @@ const port = process.env.PORT || 1337
 const cfgFile = path.resolve(__dirname, '../cfg/jira-config.json')
 nconf.argv().env().file({file: cfgFile})
 
-const jiraUrl = nconf.get('jiraUrl')
+const [jiraUrl, request] = [nconf.get('jiraUrl'), nconf.get('request')]
+const url = jiraUrl + '/rest/' + request
+
+const method = nconf.get('method')
 
 const consumerKey = nconf.get('consumerKey')
 
 const pemFile = path.resolve(__dirname, '../cfg/consumer.pem')
 const privateKey = fs.existsSync(pemFile) ? fs.readFileSync(pemFile) : undefined
 
-createOAuth1Token(port, jiraUrl, consumerKey, privateKey)
+const [oauthToken, oauthTokenSecret] = [nconf.get('oauthToken'), nconf.get('oauthTokenSecret')]
+
+const oauthHeader = getOAuth1Header(url, method, consumerKey, privateKey, oauthToken, oauthTokenSecret)
+console.log('Authorization:' + oauthHeader)

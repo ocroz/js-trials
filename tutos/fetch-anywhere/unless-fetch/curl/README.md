@@ -49,7 +49,7 @@ Simply pass the extra parameter `--ntlm` to the curl command along with the cred
 See the ntlm **handshake** thanks to the option `-v`.
 
 ```bash
-curl "$url" -u "$USERNAME:$pw" --ntlm -v
+curl "$url" -u "$USERNAME:$pw" --ntlm -X GET -v
 ```
 
 ## `oauth` auth
@@ -69,7 +69,7 @@ Now the user is able to run the request with all this info.
 
 ### With oauth 1.0
 
-See all the details in [../node-oauth/](../node-oauth/README.md).
+See all the details in [../src/jira/oauth/token/](../src/jira/oauth/token/README.md).
 
 The curl command will be:
 > curl "$url" -H "Authorization: OAuth oauth_consumer_key=\\"...\\", oauth_nonce=\\"...\\", oauth_signature_method=\\"...\\", oauth_timestamp=\\"...\\", oauth_token=\\"...\\", oauth_version=\\"1.0\\", oauth_signature=\\"...\\"" -v

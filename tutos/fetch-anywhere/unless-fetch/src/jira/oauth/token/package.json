@@ -1,7 +1,7 @@
 {
-  "name": "node-oauth",
+  "name": "oauth1-token",
   "version": "1.0.0",
-  "description": "oauth1 headers",
+  "description": "oauth1 token",
   "license": "ISC",
   "repository": {
     "type": "git"
