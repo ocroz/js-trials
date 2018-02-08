@@ -6,17 +6,19 @@ const fetch = require('node-fetch')
 const https = require('https')
 const { kgcerts } = require('./kgcerts')
 
+const port = process.env.PORT || 4000
+
 function getEnvAuth () {
   console.log('Running under node.js')
   const [jira, username, password] = [
-    process.argv[2] || 'https://atlassian-test.hq.k.grp/jira',
+    process.argv[2] || `http://localhost:${port}`,
     process.argv[3] || process.env.USERNAME,
     process.argv[4] || process.env.pw
   ]
   const credentials = (username !== undefined && password !== undefined)
     ? 'Basic ' + base64Encode(username + ':' + password)
     : undefined
-  const agent = getAgent(kgcerts)
+  const agent = getAgent(jira, kgcerts)
   return {getFetch, jira, credentials, agent}
 }
 
@@ -28,10 +30,12 @@ function base64Encode (string) {
   return Buffer.from(string, 'binary').toString('base64')
 }
 
-function getAgent (ca) {
-  return ca !== undefined
+function getAgent (url, ca) {
+  return !url.match(/^https:/)
+    ? undefined
+    : ca !== undefined
     ? new https.Agent({ ca, rejectUnauthorized: true })
     : new https.Agent({ rejectUnauthorized: false })
 }
 
-module.exports = { getEnvAuth }
+module.exports = { getEnvAuth, port }

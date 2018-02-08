@@ -1,7 +1,7 @@
 {
-  "name": "app-express-jade",
+  "name": "app-express-pug",
   "version": "1.0.0",
-  "description": "App Express Jade",
+  "description": "App Express Pug",
   "license": "ISC",
   "repository": {
     "type": "git"
@@ -14,9 +14,9 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
-    "jade": "^1.11.0",
     "method-override": "^2.3.9",
-    "node-fetch": "^1.7.2"
+    "node-fetch": "^1.7.2",
+    "pug": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "colors": "^1.1.2",

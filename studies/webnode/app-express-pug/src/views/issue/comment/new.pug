@@ -9,7 +9,7 @@ block content
   h1
     = pageTitle
 
-  form(method="post" action="/issue/#{issue.id}")
+  form(method="post" action=`/issue/${issue.id}`)
     .form-group
       label(for='body') Your comment<br>
         textarea.form-control(id='body' name="body" rows="3" required placeholder="Your comment here")
