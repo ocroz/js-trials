@@ -2,6 +2,7 @@
 
 ## Implementations
 
+- [CIC](CIC/): Original prototypes
 - [JCIC](JCIC/): Javascript ES6 + bootstrap + bootstrap-select (Only Chrome & Firefox)
 - [MSJCIC](MSJCIC/): Javascript ES5 + bootstrap + bootstrap-select (plus Edge & Internet Explorer 11)
 - [RBJCIC](RBJCIC/): React + bootstrap + bootstrap-select

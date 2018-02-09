@@ -15,6 +15,7 @@ function CIC (collector, project, mapfields) { // eslint-disable-line no-unused-
   this.collector = this.label = collector
   this.modal = collector + '-modal'
   this.project = project
+  this.formValues = {}
   this.jira = getJira()
   if (!this.jira) {
     throw new Error('CIC constructor needs a JIRA server URL')
@@ -37,8 +38,8 @@ function CIC (collector, project, mapfields) { // eslint-disable-line no-unused-
   this.submit = function () {
     submit(this)
   }
-  this.value = function (id, value) {
-    return formvalue(this, id, value)
+  this.value = function (id) {
+    return this.formValues[id]
   }
 }
 
@@ -61,32 +62,31 @@ function connect (that) {
 
   // Get user
   function getUser () {
-    queryJira(setUser, that.jira)
+    xhrJira(setUser, that.jira)
 
     function setUser (response) {
-      if (response.status === 'success') {
+      if (response.success) {
         that.user = response.data.key
         getPriorities() // next
       } else {
-        console.error('CIC failed to contact JIRA ' + that.jira, response)
-        showModal(
-          'Please first login to JIRA server',
-          '<p>Go and login at:<br /><a href="' + that.jira + '">' + that.jira + '</a></p><p>Then come back here.</p>'
-        )
+        console.error('CIC failed to contact JIRA ' + that.jira, response.data)
+        var title = 'Please first login to JIRA server'
+        var message = '<p>Go and login at:<br /><a href="' + that.jira + '">' + that.jira + '</a></p><p>Then come back here.</p>'
+        showMessage(that, title, message)
       }
     }
   }
 
   // Get priorities
   function getPriorities () {
-    queryJira(setPriorities, that.jira, 'GET', 'api/2/priority')
+    xhrJira(setPriorities, that.jira, 'GET', 'api/2/priority')
 
     function setPriorities (response) {
-      if (response.status === 'success') {
+      if (response.success) {
         that.priorities = response.data
         getProjectData() // next
       } else {
-        console.error('Internal Ajax Error:', response)
+        console.error('Internal HTTP Error:', response.data)
         throw new Error('CIC failed to load priorities')
       }
     }
@@ -94,144 +94,78 @@ function connect (that) {
 
   // Get issuetypes, components, and versions
   function getProjectData () {
-    queryJira(setProjectData, that.jira, 'GET', 'api/2/project/' + that.project)
+    xhrJira(setProjectData, that.jira, 'GET', 'api/2/project/' + that.project)
 
     function setProjectData (response) {
-      if (response.status === 'success') {
+      if (response.success) {
         that.issuetypes = response.data.issueTypes
         that.components = response.data.components
         that.versions = response.data.versions
-        show() // next
+        showForm(that) // next
       } else {
-        console.error('Internal Ajax Error:', response)
+        console.error('Internal HTTP Error:', response.data)
         throw new Error('CIC failed to load issuetypes, components, and versions')
       }
     }
   }
-
-  // Show modal
-  function show () {
-    createModal(that)
-    addJiraOptions(that)
-    $('#' + that.modal).modal('show')
-    $('.selectpicker').selectpicker()
-  }
 }
 
 function submit (that) {
-  if (mandatoryFields(that)) {
-    var issue = that.mapfields()
-    console.log(issue)
-    sendIssue(hide, that, issue)
-  }
+  // We go here only when all required fields are valued within the html form
+  console.log(that)
+  var issue = that.mapfields()
+  console.log(issue)
 
-  function hide () {
-    $('#' + that.modal).modal('hide')
-  }
-}
-
-function formvalue (that, id, value) {
-  var element = document.querySelectorAll('#' + that.modal + ' ' + '#' + id)[0]
-  if (value !== undefined) {
-    element.value = value
-  }
-  if (element.localName !== 'div') {
-    // Single value
-    if (!element.multiple) {
-      return element.value !== '' ? element.value : undefined
-    }
-    // Multiple values
-    if (element.parentNode.childNodes[0].title !== element.title) {
-      return element.parentNode.childNodes[0].title.split(', ')
-    }
-    return undefined // No  value selected
-  } else {
-    // Checkbox and Radio buttons
-    var inputs = document.querySelectorAll('#' + that.modal + ' ' + '#' + id + ' ' + 'input')
-    var type = 'checkbox'
-    var values = []
-    for (var i = 0; i < inputs.length; i++) {
-      var input = inputs[i]
-      if (input.checked) {
-        type = input.type
-        values.push(input.value)
-      }
-    }
-    return type === 'checkbox' ? values : values[0]
-  }
-}
-
-// Check mandatory fields
-function mandatoryFields (that) {
-  var needValue = []
-  var tags = document.querySelectorAll('#' + that.modal + ' ' + '[id][name]')
-  for (var i = 0; i < tags.length; i++) {
-    var tag = tags[i]
-    if (tag.required) {
-      if (that.value(tag.getAttribute('id')) === undefined) {
-        needValue.push(tag.getAttribute('id'))
-      }
-    }
-  }
-  if (needValue.length > 0) {
-    if (needValue.length === 1) {
-      throw new Error('The field "' + needValue[0] + '" is required !')
-    } else {
-      throw new Error('The fields "' + needValue.join(', ') + '" are required !')
-    }
-  }
-  return needValue.length === 0
-}
-
-// Send issue
-function sendIssue (cb, that, issue) {
-  if (!cb) { cb = null }
-
+  // Send issue
   issue.fields.project = {'key': that.project}
   issue.fields.labels === undefined
     ? issue.fields.labels = [that.label]
     : issue.fields.labels[issue.fields.labels.length] = that.label
 
   console.log('SUBMITTING ISSUE...')
-  queryJira(recieveIssue, that.jira, 'POST', 'api/2/issue', issue)
+  xhrJira(recieveIssue, that.jira, 'POST', 'api/2/issue', issue)
 
   function recieveIssue (response) {
-    if (response.status === 'success') {
+    if (response.success) {
       var issueurl = that.jira + '/browse/' + response.data.key
+      var title = 'New issue submitted'
+      var message = '<a href="' + issueurl + '">' + response.data.key + '</a>'
       console.log('ISSUE SUBMITTED:', issueurl)
-      showModal(
-        'New issue submitted',
-        '<a href="' + issueurl + '">' + response.data.key + '</a>'
-      )
-      cb && cb() // next
+      $('#' + that.modal).modal('hide')
+      showMessage(that, title, message)
     } else {
-      console.error('Fail to submit issue:', response)
-      alert(JSON.stringify(response.result))
+      console.error('Fail to submit issue:', response.data)
+      alert(JSON.stringify(response.data))
     }
   }
 }
 
 // Generic JIRA REST function
-function queryJira (cb, jiraurl, method, request, input) {
+function xhrJira (cb, jiraurl, method, request, input) {
   if (!cb) { cb = null }
-  if (!jiraurl) { jiraurl = 'https://atlassian-test.hq.k.grp/jira' }
+  if (!jiraurl) { throw new Error('jiraurl is undefined') }
   if (!method) { method = 'GET' }
   if (!request) { request = 'api/2/myself' }
-  if (input) { input = JSON.stringify(input) }
+
+  // xhr parameters
   var url = jiraurl + '/rest/' + request
+  var body = input && JSON.stringify(input)
   var xasync = true
+
+  // xhr request
   console.log('BEGINNING OF REST CALL')
   var xhr = new XMLHttpRequest()
   xhr.open(method, url, xasync)
+  xhr.setRequestHeader('Accept', 'application/json')
   xhr.setRequestHeader('Content-Type', 'application/json')
   xhr.withCredentials = true
   xhr.onload = function () {
-    // console.log('onload', xhr);
+    var success = (xhr.status >= 200 && xhr.status < 300)
     var data = null
     try {
       data = JSON.parse(xhr.response)
     } catch (err) {
-      data = xhr.response
+      data = { success: success, status: xhr.status, statusText: xhr.statusText }
     }
     if (typeof (data) === 'object') {
       Object.keys(data).forEach(function (key) {
@@ -240,11 +174,7 @@ function queryJira (cb, jiraurl, method, request, input) {
         }
       })
     }
-    var response = {
-      status: (xhr.statusText === 'OK' || xhr.statusText === 'Created') ? 'success' : 'error', // Keep consistent status with the $.ajax method
-      data: data,
-      result: {status: xhr.status, statusText: xhr.statusText, data: data}
-    }
+    var response = { success: success, data: data }
     cb && cb(response)
   }
   xhr.onerror = function () {
@@ -253,133 +183,202 @@ function queryJira (cb, jiraurl, method, request, input) {
   xhr.onloadend = function () {
     console.log('END OF REST CALL')
   }
-  xhr.send(input)
+  xhr.send(body)
 }
 
-function createModal (that) {
-  // Modal Structure
-  var modal = createModalStructure(that.modal)
+function showMessage (that, title, message) {
+  // modalTitle, modalEvents
+  var modalTitle = title
+  var modalEvents = null
 
-  // Modal Header
-  addElement(modal.header, 'h4', {class: 'modal-title'}, document.getElementById(that.collector).title)
+  // modalBody
+  var fragment = document.createDocumentFragment()
+  var modalBody = addElement(fragment, 'div')
+  modalBody.innerHTML += message
 
-  // Modal Body
-  var childNodes = document.getElementById(that.collector).childNodes
-  for (var i = 1; i < childNodes.length; i += 2) {
-    var childNode = childNodes[i]
-    const modalBodyContent = document.createDocumentFragment()
-    const modalBodyRow = addElement(modalBodyContent, 'div', {class: 'row'})
-    const modalBodyColumnLeft = addElement(modalBodyRow, 'div', {class: 'col-lg-3'})
-    const modalBodyColumnRight = addElement(modalBodyRow, 'div', {class: 'col-lg-6'})
-    modal.body.appendChild(modalBodyContent)
-    const label = childNode.getAttribute('name') || childNode.getAttribute('title')
-    const required = childNode.required ? '*' : ''
-    modalBodyColumnLeft.innerHTML += '<p align="right">' + label + '<span style="color:red">' + required + '<span></p>'
-    const p = addElement(modalBodyColumnRight, 'p', {})
-    const newNode = document.createElement(childNode.localName)
-    p.appendChild(newNode)
-    newNode.outerHTML = childNode.outerHTML
-    if (childNode.localName !== 'div') {
-      p.children[0].className = childNode.className + ' form-control'
-    }
-    if (childNode.localName === 'textarea' && childNode.placeholder) {
-      p.children[0].value = ''
-    } // Fix a bug in Internet Explorer
-  }
+  // Show Modal
+  showModal(that, modalTitle, modalBody, modalEvents)
+}
 
-  // Modal Footer
-  addElement(modal.footer, 'button', {class: 'btn btn-link', 'data-dismiss': 'modal'}, 'Cancel')
-  addElement(modal.footer, 'button', {class: 'btn btn-primary'}, 'Submit')
+function showForm (that) {
+  // Modal Header, Body, Footer
+  var modalTitle = document.getElementById(that.collector).title || that.collector + ' Submit Form'
+  var modalBody = addFormFields()
+  var modalEvents = { onSubmit: true }
+
+  // Show Modal
+  showModal(that, modalTitle, modalBody, modalEvents)
 
   // Modal Form Submit Handler
-  $('#' + that.modal).submit(function () {
+  $('#' + that.modal).submit(function (e) {
+    e.preventDefault()
+    getFormValues()
     that.submit()
     return false
   })
-}
 
-// Add JIRA options to the select lists
-function addJiraOptions (that) {
-  var selects = document.getElementById(that.modal).getElementsByTagName('select')
-  var i, j, item, attributes
-  for (i = 0; i < selects.length; i++) {
-    var select = selects[i]
-    select.className = select.className + ' selectpicker'
-    var selectType = select.className.match(/jira:[^ ]*/)
-    if (selectType) {
-      var list = selectType[0].split(':')[1]
-      if (select.options.length === 0) {
-        if (!select.title) {
-          select.setAttribute('title', select.getAttribute('placeholder'))
-        }
-        if (list === 'versions') {
-          var groupUnreleased = addElement(select, 'optgroup', {label: 'Unreleased'})
-          for (j = 0; j < that[list].length; j++) {
-            item = that[list][j]
-            if (!item.archived && !item.released) { // unarchived and unreleased
-              attributes = {'data-content': item.name}
-              addElement(groupUnreleased, 'option', attributes, item.name)
-            }
+  // Apply .selectpicker() to the select lists
+  $('.selectpicker').selectpicker()
+
+  // Add Form Fields form the Collector
+  function addFormFields () {
+    var modalBody = document.createElement('div')
+    var childNodes = document.getElementById(that.collector).childNodes
+    for (var i = 1; i < childNodes.length; i += 2) {
+      var childNode = childNodes[i]
+      var modalBodyContent = document.createDocumentFragment()
+      var modalBodyRow = addElement(modalBodyContent, 'div', {class: 'row'})
+      var modalBodyColumnLeft = addElement(modalBodyRow, 'div', {class: 'col-lg-3'})
+      var modalBodyColumnRight = addElement(modalBodyRow, 'div', {class: 'col-lg-6'})
+      modalBody.appendChild(modalBodyContent)
+      var label = childNode.getAttribute('name') || childNode.getAttribute('title')
+      var required = childNode.required ? '*' : ''
+      modalBodyColumnLeft.innerHTML += '<p align="right">' + label + '<span style="color:red">' + required + '<span></p>'
+      var p = addElement(modalBodyColumnRight, 'p', {})
+      var newNode = document.createElement(childNode.localName)
+      p.appendChild(newNode)
+      newNode.outerHTML = childNode.outerHTML
+      if (childNode.localName !== 'div') {
+        p.children[0].className = childNode.className + ' form-control'
+      }
+      if (childNode.localName === 'textarea' && childNode.placeholder) {
+        p.children[0].value = ''
+      } // Fix a bug in Internet Explorer
+    }
+    addJiraOptions(modalBody)
+    return modalBody
+  }
+
+  // Add JIRA options to the select lists
+  function addJiraOptions (form) {
+    var selects = form.getElementsByTagName('select')
+    var i, j, item, attributes
+    for (i = 0; i < selects.length; i++) {
+      var select = selects[i]
+      select.className = select.className + ' selectpicker'
+      var selectType = select.className.match(/jira:[^ ]*/)
+      if (selectType) {
+        var list = selectType[0].split(':')[1]
+        if (select.options.length === 0) {
+          if (!select.title) {
+            select.setAttribute('title', select.getAttribute('placeholder'))
           }
-          var groupReleased = addElement(select, 'optgroup', {label: 'Released'})
-          for (j = 0; j < that[list].length; j++) {
-            item = that[list][j]
-            if (!item.archived && item.released) { // unarchived and released
-              attributes = {'data-content': item.name}
-              addElement(groupReleased, 'option', attributes, item.name)
-            }
-          }
-        } else {
-          for (j = 0; j < that[list].length; j++) {
-            item = that[list][j]
-            attributes = {'data-content': item.name}
-            if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
-              if ((list === 'issuetypes') || (list === 'priorities')) {
-                attributes = {'data-content': '<img src="' + item.iconUrl + '" height="24px" width="24px" />&nbsp;&nbsp;' + item.name}
+          if (list === 'versions') {
+            var groupUnreleased = addElement(select, 'optgroup', {label: 'Unreleased'})
+            for (j = 0; j < that[list].length; j++) {
+              item = that[list][j]
+              if (!item.archived && !item.released) { // unarchived and unreleased
+                attributes = {'data-content': item.name}
+                addElement(groupUnreleased, 'option', attributes, item.name)
               }
-              addElement(select, 'option', attributes, item.name)
+            }
+            var groupReleased = addElement(select, 'optgroup', {label: 'Released'})
+            for (j = 0; j < that[list].length; j++) {
+              item = that[list][j]
+              if (!item.archived && item.released) { // unarchived and released
+                attributes = {'data-content': item.name}
+                addElement(groupReleased, 'option', attributes, item.name)
+              }
+            }
+          } else {
+            for (j = 0; j < that[list].length; j++) {
+              item = that[list][j]
+              attributes = {'data-content': item.name}
+              if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
+                if ((list === 'issuetypes') || (list === 'priorities')) {
+                  attributes = {'data-content': '<img src="' + item.iconUrl + '" height="24px" width="24px" />&nbsp;&nbsp;' + item.name}
+                }
+                addElement(select, 'option', attributes, item.name)
+              }
             }
           }
         }
       }
     }
   }
+
+  // Get form values
+  function getFormValues () {
+    var elements = $('#' + that.modal + ' [id]')
+    for (var i = 0; i < elements.length; i++) {
+      var element = elements[i]
+      if (element.localName !== 'div') {
+        if (!element.multiple) {
+          // Single value
+          that.formValues[element.id] = element.value !== '' ? element.value : undefined
+        } else if (element.parentNode.childNodes[0].title !== element.title) {
+          // Multiple values
+          that.formValues[element.id] = element.parentNode.childNodes[0].title.split(', ')
+        } else {
+          // No  value selected
+          that.formValues[element.id] = undefined
+        }
+      } else {
+        // Checkbox and Radio buttons
+        var inputs = document.querySelectorAll('#' + that.modal + ' ' + '#' + element.id + ' ' + 'input')
+        var type = 'checkbox'
+        var values = []
+        for (var j = 0; j < inputs.length; j++) {
+          var input = inputs[j]
+          if (input.checked) {
+            type = input.type
+            values.push(input.value)
+          }
+        }
+        that.formValues[element.id] = type === 'checkbox' ? values : values[0]
+      }
+    }
+  }
 }
 
-function showModal (title, message) {
-  var modalId = 'info-modal'
-  var modal = createModalStructure(modalId)
-  addElement(modal.header, 'h4', {class: 'modal-title'}, title)
-  modal.body.innerHTML += message
-  addElement(modal.footer, 'button', {class: 'btn btn-default', 'data-dismiss': 'modal'}, 'Close')
-  $('#' + modalId).modal('show')
-}
+function showModal (that, modalTitle, modalBody, modalEvents) {
+  var modal = createModalStructure(that.modal)
 
-function createModalStructure (modalId) {
-  // Remove the previous modal if any
-  var modalNode = document.getElementById(modalId)
-  if (modalNode) {
-    modalNode.outerHTML = ''
+  // Modal Header
+  addElement(modal.header, 'h4', {class: 'modal-title'}, modalTitle)
+
+  // Modal Body
+  modal.body.appendChild(modalBody)
+
+  // Modal Footer
+  if (!(modalEvents && modalEvents.onSubmit)) {
+    addElement(modal.footer, 'button', {class: 'btn btn-default', 'data-dismiss': 'modal'}, 'Close')
+  } else {
+    addElement(modal.footer, 'button', {class: 'btn btn-link', 'data-dismiss': 'modal'}, 'Cancel')
+    addElement(modal.footer, 'button', {class: 'btn btn-primary'}, 'Submit')
   }
 
-  // Create the modal structure
-  var fragment = document.createDocumentFragment()
-  // const container = addElement(fragment, 'div', { class: 'container' })
-  var modal = addElement(fragment, 'div', {class: 'modal fade', id: modalId, role: 'dialog', 'data-backdrop': 'static', 'data-keyboard': 'false'})
-  var modalDialog = addElement(modal, 'div', {class: 'modal-dialog'})
-  var modalContent = addElement(modalDialog, 'div', {class: 'modal-content'})
-  var modalForm = addElement(modalContent, 'form')
-  // const modalFormGroup = addElement(modalForm, 'div', { class: 'form-group' });
-  var modalHeader = addElement(modalForm, 'div', {class: 'modal-header'})
-  addElement(modalHeader, 'button', {class: 'close', 'data-dismiss': 'modal'}, 'x')
-  var modalBody = addElement(modalForm, 'div', {class: 'modal-body'})
-  var modalFooter = addElement(modalForm, 'div', {class: 'modal-footer'})
-  document.body.appendChild(fragment)
+  // Show Modal
+  document.body.appendChild(modal.fragment)
+  $('#' + that.modal).modal('show')
 
-  // Modal nodes under which to add other elements
-  return {header: modalHeader, body: modalBody, footer: modalFooter}
+  // Modal Structure
+  function createModalStructure (modalId) {
+    // Remove the previous modal if any
+    var modalNode = document.getElementById(modalId)
+    if (modalNode) {
+      modalNode.outerHTML = ''
+    }
+
+    // Create the modal structure
+    var modalFragment = document.createDocumentFragment()
+    // const container = addElement(modalFragment, 'div', { class: 'container' })
+    var modal = addElement(modalFragment, 'div', {class: 'modal fade', id: modalId, role: 'dialog', 'data-backdrop': 'static', 'data-keyboard': 'false'})
+    var modalDialog = addElement(modal, 'div', {class: 'modal-dialog'})
+    var modalContent = addElement(modalDialog, 'div', {class: 'modal-content'})
+    var modalForm = addElement(modalContent, 'form', {action: 'javascript:void(0)'})
+    // const modalFormGroup = addElement(modalForm, 'div', { class: 'form-group' });
+    var modalHeader = addElement(modalForm, 'div', {class: 'modal-header'})
+    addElement(modalHeader, 'button', {class: 'close', 'data-dismiss': 'modal'}, 'x')
+    var modalBody = addElement(modalForm, 'div', {class: 'modal-body'})
+    var modalFooter = addElement(modalForm, 'div', {class: 'modal-footer'})
+
+    // Modal nodes under which to add other elements
+    return {fragment: modalFragment, form: modalForm, header: modalHeader, body: modalBody, footer: modalFooter}
+  }
 }
 
+// Add Element
 function addElement (fragment, element, attributes, text) {
   var newNode = document.createElement(element)
   for (var attribute in attributes) {

@@ -26,39 +26,39 @@
 </div>
 
 <div id="TaskSPL" title="TaskSPL Submit Form" style="display: none;">
-   <input id="improvement" name="Improvement" placeholder="What needs to be improved?" type="text"/>
-   <input id="addedvalue" name="Added Value" placeholder="What would be the added value?" type="text" required/>
-   <textarea id="description" name="Description" placeholder="Any details about the desired modification?" rows="3" required></textarea>
-   <select id="priority" class="jira:priorities" name="Priority" title="Select Priority" required></select>
-   <select id="issuetype" class="jira:issuetypes" name="Issue Type" title="Select Issue Type"></select>
-   <select id="components" class="jira:components" multiple data-live-search name="Component" title="Select Component"></select>
-   <select id="affectversions" class="jira:versions" multiple name="Affected Version" title="Select Affected Version"></select>
-   <select id="fixversion" class="jira:versions" name="Fix Version" title="Select Fix Version"></select>
-   <select id="fruit" name="Fruit" title="Select Fruit">
-      <option>Apple</option>
-      <option>Orange</option>
-      <option>Banana</option>
-   </select>
-   <div id="checkbox-1" class="checkbox" title="Checkbox 1">
-      <label class="checkbox"><input type="checkbox" value="Option 1">Option 1</label>
-      <label class="checkbox"><input type="checkbox" value="Option 2">Option 2</label>
-      <label class="checkbox"><input type="checkbox" value="Option 3">Option 3</label>
-   </div>
-   <div id="checkbox-2" class="checkbox" title="Checkbox 2">
-      <label class="checkbox-inline"><input type="checkbox" value="Option 4">Option 4</label>
-      <label class="checkbox-inline"><input type="checkbox" value="Option 5">Option 5</label>
-      <label class="checkbox-inline"><input type="checkbox" value="Option 6">Option 6</label>
-   </div>
-   <div id="radio-1" class="radio" title="Radiobox 1">
-      <label class="radio"><input type="radio" name="radio-1" value="Option 1">Option 1</label>
-      <label class="radio"><input type="radio" name="radio-1" value="Option 2">Option 2</label>
-      <label class="radio"><input type="radio" name="radio-1" value="Option 3">Option 3</label>
-   </div>
-   <div id="radio-2" class="radio" title="Radiobox 2">
-      <label class="radio-inline"><input type="radio" name="radio-2" value="Option 4">Option 4</label>
-      <label class="radio-inline"><input type="radio" name="radio-2" value="Option 5">Option 5</label>
-      <label class="radio-inline"><input type="radio" name="radio-2" value="Option 6">Option 6</label>
-   </div>
+  <input id="improvement" name="Improvement" placeholder="What needs to be improved?" type="text"/>
+  <input id="addedvalue" name="Added Value" placeholder="What would be the added value?" type="text" required/>
+  <textarea id="description" name="Description" placeholder="Any details about the desired modification?" rows="3" required></textarea>
+  <select id="priority" class="jira:priorities" name="Priority" title="Select Priority" required></select>
+  <select id="issuetype" class="jira:issuetypes" name="Issue Type" title="Select Issue Type"></select>
+  <select id="components" class="jira:components" multiple data-live-search name="Component" title="Select Component"></select>
+  <select id="affectversions" class="jira:versions" multiple name="Affected Version" title="Select Affected Version"></select>
+  <select id="fixversion" class="jira:versions" name="Fix Version" title="Select Fix Version"></select>
+  <select id="fruit" name="Fruit" title="Select Fruit">
+    <option>Apple</option>
+    <option>Orange</option>
+    <option>Banana</option>
+  </select>
+  <div id="checkbox-1" class="checkbox" title="Checkbox 1">
+    <label class="checkbox"><input type="checkbox" value="Option 1">Option 1</label>
+    <label class="checkbox"><input type="checkbox" value="Option 2">Option 2</label>
+    <label class="checkbox"><input type="checkbox" value="Option 3">Option 3</label>
+  </div>
+  <div id="checkbox-2" class="checkbox" title="Checkbox 2">
+    <label class="checkbox-inline"><input type="checkbox" value="Option 4">Option 4</label>
+    <label class="checkbox-inline"><input type="checkbox" value="Option 5">Option 5</label>
+    <label class="checkbox-inline"><input type="checkbox" value="Option 6">Option 6</label>
+  </div>
+  <div id="radio-1" class="radio" title="Radiobox 1">
+    <label class="radio"><input type="radio" name="radio-1" value="Option 1">Option 1</label>
+    <label class="radio"><input type="radio" name="radio-1" value="Option 2">Option 2</label>
+    <label class="radio"><input type="radio" name="radio-1" value="Option 3">Option 3</label>
+  </div>
+  <div id="radio-2" class="radio" title="Radiobox 2">
+    <label class="radio-inline"><input type="radio" name="radio-2" value="Option 4">Option 4</label>
+    <label class="radio-inline"><input type="radio" name="radio-2" value="Option 5">Option 5</label>
+    <label class="radio-inline"><input type="radio" name="radio-2" value="Option 6">Option 6</label>
+  </div>
 </div>
 
 <script type="text/javascript">
@@ -83,17 +83,17 @@
           'fixVersions': myCIC.value('fixversion') && [{'name': myCIC.value('fixversion')}],
           'summary': myCIC.value('improvement'),
           'description':
-          '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
-          myCIC.value('addedvalue') +
-          '{panel}' +
-          '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
-          myCIC.value('description') +
-          '{panel}' +
-          ((myCIC.value('fruit') || '') && myCIC.value('fruit') + '\n') +
-          ((myCIC.value('checkbox-1') || '') && myCIC.value('checkbox-1').join(', ') + '\n') +
-          ((myCIC.value('checkbox-2') || '') && myCIC.value('checkbox-2').join(', ') + '\n') +
-          ((myCIC.value('radio-1') || '') && myCIC.value('radio-1') + '\n') +
-          ((myCIC.value('radio-2') || '') && myCIC.value('radio-2'))
+            '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
+            myCIC.value('addedvalue') +
+            '{panel}' +
+            '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
+            myCIC.value('description') +
+            '{panel}' +
+            ((myCIC.value('fruit') || '') && myCIC.value('fruit') + '\n') +
+            ((myCIC.value('checkbox-1') || '') && myCIC.value('checkbox-1').join(', ') + '\n') +
+            ((myCIC.value('checkbox-2') || '') && myCIC.value('checkbox-2').join(', ') + '\n') +
+            ((myCIC.value('radio-1') || '') && myCIC.value('radio-1') + '\n') +
+            ((myCIC.value('radio-2') || '') && myCIC.value('radio-2'))
         }
       }
     }
