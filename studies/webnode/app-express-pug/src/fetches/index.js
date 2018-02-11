@@ -7,11 +7,12 @@ const https = require('https')
 const { kgcerts } = require('./kgcerts')
 
 const port = process.env.PORT || 4000
+const jiraport = process.env.PORT || 4545 // we use app-mock-jira
 
 function getEnvAuth () {
   console.log('Running under node.js')
   const [jira, username, password] = [
-    process.argv[2] || `http://localhost:${port}`,
+    process.argv[2] || `http://localhost:${jiraport}/jira`,
     process.argv[3] || process.env.USERNAME,
     process.argv[4] || process.env.pw
   ]

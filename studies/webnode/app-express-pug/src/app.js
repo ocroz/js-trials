@@ -3,9 +3,8 @@ const Path = require('path')
 const bodyParser = require('body-parser')
 const methodOverride = require('method-override')
 
-const apiController = require('./controllers/api')
-const issuesController = require('./controllers/issues')
 const mainController = require('./controllers/main')
+const issuesController = require('./controllers/issues')
 
 const app = express()
 
@@ -22,7 +21,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(methodOverride(req => req.body._method))
 
 app.use(mainController)
-app.use('/rest/api/2', apiController)
 app.use('/issue', issuesController)
 
 module.exports = app

@@ -1,0 +1,308 @@
+Running under node.js
+✔ Server listening on port 4000
+Get /issue
+GET http://localhost:4545/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Error: {"ok":false,"status":404,"statusText":"Not Found"}
+    at resp.json.catch (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\fetches\jirafetch.js:28:29)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+TypeError: Cannot read property 'issues' of undefined
+    at jiraFetch.catch.then.json (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\fetches\apijira.js:22:22)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+TypeError: C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\views\issue\index.pug:9
+    7|   h1 Select your issue !
+    8| 
+  > 9|   each issue in issues
+    10|     p
+    11|       span Reported by #{issue.fields.reporter.name}<br>
+    12|       | <a href="/issue/#{issue.key}">#{issue.key}</a>
+
+Cannot read property 'length' of undefined
+    at eval (eval at wrap (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug-runtime\wrap.js:6:10), <anonymous>:34:32)
+    at eval (eval at wrap (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug-runtime\wrap.js:6:10), <anonymous>:97:4)
+    at template (eval at wrap (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug-runtime\wrap.js:6:10), <anonymous>:102:162)
+    at Object.exports.renderFile (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug\lib\index.js:428:38)
+    at Object.exports.renderFile (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug\lib\index.js:418:21)
+    at View.exports.__express [as engine] (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug\lib\index.js:465:11)
+    at View.render (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\view.js:127:8)
+    at tryRender (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\application.js:640:10)
+    at Function.render (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\application.js:592:3)
+    at ServerResponse.render (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\response.js:971:7)
+Get /issue
+GET http://localhost:4545/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Error: {"ok":false,"status":404,"statusText":"Not Found"}
+    at resp.json.catch (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\fetches\jirafetch.js:28:29)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+TypeError: Cannot read property 'issues' of undefined
+    at jiraFetch.catch.then.json (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\fetches\apijira.js:22:22)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)
+TypeError: C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\views\issue\index.pug:9
+    7|   h1 Select your issue !
+    8| 
+  > 9|   each issue in issues
+    10|     p
+    11|       span Reported by #{issue.fields.reporter.name}<br>
+    12|       | <a href="/issue/#{issue.key}">#{issue.key}</a>
+
+Cannot read property 'length' of undefined
+    at eval (eval at wrap (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug-runtime\wrap.js:6:10), <anonymous>:34:32)
+    at eval (eval at wrap (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug-runtime\wrap.js:6:10), <anonymous>:97:4)
+    at template (eval at wrap (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug-runtime\wrap.js:6:10), <anonymous>:102:162)
+    at Object.exports.renderFile (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug\lib\index.js:428:38)
+    at Object.exports.renderFile (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug\lib\index.js:418:21)
+    at View.exports.__express [as engine] (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\pug\lib\index.js:465:11)
+    at View.render (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\view.js:127:8)
+    at tryRender (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\application.js:640:10)
+    at Function.render (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\application.js:592:3)
+    at ServerResponse.render (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\node_modules\express\lib\response.js:971:7)
+Running under node.js
+events.js:183
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE :::4000
+    at Object._errnoException (util.js:1022:11)
+    at _exceptionWithHostPort (util.js:1044:20)
+    at Server.setupListenHandle [as _listen2] (net.js:1351:14)
+    at listenInCluster (net.js:1392:12)
+    at Server.listen (net.js:1476:7)
+    at Object.<anonymous> (C:\Users\Denise\Documents\Tools\Software\js-trials\studies\webnode\app-express-pug\src\server.js:11:8)
+    at Module._compile (module.js:643:30)
+    at Object.Module._extensions..js (module.js:654:10)
+    at Module.load (module.js:556:32)
+    at tryModuleLoad (module.js:499:12)
+Running under node.js
+✔ Server listening on port 4000
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'toto' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"toto"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/0
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment/0 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Put /issue/SPLPRJ-1/0 { _method: 'put', body: 'tata' }
+PUT http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment/0 {"_method":"put","body":"tata"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Delete /issue/SPLPRJ-1/0
+DELETE http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment/0 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'toto' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"toto"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'tutu' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"tutu"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'jhvcdjlcvh' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"jhvcdjlcvh"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'jghf' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"jghf"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'jgfv' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"jgfv"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'jhvg' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"jhvg"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/new
+GET http://localhost:4545/jira/rest/api/2/issue/fake undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue
+GET http://localhost:4545/jira/rest/api/2/search?jql=key%20in%20(SPLPRJ-42%2CSPLPRJ-43%2CSPLPRJ-44)%20ORDER%20BY%20key%20ASC undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'jgv' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"jgv"}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'several\r\nlines\r\ncomments\r\n...' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"several\r\nlines\r\ncomments\r\n..."}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1/new
+Post /issue/SPLPRJ-1 { body: 'Several<br>\r\nlines<br>\r\ncomment<br>\r\n...' }
+POST http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1/comment {"body":"Several<br>\r\nlines<br>\r\ncomment<br>\r\n..."}
+BEGINNING OF REST CALL
+END OF REST CALL
+Get /issue/SPLPRJ-1
+GET http://localhost:4545/jira/rest/api/2/issue/SPLPRJ-1 undefined
+BEGINNING OF REST CALL
+END OF REST CALL

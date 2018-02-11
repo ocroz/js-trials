@@ -12,7 +12,7 @@ async function jiraFetch (auth = {}, method = 'GET', request = 'api/2/myself', i
     ? { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': auth.credentials }
     : { 'Accept': 'application/json', 'Content-Type': 'application/json' }
   const [mode, credentials, agent] = ['cors', 'include', auth.agent]
-  console.log(method, url, body)
+  console.log(method, url, body || '')
   // console.log(url, method, body, headers, mode, credentials, agent)
 
   // fetch promise

@@ -1,10 +1,10 @@
 'use strict'
 
 require('colors')
-// const apiJira = require('./fetches/apijira')
+const { createServer } = require('http')
 const { port } = require('./fetches/index')
 const app = require('./app')
-const { createServer } = require('http')
+// const apiJira = require('./fetches/apijira')
 
 app.set('port', port)
 const server = createServer(app)
