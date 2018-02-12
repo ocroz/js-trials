@@ -1,0 +1,23 @@
+{
+  "name": "app-tamed-redux",
+  "version": "1.0.0",
+  "description": "App Tamed Redux",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev:server": "nodemon src/server.js",
+    "debug:server": "nodemon --inspect src/server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "method-override": "^2.3.9"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "nodemon": "^1.11.0"
+  }
+}
