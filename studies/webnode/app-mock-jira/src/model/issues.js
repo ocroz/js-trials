@@ -1,6 +1,6 @@
 'use strict'
 
-const { getMyself } = require('./system')
+const { getMyself, getIssueTypes, getPriorities, getStatuses } = require('./system')
 
 let issues = []
 
@@ -11,6 +11,7 @@ function addIssue (issueData) {
   if (!issueData.fields.summary) { return {error: 'No issue summary provided'} }
   if (!issueData.fields.project || !issueData.fields.project.key) { return {error: 'No issue project provided'} }
   if (!issueData.fields.issuetype || !issueData.fields.issuetype.name) { return {error: 'No issue type provided'} }
+  if (!issueData.fields.priority) { issueData.fields.priority = {} } // Default value is 'Major'
 
   // new issue
   const active = true
@@ -19,7 +20,9 @@ function addIssue (issueData) {
   fields.reporter = fields.reporter || getMyself()
   fields.assignee = fields.assignee || getMyself()
   fields.description = fields.description || ''
-  fields.status = { name: 'Open' }
+  fields.issuetype = getIssueTypes().filter(item => item.name === issueData.fields.issuetype.name)[0]
+  fields.priority = getPriorities().filter(item => item.name === issueData.fields.priority.name || 'Major')[0]
+  fields.status = getStatuses().filter(item => item.name === 'Open')[0]
   fields.comment = { comments: [] }
   const issue = { active, key, fields }
   issues.push(issue)
