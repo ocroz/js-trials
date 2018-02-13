@@ -9,38 +9,74 @@ block content
   div(class='container')
     hr
 
-  p
   div(class='container')
-    div(class='col-lg-6')
-      a(href=`/issue/${issue.key}`) #{issue.key}
+    b Summary:
+    | &nbsp;&nbsp;&nbsp;&nbsp;
+    | #{issue.fields.summary}
 
   p
   div(class='container')
-    div(class='row')
-      div(class='col-lg-2' align='right')
-        b Summary:
-      div(class='col-lg-10')
-        | #{issue.fields.summary}
-    div(class='row')
-      p
-      div(class='col-lg-3' align='right')
-        b Type:<br>
-        b Status:
-      div(class='col-lg-2')
-        | #{issue.fields.issuetype.name}<br>
-        | #{issue.fields.status.name}
-      div(class='col-lg-2' align='right')
-        b Assignee:<br>
-        b Reporter:
-      div(class='col-lg-3')
-        | #{issue.fields.assignee.name}<br>
-        | #{issue.fields.reporter.name}
-    div(class='row')
-      p
-      div(class='col-lg-2' align='right')
-        b Description:
-      div(class='col-lg-10')
-        | #{issue.fields.description}
+
+    div(class='col-lg-9')
+      div(class='container-fluid')
+        div(class='col-lg-3' align='right')
+          b Type:<br>
+          b Priority:<br>
+          b Affects Version/s:<br>
+          b Component/s:<br>
+          b Labels:
+        div(class='col-lg-3')
+          img(src=`${issue.fields.issuetype.iconUrl}`)
+          | &nbsp;
+          | #{issue.fields.issuetype.name}<br>
+          img(src=`${issue.fields.priority.iconUrl}` height='16px' width='16px')
+          | &nbsp;
+          | #{issue.fields.priority.name}<br>
+          | #{issue.fields.versions.map(item => item.name).join(', ')}<br>
+          | #{issue.fields.components.map(item => item.name).join(', ')}<br>
+          | #{issue.fields.labels.map(item => item).join(', ')}
+        div(class='col-lg-3' align='right')
+          b Status:<br>
+          b Resolution:<br>
+          b Fix Version/s:
+        div(class='col-lg-3')
+          img(src=`${issue.fields.status.iconUrl}`)
+          | &nbsp;
+          | #{issue.fields.status.name}<br>
+          | #{issue.fields.resolution.name}<br>
+          | #{issue.fields.fixVersions.map(item => item.name).join(', ')}
+
+    div(class='col-lg-3')
+      div(class='container-fluid')
+        div(class='row')
+          div(class='col-lg-5' align='right')
+            b Assignee:<br>
+            b Reporter:
+          div(class='col-lg-7')
+            | #{issue.fields.assignee.name}<br>
+            | #{issue.fields.reporter.name}
+        div(class='row')
+          -
+            var created = {
+              title:  moment(issue.fields.created).format('YYYY/MM/DD HH:mm:ss'),
+              fromNow: moment(issue.fields.created).fromNow()
+            }
+            var updated = {
+              title:  moment(issue.fields.updated).format('YYYY/MM/DD HH:mm:ss'),
+              fromNow: moment(issue.fields.updated).fromNow()
+            }
+          p
+          div(class='col-lg-5' align='right')
+            b Created:<br>
+            b Updated:
+          div(class='col-lg-7')
+            span(title=`${created.title}`) #{created.fromNow}<br>
+            span(title=`${updated.title}`) #{updated.fromNow}
+
+  p
+  div(class='container')
+    b Description:
+    p !{issue.fields.description.replace(/\n|\r\n/g, '<br>')}
 
   div(class='container')
     hr
@@ -59,4 +95,4 @@ block content
       p
         span Posted by #{comment.author.name}&nbsp;
         span(title=`${created.title}`) #{created.fromNow}.<br>
-          | #{comment.body}<br>
+          | !{comment.body.replace(/\n|\r\n/g, '<br>')}<br>

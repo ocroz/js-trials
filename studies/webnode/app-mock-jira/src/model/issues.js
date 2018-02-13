@@ -21,9 +21,14 @@ function addIssue (issueData) {
   fields.assignee = fields.assignee || getMyself()
   fields.description = fields.description || ''
   fields.issuetype = getIssueTypes().filter(item => item.name === issueData.fields.issuetype.name)[0]
-  fields.priority = getPriorities().filter(item => item.name === issueData.fields.priority.name || 'Major')[0]
+  fields.priority = getPriorities().filter(item => item.name === (issueData.fields.priority.name || 'Major'))[0]
   fields.status = getStatuses().filter(item => item.name === 'Open')[0]
+  fields.components = fields.components || []
+  fields.versions = fields.versions || []
+  fields.fixVersions = fields.fixVersions || []
+  fields.resolution = { name: 'Unresolved' }
   fields.comment = { comments: [] }
+  fields.updated = fields.created = new Date()
   const issue = { active, key, fields }
   issues.push(issue)
   return issue
@@ -33,6 +38,7 @@ function deleteIssue (key) {
   const issueIndex = issues.findIndex(issue => issue.key === key)
   console.log(`Delete issue ${key} (issueIndex: ${issueIndex})`)
   issues[issueIndex].active = false
+  issues[issueIndex].fields.updated = new Date()
 }
 
 function getIssue (key) {
@@ -60,12 +66,14 @@ function addComment (key, body) {
   const created = new Date()
   const comment = { active, id, author, body, created }
   issues[issueIndex].fields.comment.comments.push(comment)
+  issues[issueIndex].fields.updated = new Date()
 }
 
 function deleteComment (key, cid) {
   const issueIndex = issues.findIndex(issue => issue.key === key)
   console.log(`Delete comment ${cid} of issue ${key} (issueIndex: ${issueIndex})`)
   issues[issueIndex].fields.comment.comments[cid].active = false
+  issues[issueIndex].fields.updated = new Date()
 }
 
 function getComment (key, cid) {
@@ -77,6 +85,7 @@ function getComment (key, cid) {
 function updateComment (key, cid, body) {
   const issueIndex = issues.findIndex(issue => issue.key === key)
   issues[issueIndex].fields.comment.comments[cid].body = body
+  issues[issueIndex].fields.updated = new Date()
 }
 
 module.exports = {
