@@ -1,6 +1,6 @@
 'use strict'
 
-/* globals Component, connect, Row, Col, Button, Form */
+/* globals Component, connect, Row, Col, Button, Form, moment */
 /* globals LinkView, DeleteIssue, CommentBox */
 /* globals store, getIssues, openComment, closeComment, submitComment */
 
@@ -16,6 +16,8 @@ class IssueBoxComp extends Component {
 
   render () {
     const container = this.props.issuekey ? 'container-fluid' : 'container'
+    const fontSize = this.props.issuekey ? {'font-size': '9px'} : undefined
+    const iconSize = this.props.issuekey ? '9px' : '16px'
     const issuekey = this.props.issuekey || this.props.match.params.key
     const issueIndex = store.getState().data.issues.findIndex(issue => issue.key === issuekey)
     const issue = store.getState().data.issues[issueIndex]
@@ -28,6 +30,7 @@ class IssueBoxComp extends Component {
         {!isFetching && issues.length === 0 && <p><b>Empty.</b></p>}
         {issues.length > 0 && issue !== undefined &&
         <div>
+
           <div className={container}>
             <Col lg={6}>
               Issue <LinkView view={`/issue/${issuekey}`}>{issuekey}</LinkView>
@@ -36,40 +39,90 @@ class IssueBoxComp extends Component {
               <DeleteIssue issuekey={issuekey}>Delete</DeleteIssue>
             </Col>
           </div>
+
           <div className={container}><hr /></div>
+
           <div className={container}>
             <b>Summary:</b>
             &nbsp;&nbsp;&nbsp;&nbsp;
             {issue.fields.summary}
-            <p>{''}</p>
           </div>
-          <div className={container}>
-            <Row>
-              <p>{''}</p>
-              <Col lg={3} className='text-right'>
-                <b>Type:</b><br />
-                <b>Status:</b>
-              </Col>
-              <Col lg={2}>
-                {issue.fields.issuetype.name}<br />
-                {issue.fields.status.name}
-              </Col>
-              <Col lg={2} className='text-right'>
-                <b>Assignee:</b><br />
-                <b>Reporter:</b>
-              </Col>
-              <Col lg={2}>
-                {issue.fields.assignee.name}<br />
-                {issue.fields.reporter.name}
-              </Col>
-            </Row>
+
+          <p>{''}</p>
+          <div className={container} style={fontSize}>
+
+            <Col lg={8}>
+              <div className={'container-fluid'}>
+                <Col lg={3} className='text-right'>
+                  <b>Type:</b><br />
+                  <b>Priority:</b><br />
+                  <b>Affects&nbsp;Version/s:</b><br />
+                  <b>Component/s:</b><br />
+                  <b>Labels:</b>
+                </Col>
+                <Col lg={3}>
+                  <img src={issue.fields.issuetype.iconUrl} height={iconSize} width={iconSize} />&nbsp;
+                  {issue.fields.issuetype.name}<br />
+                  <img src={issue.fields.priority.iconUrl} height={iconSize} width={iconSize} />&nbsp;
+                  {issue.fields.priority.name}<br />
+                  {(issue.fields.versions || []).map(item => item.name).join(', ')}<br />
+                  {(issue.fields.components || []).map(item => item.name).join(', ')}<br />
+                  {(issue.fields.labels || []).map(item => item).join(', ')}
+                </Col>
+                <Col lg={3} className='text-right'>
+                  <b>Status:</b><br />
+                  <b>Resolution:</b><br />
+                  <b>Fix&nbsp;Version/s:</b>
+                </Col>
+                <Col lg={3}>
+                  <img src={issue.fields.status.iconUrl} height={iconSize} width={iconSize} />&nbsp;
+                  {issue.fields.status.name}<br />
+                  {issue.fields.resolution.name}<br />
+                  {(issue.fields.labels || []).map(item => item).join(', ')}
+                </Col>
+              </div>
+            </Col>
+
+            <Col lg={4}>
+              <div className={'container-fluid'}>
+                <Row>
+                  <Col lg={5} className='text-right'>
+                    <b>Assignee:</b><br />
+                    <b>Reporter:</b>
+                  </Col>
+                  <Col lg={7}>
+                    {issue.fields.assignee.name}<br />
+                    {issue.fields.reporter.name}
+                  </Col>
+                </Row>
+                <p>{''}</p>
+                <Row>
+                  <Col lg={5} className='text-right'>
+                    <b>Created:</b><br />
+                    <b>Updated:</b>
+                  </Col>
+                  <Col lg={7}>
+                    <span title={moment(issue.fields.created).format('YYYY/MM/DD HH:mm:ss')}>
+                      {moment(issue.fields.created).fromNow()}
+                    </span><br />
+                    <span title={moment(issue.fields.updated).format('YYYY/MM/DD HH:mm:ss')}>
+                      {moment(issue.fields.updated).fromNow()}
+                    </span><br />
+                  </Col>
+                </Row>
+              </div>
+            </Col>
+
           </div>
+
           <div className={container}>
             <p>{''}</p>
             <p><b>Description:</b></p>
             <pre>{issue.fields.description}</pre><p>{''}</p>
           </div>
+
           <div className={container}><hr /></div>
+
           <div className={container}>
             {isFetching && comments.length === 0 && <p><b>Loading...</b></p>}
             {!isFetching && comments.length === 0 && <p><b>No comment yet</b></p>}
@@ -85,6 +138,7 @@ class IssueBoxComp extends Component {
               {isOpen && <Button bsStyle='primary' type='submit'>Submit</Button>}
             </Form>
           </div>
+
         </div>}
       </div>
     )

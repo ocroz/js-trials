@@ -32,9 +32,9 @@ block content
           img(src=`${issue.fields.priority.iconUrl}` height='16px' width='16px')
           | &nbsp;
           | #{issue.fields.priority.name}<br>
-          | #{issue.fields.versions.map(item => item.name).join(', ')}<br>
-          | #{issue.fields.components.map(item => item.name).join(', ')}<br>
-          | #{issue.fields.labels.map(item => item).join(', ')}
+          | #{(issue.fields.versions || []).map(item => item.name).join(', ')}<br>
+          | #{(issue.fields.components || []).map(item => item.name).join(', ')}<br>
+          | #{(issue.fields.labels || []).map(item => item).join(', ')}
         div(class='col-lg-3' align='right')
           b Status:<br>
           b Resolution:<br>
@@ -44,7 +44,7 @@ block content
           | &nbsp;
           | #{issue.fields.status.name}<br>
           | #{issue.fields.resolution.name}<br>
-          | #{issue.fields.fixVersions.map(item => item.name).join(', ')}
+          | #{(issue.fields.fixVersions || []).map(item => item.name).join(', ')}
 
     div(class='col-lg-3')
       div(class='container-fluid')
@@ -76,7 +76,8 @@ block content
   p
   div(class='container')
     b Description:
-    p !{issue.fields.description.replace(/\n|\r\n/g, '<br>')}
+    p
+      pre #{issue.fields.description}
 
   div(class='container')
     hr
@@ -94,5 +95,5 @@ block content
           }
       p
         span Posted by #{comment.author.name}&nbsp;
-        span(title=`${created.title}`) #{created.fromNow}.<br>
-          | !{comment.body.replace(/\n|\r\n/g, '<br>')}<br>
+        span(title=`${created.title}`) #{created.fromNow}.
+        pre #{comment.body}<br>

@@ -21,7 +21,7 @@ block content
             input(type="hidden" name="_method" value="delete")
           div
             span Posted by #{comment.author.name}<br>
-            | #{comment.body.replace(/\n|\r\n/g, '<br>')}<br>
+            pre #{comment.body}<br>
           div
             <a href="/issue/#{issue.key}/#{comment.id}">update</a>&nbsp;
             button.btn.btn-primary(type="submit" class="btn-link")
