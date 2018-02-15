@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JIRA Custom Issue Collector</title>
+
+  <link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- Bootstrap's JavaScript requires jQuery version 1.9.1 or higher, but lower than version 4 -->
+  <script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+  <script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+  <script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+  <script src="/custom/jcic/1/js/jcic.js"></script>
+</head>
+<body>
+
+<button id="IssueTypePriorityBtn" class="btn btn-default" onclick="createIssueTypePriority()">Issue Type and Priority</button>
+
+<div id="IssueTypePriority" title="IssueType/Priority Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
+  <textarea id="description" name="Description" placeholder="Description of the issue" rows="3" required></textarea>
+  <!-- Add the class 'jira:issuetypes' to build a select list which picks up all the issue type values from JIRA -->
+  <select id="issuetype" class="jira:issuetypes" name="Issue Type" title="Select Issue Type"></select>
+  <!-- Add the class 'jira:priorities' to build a select list which picks up all the priority values from JIRA -->
+  <select id="priority" class="jira:priorities" name="Priority" title="Select Priority" required></select>
+</div>
+
+<script type="text/javascript">
+  function createIssueTypePriority (cb) { // eslint-disable-line no-unused-vars
+    function mapfields (that) { // access any CIC field value via: that.value('field')
+      return {
+        'fields': {
+          'summary': that.value('summary'), // 'summary' is the id you have defined in the above HTML element
+          'issuetype': that.value('issuetype'), // same for 'issuetype'
+          'priority': that.value('priority'),
+          'description': that.value('summary')
+        }
+      }
+    }
+
+    // All the fields listed inside the above HTML element of id 'IssueTypePriority' will be shown in the CIC form
+    // The issue will be submitted in project JCICSBX
+    // Say how to update the JIRA issue fields from the CIC form fields via mapfields()
+    // Pass a calback cb() to run actions on process exit
+    var IssueTypePriority = new CIC('IssueTypePriority', 'JCICSBX', mapfields, cb) // eslint-disable-line no-undef
+    IssueTypePriority.connect()
+  }
+</script>
+
+</body>
+</html>
