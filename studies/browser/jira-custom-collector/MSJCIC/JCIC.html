@@ -4,23 +4,22 @@
   <meta charset="utf-8">
   <title>JIRA Custom Issue Collector</title>
 
-  <link rel="stylesheet" href="/custom/tmp/cdn/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
   <!-- Bootstrap's JavaScript requires jQuery version 1.9.1 or higher, but lower than version 4 -->
-  <script src="/custom/tmp/cdn/jquery/3.2.1/jquery.min.js"></script>
-  <script src="/custom/tmp/cdn/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+  <script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-  <link rel="stylesheet" href="/custom/tmp/cdn/bootstrap-select/1.12.4/bootstrap-select.min.css">
-  <script src="/custom/tmp/cdn/bootstrap-select/1.12.4/bootstrap-select.min.js"></script>
+  <link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+  <script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
 
-  <script src="JCIC.js"></script>
+  <script src="jcic.js"></script>
+
 </head>
 <body>
 
-<div class=container>
-  <p></p><button class="btn btn-default" onclick="createTask()">Submit Task into SPLPRJ</button>
-</div>
+<p></p><button id="FullExampleBtn" class="btn btn-default" onclick="createFullExample()">Submit Task into JCICSBX</button>
 
-<div id="TaskSPL" title="TaskSPL Submit Form" style="display: none;">
+<div id="FullExample" title="FullExample Submit Form" style="display: none;">
   <input id="improvement" name="Improvement" placeholder="What needs to be improved?" type="text"/>
   <input id="addedvalue" name="Added Value" placeholder="What would be the added value?" type="text" required/>
   <textarea id="description" name="Description" placeholder="Any details about the desired modification?" rows="3" required></textarea>
@@ -57,11 +56,9 @@
 </div>
 
 <script type="text/javascript">
-  var JIRAURL = 'https://atlassian-test.hq.k.grp/jira' // eslint-disable-line no-unused-vars
+  var JIRAURL = window.location.origin + '/jira' // eslint-disable-line no-unused-vars
 
-  // CIC TaskSPL
-  var TaskSPL = undefined // eslint-disable-line no-undef-init
-  function createTask () { // eslint-disable-line no-unused-vars
+  function createFullExample (cb) { // eslint-disable-line no-unused-vars
     function mapfields (myCIC) {
       return {
         'fields': {
@@ -78,12 +75,12 @@
           'fixVersions': myCIC.value('fixversion') && [{'name': myCIC.value('fixversion')}],
           'summary': myCIC.value('improvement'),
           'description':
-            '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' +
-            myCIC.value('addedvalue') +
-            '{panel}' +
-            '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' +
-            myCIC.value('description') +
-            '{panel}' +
+            '{panel:title=What would be the added value?|borderColor=#ccc| titleBGColor=#c2ffa2|bgColor=#fff}' + '\n' +
+            myCIC.value('addedvalue') + '\n' +
+            '{panel}' + '\n' +
+            '{panel:title=Any details about the desired modification?|borderColor=#ccc| titleBGColor=#faacad|bgColor=#fff}' + '\n' +
+            myCIC.value('description') + '\n' +
+            '{panel}' + '\n' +
             ((myCIC.value('fruit') || '') && myCIC.value('fruit') + '\n') +
             ((myCIC.value('checkbox-1') || '') && myCIC.value('checkbox-1').join(', ') + '\n') +
             ((myCIC.value('checkbox-2') || '') && myCIC.value('checkbox-2').join(', ') + '\n') +
@@ -93,9 +90,10 @@
       }
     }
 
-    TaskSPL = new CIC('TaskSPL', 'SPLPRJ', mapfields) // eslint-disable-line no-undef
-    TaskSPL.connect()
+    var FullExample = new CIC('FullExample', 'JCICSBX', mapfields, cb) // eslint-disable-line no-undef
+    FullExample.connect()
   }
 </script>
+
 </body>
 </html>

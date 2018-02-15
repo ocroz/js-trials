@@ -3,7 +3,7 @@
 /* globals Confluence JIRAURL $ alert XMLHttpRequest */
 
 // CIC constructor
-function CIC (collector, project, mapfields) { // eslint-disable-line no-unused-vars
+function CIC (collector, project, mapfields, cb) { // eslint-disable-line no-unused-vars
   // Check params
   if (!(collector && project && mapfields)) {
     throw new Error('CIC constructor needs a collector, a project, and a mapfields function')
@@ -40,6 +40,9 @@ function CIC (collector, project, mapfields) { // eslint-disable-line no-unused-
   }
   this.value = function (id) {
     return this.formValues[id]
+  }
+  this.exit = function () {
+    cb && cb(this.issue)
   }
 }
 
@@ -133,9 +136,14 @@ function submit (that) {
       console.log('ISSUE SUBMITTED:', issueurl)
       $('#' + that.modal).modal('hide')
       showMessage(that, title, message)
+      that.issue = { key: response.data.key, url: issueurl }
     } else {
       console.error('Fail to submit issue:', response.data)
-      alert(JSON.stringify(response.data))
+      // alert(JSON.stringify(response.data))
+      var modal = that.modal
+      that.modal += '-error'
+      showMessage(that, 'Fail to submit issue', JSON.stringify(response.data), 'continue') // Do not exit, so continue
+      that.modal = modal
     }
   }
 }
@@ -186,10 +194,14 @@ function xhrJira (cb, jiraurl, method, request, input) {
   xhr.send(body)
 }
 
-function showMessage (that, title, message) {
+function showMessage (that, title, message, event) {
   // modalTitle, modalEvents
   var modalTitle = title
   var modalEvents = null
+  if (event) {
+    modalEvents = {}
+    modalEvents[event] = true
+  }
 
   // modalBody
   var fragment = document.createDocumentFragment()
@@ -204,7 +216,7 @@ function showForm (that) {
   // Modal Header, Body, Footer
   var modalTitle = document.getElementById(that.collector).title || that.collector + ' Submit Form'
   var modalBody = addFormFields()
-  var modalEvents = { onSubmit: true }
+  var modalEvents = { submit: true }
 
   // Show Modal
   showModal(that, modalTitle, modalBody, modalEvents)
@@ -228,8 +240,8 @@ function showForm (that) {
       var childNode = childNodes[i]
       var modalBodyContent = document.createDocumentFragment()
       var modalBodyRow = addElement(modalBodyContent, 'div', {class: 'row'})
-      var modalBodyColumnLeft = addElement(modalBodyRow, 'div', {class: 'col-lg-3'})
-      var modalBodyColumnRight = addElement(modalBodyRow, 'div', {class: 'col-lg-6'})
+      var modalBodyColumnLeft = addElement(modalBodyRow, 'div', {class: 'col-lg-3 col-md-3 col-sm-3 col-xs-3'})
+      var modalBodyColumnRight = addElement(modalBodyRow, 'div', {class: 'col-lg-8 col-md-8 col-sm-8 col-xs-8'})
       modalBody.appendChild(modalBodyContent)
       var label = childNode.getAttribute('name') || childNode.getAttribute('title')
       var required = childNode.required ? '*' : ''
@@ -263,32 +275,34 @@ function showForm (that) {
           if (!select.title) {
             select.setAttribute('title', select.getAttribute('placeholder'))
           }
-          if (list === 'versions') {
-            var groupUnreleased = addElement(select, 'optgroup', {label: 'Unreleased'})
-            for (j = 0; j < that[list].length; j++) {
-              item = that[list][j]
-              if (!item.archived && !item.released) { // unarchived and unreleased
-                attributes = {'data-content': item.name}
-                addElement(groupUnreleased, 'option', attributes, item.name)
-              }
-            }
-            var groupReleased = addElement(select, 'optgroup', {label: 'Released'})
-            for (j = 0; j < that[list].length; j++) {
-              item = that[list][j]
-              if (!item.archived && item.released) { // unarchived and released
-                attributes = {'data-content': item.name}
-                addElement(groupReleased, 'option', attributes, item.name)
-              }
-            }
-          } else {
-            for (j = 0; j < that[list].length; j++) {
-              item = that[list][j]
-              attributes = {'data-content': item.name}
-              if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
-                if ((list === 'issuetypes') || (list === 'priorities')) {
-                  attributes = {'data-content': '<img src="' + item.iconUrl + '" height="24px" width="24px" />&nbsp;&nbsp;' + item.name}
+          if (that[list]) {
+            if (list === 'versions') {
+              var groupUnreleased = addElement(select, 'optgroup', {label: 'Unreleased'})
+              for (j = 0; j < that[list].length; j++) {
+                item = that[list][j]
+                if (!item.archived && !item.released) { // unarchived and unreleased
+                  attributes = {'data-content': item.name}
+                  addElement(groupUnreleased, 'option', attributes, item.name)
                 }
-                addElement(select, 'option', attributes, item.name)
+              }
+              var groupReleased = addElement(select, 'optgroup', {label: 'Released'})
+              for (j = 0; j < that[list].length; j++) {
+                item = that[list][j]
+                if (!item.archived && item.released) { // unarchived and released
+                  attributes = {'data-content': item.name}
+                  addElement(groupReleased, 'option', attributes, item.name)
+                }
+              }
+            } else {
+              for (j = 0; j < that[list].length; j++) {
+                item = that[list][j]
+                attributes = {'data-content': item.name}
+                if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
+                  if ((list === 'issuetypes') || (list === 'priorities')) {
+                    attributes = {'data-content': '<img src="' + item.iconUrl + '" height="24px" width="24px" />&nbsp;&nbsp;' + item.name}
+                  }
+                  addElement(select, 'option', attributes, item.name)
+                }
               }
             }
           }
@@ -341,16 +355,26 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   modal.body.appendChild(modalBody)
 
   // Modal Footer
-  if (!(modalEvents && modalEvents.onSubmit)) {
-    addElement(modal.footer, 'button', {class: 'btn btn-default', 'data-dismiss': 'modal'}, 'Close')
-  } else {
-    addElement(modal.footer, 'button', {class: 'btn btn-link', 'data-dismiss': 'modal'}, 'Cancel')
+  if (modalEvents && modalEvents.submit) {
+    // Exit if cancel, or submit
+    addElement(modal.footer, 'button', {class: 'btn btn-link exit', 'data-dismiss': 'modal'}, 'Cancel')
     addElement(modal.footer, 'button', {class: 'btn btn-primary'}, 'Submit')
+  } else if (modalEvents && modalEvents.continue) {
+    // Do not exit, so remove class .exit
+    addElement(modal.footer, 'button', {class: 'btn btn-default', 'data-dismiss': 'modal'}, 'Continue')
+  } else {
+    // Exit on close
+    addElement(modal.footer, 'button', {class: 'btn btn-default exit', 'data-dismiss': 'modal'}, 'Close')
   }
 
   // Show Modal
-  document.body.appendChild(modal.fragment)
+  document.getElementById(that.collector).parentNode.appendChild(modal.fragment)
   $('#' + that.modal).modal('show')
+
+  // Modal Close Handler
+  $('.exit').click(function (e) {
+    that.exit()
+  })
 
   // Modal Structure
   function createModalStructure (modalId) {
@@ -369,7 +393,7 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
     var modalForm = addElement(modalContent, 'form', {action: 'javascript:void(0)'})
     // const modalFormGroup = addElement(modalForm, 'div', { class: 'form-group' });
     var modalHeader = addElement(modalForm, 'div', {class: 'modal-header'})
-    addElement(modalHeader, 'button', {class: 'close', 'data-dismiss': 'modal'}, 'x')
+    addElement(modalHeader, 'button', {class: 'close exit', 'data-dismiss': 'modal'}, 'x')
     var modalBody = addElement(modalForm, 'div', {class: 'modal-body'})
     var modalFooter = addElement(modalForm, 'div', {class: 'modal-footer'})
 
