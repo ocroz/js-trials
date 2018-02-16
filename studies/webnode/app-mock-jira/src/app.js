@@ -1,4 +1,7 @@
+'use strict'
+
 const express = require('express')
+const serveIndex = require('serve-index')
 const Path = require('path')
 const bodyParser = require('body-parser')
 const methodOverride = require('method-override')
@@ -13,6 +16,12 @@ app.set('views', Path.resolve(__dirname, 'views'))
 app.set('view engine', 'pug')
 
 app.use(express.static(Path.resolve(__dirname, '../public')))
+
+app.use(
+  '/jcic',
+  express.static(Path.resolve(__dirname, '../public/custom/jcic/1/examples')),
+  serveIndex(Path.resolve(__dirname, '../public/custom/jcic/1/examples'), {'icons': true})
+)
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))

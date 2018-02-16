@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JIRA Custom Issue Collector</title>
+
+  <link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- Bootstrap's JavaScript requires jQuery version 1.9.1 or higher, but lower than version 4 -->
+  <script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+  <script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <link rel="stylesheet" href="/custom/jcic/1/css/jcic.css">
+</head>
+<body>
+
+<button class="btn btn-default" onclick="showIframe()">Show dialog</button>
+
+<div id="createBasicDialog" class="modal fade jcic-dialog" role="dialog" style="height:238px; width:700px;">
+  <div class="modal-content jcic-dialog-content">
+    <iframe id="createBasicFrm" class="jcic-dialog-iframe" src="about:blank"></iframe>
+  </div>
+</div>
+
+<script type="text/javascript">
+  /* globals $ XMLHttpRequest */
+  /* eslint-disable no-unused-vars */
+  function showIframe () {
+    var xhr = new XMLHttpRequest()
+    xhr.open('GET', '/custom/jcic/1/examples/download/basic.txt', true)
+    xhr.onload = function () {
+      var html = xhr.response
+      var d = $('#createBasicFrm')[0].contentWindow.document; d.open(); d.write(html); d.close()
+    }
+    xhr.send()
+  }
+</script>
+
+</body>
+</html>

@@ -33,8 +33,8 @@
       return {
         'fields': {
           'summary': that.value('summary'), // 'summary' is the id you have defined in the above HTML element
-          'issuetype': that.value('issuetype'), // same for 'issuetype'
-          'priority': that.value('priority'),
+          'issuetype': { name: that.value('issuetype') }, // same for 'issuetype'
+          'priority': { name: that.value('priority') },
           'description': that.value('summary')
         }
       }
