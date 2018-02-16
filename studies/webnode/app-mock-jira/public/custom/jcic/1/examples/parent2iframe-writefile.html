@@ -10,30 +10,17 @@
   <script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
   <link rel="stylesheet" href="/custom/jcic/1/css/jcic.css">
+  <script src="/custom/jcic/1/js/jcic.js"></script>
 </head>
 <body>
 
-<button class="btn btn-default" onclick="showIframe()">Show dialog</button>
+<button class="btn btn-default" onclick="loadCIC('./download/basic.html', 'createBasicFrm')">Show dialog</button>
 
 <div id="createBasicDialog" class="modal fade jcic-dialog" role="dialog" style="height:238px; width:700px;">
   <div class="modal-content jcic-dialog-content">
     <iframe id="createBasicFrm" class="jcic-dialog-iframe" src="about:blank"></iframe>
   </div>
 </div>
-
-<script type="text/javascript">
-  /* globals $ XMLHttpRequest */
-  /* eslint-disable no-unused-vars */
-  function showIframe () {
-    var xhr = new XMLHttpRequest()
-    xhr.open('GET', '/custom/jcic/1/examples/download/basic.txt', true)
-    xhr.onload = function () {
-      var html = xhr.response
-      var d = $('#createBasicFrm')[0].contentWindow.document; d.open(); d.write(html); d.close()
-    }
-    xhr.send()
-  }
-</script>
 
 </body>
 </html>

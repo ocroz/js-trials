@@ -2,19 +2,43 @@
 
 /* globals JIRAURL $ XMLHttpRequest */
 
-// CIC render from Confluence
+// CIC load iframe (ran within parent of iframe)
+function loadCIC (cicHtml, cicIframe) { // eslint-disable-line no-unused-vars
+  if (!cicHtml) { throw new Error('loadCIC() needs a cicHtml file URL') }
+  if (!cicIframe) { throw new Error('loadCIC() needs a cicIframe element') }
+
+  var xhr = new XMLHttpRequest()
+  xhr.open('GET', cicHtml, true)
+  xhr.onload = function () {
+    var html = xhr.response
+    var d = $('#' + cicIframe)[0].contentWindow.document; d.open(); d.write(html); d.close()
+  }
+  xhr.send()
+}
+
+// CIC render from parent iframe (ran within iframe)
 function renderCIC (cicDialog, cicFunction) { // eslint-disable-line no-unused-vars
   if (!cicDialog) { throw new Error('renderCIC() needs a cicDialog element') }
   if (!cicFunction) { throw new Error('renderCIC() needs a cicFunction function') }
 
   function showDialog () { // eslint-disable-line no-unused-vars
-    window.parent.$('#' + cicDialog).modal('show')
-    // window.parent.AJS.dialog2('#' + cicDialog).show()
-    window.parent.$(window.parent.document).ready(function () { window[cicFunction](hideDialog) })
+    // monitorEvents($('#createBasicFrm')[0].contentWindow.document.body)
+    if (window.parent.AJS) {
+      // Confluence dialog
+      window.parent.AJS.dialog2('#' + cicDialog).show()
+      window[cicFunction](hideDialog) // setTimeout(function () { fn() }, DELAY)
+    } else {
+      // Bootstrap dialog
+      window.parent.$('#' + cicDialog).modal('show')
+      window.parent.$(window.parent.document).ready(function () { window[cicFunction](hideDialog) })
+    }
   }
   function hideDialog () {
-    window.parent.$('#' + cicDialog).modal('hide')
-    // window.parent.AJS.dialog2('#' + cicDialog).hide()
+    if (window.parent.AJS) {
+      window.parent.AJS.dialog2('#' + cicDialog).hide()
+    } else {
+      window.parent.$('#' + cicDialog).modal('hide')
+    }
   }
   showDialog()
 }

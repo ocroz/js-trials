@@ -5,8 +5,6 @@
 <link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
 <script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
 
-<button id="BasicBtn" class="btn btn-default" onclick="createBasic()">Submit into JCICSBX</button>
-
 <div id="Basic" title="Basic Submit Form" style="display: none;">
   <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
 </div>
@@ -28,4 +26,6 @@
   }
 </script>
 
+<!-- load jcic.js at last with attribute 'onload' to run renderCIC() only when the iframe is completely loaded -->
+<!-- give the IDs of the dialog and iframe where this html is injected to correctly render them -->
 <script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createBasicDialog', 'createBasic')"></script>

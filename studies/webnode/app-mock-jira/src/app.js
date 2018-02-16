@@ -15,6 +15,18 @@ app.locals.title = 'App Mock Jira'
 app.set('views', Path.resolve(__dirname, 'views'))
 app.set('view engine', 'pug')
 
+app.get('/jcic/download/:file', (req, res) => {
+  res.redirect('/custom/jcic/1/examples/download/' + req.params.file)
+})
+app.get('/custom/jcic/1/examples/download/:file', (req, res) => {
+  console.log('download', req.originalUrl)
+  const headers = {
+    'Content-Disposition': 'attachment; filename=' + req.params.file,
+    'Content-Type': 'application/octet-stream'
+  }
+  res.sendFile(Path.resolve(__dirname, '../public' + req.originalUrl), {headers})
+})
+
 app.use(express.static(Path.resolve(__dirname, '../public')))
 
 app.use(
