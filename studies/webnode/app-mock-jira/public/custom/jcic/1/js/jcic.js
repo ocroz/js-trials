@@ -3,10 +3,18 @@
 /* globals JIRAURL $ XMLHttpRequest */
 
 // CIC load iframe (ran within parent of iframe)
-function loadCIC (cicHtml, cicIframe) { // eslint-disable-line no-unused-vars
+// NOTE: The last element of the HTML must have an attribute onload that triggers renderCIC()
+function loadCIC (cicHtml, cicDialog, cicIframe) { // eslint-disable-line no-unused-vars
   if (!cicHtml) { throw new Error('loadCIC() needs a cicHtml file URL') }
+  if (!cicDialog) { throw new Error('loadCIC() needs a cicDialog element') }
   if (!cicIframe) { throw new Error('loadCIC() needs a cicIframe element') }
 
+  if (window.AJS) {
+    // In Confluence the dialog must be opened before to load the HTML into the iframe
+    window.AJS.dialog2('#' + cicDialog).show()
+  }
+
+  // Load the HTML into the iframe
   var xhr = new XMLHttpRequest()
   xhr.open('GET', cicHtml, true)
   xhr.onload = function () {
@@ -16,17 +24,15 @@ function loadCIC (cicHtml, cicIframe) { // eslint-disable-line no-unused-vars
   xhr.send()
 }
 
-// CIC render from parent iframe (ran within iframe)
+// CIC render iframe (ran within iframe when the last HTML element is loaded well)
 function renderCIC (cicDialog, cicFunction) { // eslint-disable-line no-unused-vars
   if (!cicDialog) { throw new Error('renderCIC() needs a cicDialog element') }
   if (!cicFunction) { throw new Error('renderCIC() needs a cicFunction function') }
 
   function showDialog () { // eslint-disable-line no-unused-vars
-    // monitorEvents($('#createBasicFrm')[0].contentWindow.document.body)
     if (window.parent.AJS) {
       // Confluence dialog
-      window.parent.AJS.dialog2('#' + cicDialog).show()
-      window[cicFunction](hideDialog) // setTimeout(function () { fn() }, DELAY)
+      window[cicFunction](hideDialog)
     } else {
       // Bootstrap dialog
       window.parent.$('#' + cicDialog).modal('show')
