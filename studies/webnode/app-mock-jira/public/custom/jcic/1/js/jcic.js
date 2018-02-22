@@ -32,11 +32,11 @@ function renderCIC (cicDialog, cicFunction) { // eslint-disable-line no-unused-v
   function showDialog () { // eslint-disable-line no-unused-vars
     if (window.parent.AJS) {
       // Confluence dialog
-      window[cicFunction](hideDialog)
+      window[cicFunction](hideDialog, cicDialog)
     } else {
       // Bootstrap dialog
       window.parent.$('#' + cicDialog).modal('show')
-      window.parent.$(window.parent.document).ready(function () { window[cicFunction](hideDialog) })
+      window.parent.$(window.parent.document).ready(function () { window[cicFunction](hideDialog, cicDialog) })
     }
   }
   function hideDialog () {
@@ -49,8 +49,67 @@ function renderCIC (cicDialog, cicFunction) { // eslint-disable-line no-unused-v
   showDialog()
 }
 
+// CIC show submitted issue (ran within iframe when the issue has been submitted)
+function showSubmitted (that, title, message) {
+  var modalContentId = 'submitted'
+  var modalHeight = '238px'
+  var modalDialog, modalContent, modalHeader, modalBody, modalFooter, modalActions, cicDialog
+  if (window.parent === window) {
+    // We are not running within an iframe
+    showMessage(that, title, message)
+  } else if (window.parent.AJS) {
+    // In Confluence we first close the dialog that contains the iframe, then we create a new dialog for the final message
+    window.parent.AJS.dialog2('#' + that.cicDialog).hide()
+
+    // Confluence dialog
+    modalDialog = document.createDocumentFragment()
+    modalContent = addElement(modalDialog, 'section', {class: 'aui-layer aui-dialog2', id: modalContentId, 'aria-hidden': true, 'data-aui-modal': true, role: 'dialog', style: 'height:110px; width:700px;'})
+    modalHeader = addElement(modalContent, 'div', {class: 'aui-dialog2-header'})
+    addElement(modalHeader, 'h4', {class: 'aui-dialog2-header-main'}, title)
+    modalBody = addElement(modalContent, 'div', {class: 'aui-dialog2-content'})
+    modalBody.innerHTML += message
+    modalFooter = addElement(modalContent, 'div', {class: 'aui-dialog2-footer'})
+    modalActions = addElement(modalFooter, 'div', {class: 'aui-dialog2-footer-actions'})
+    addElement(modalActions, 'button', {class: 'aui-button aui-button-primary exit', id: modalContentId + '-btn'}, 'Close')
+    window.parent.document.body.appendChild(modalDialog)
+    window.parent.AJS.dialog2('#' + modalContentId).show()
+
+    // Modal Close Handler
+    window.parent.AJS.$('#' + modalContentId + '-btn').click(function (e) {
+      e.preventDefault()
+      window.parent.AJS.dialog2('#' + modalContentId).hide()
+    })
+  } else {
+    // We reuse the dialog and append a new modal content after the iframe
+    // Bootstrap dialog
+    modalDialog = document.createDocumentFragment()
+    modalContent = addElement(modalDialog, 'div', {class: 'modal-content', id: modalContentId})
+    modalHeader = addElement(modalContent, 'div', {class: 'modal-header'})
+    addElement(modalHeader, 'h4', {class: 'modal-title'}, title)
+    modalBody = addElement(modalContent, 'div', {class: 'modal-body'})
+    modalBody.innerHTML += message
+    modalFooter = addElement(modalContent, 'div', {class: 'modal-footer'})
+    addElement(modalFooter, 'button', {class: 'btn btn-default exit', 'data-dismiss': 'modal'}, 'Close')
+    cicDialog = window.parent.document.getElementById(that.cicDialog)
+    cicDialog.appendChild(modalDialog)
+    modalHeight = cicDialog.style.height
+    cicDialog.style.height = '100%'
+
+    // Modal Close Handler
+    window.parent.$('.exit').click(function (e) {
+      restoreDialog() // We restore the dialog to its original settings
+    })
+  }
+  function restoreDialog () {
+    var modalContent = window.parent.document.getElementById(modalContentId)
+    window.parent.$('#' + modalContent.parentNode.id).modal('hide')
+    window.parent.document.getElementById(modalContent.parentNode.id).style.height = modalHeight
+    modalContent.parentNode.removeChild(modalContent)
+  }
+}
+
 // CIC constructor
-function CIC (collector, project, mapfields, cb) { // eslint-disable-line no-unused-vars
+function CIC (collector, project, mapfields, cb, cicDialog) { // eslint-disable-line no-unused-vars
   // Check params
   if (!(collector && project && mapfields)) {
     throw new Error('CIC constructor needs a collector, a project, and a mapfields function')
@@ -62,6 +121,7 @@ function CIC (collector, project, mapfields, cb) { // eslint-disable-line no-unu
   this.collector = this.label = collector
   this.modal = collector + '-modal'
   this.project = project
+  this.cicDialog = cicDialog
   this.formValues = {}
   this.jira = getJira()
   if (!this.jira) {
@@ -183,8 +243,8 @@ function submit (that) {
       var message = '<a href="' + issueurl + '">' + response.data.key + '</a>'
       console.log('ISSUE SUBMITTED:', issueurl)
       $('#' + that.modal).modal('hide')
-      showMessage(that, title, message)
       that.issue = { key: response.data.key, url: issueurl }
+      showSubmitted(that, title, message)
     } else {
       console.error('Fail to submit issue:', response.data)
       // alert(JSON.stringify(response.data))

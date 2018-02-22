@@ -10,7 +10,9 @@
 </div>
 
 <script type="text/javascript">
-  function createBasic (cb) {
+  var JIRAURL = 'https://atlassian-test.hq.k.grp/jira'
+
+  function createBasic (cb, cicDialog) {
     function mapfields (that) {
       return {
         'fields': {
@@ -21,7 +23,7 @@
       }
     }
 
-    var Basic = new CIC('Basic', 'JCICSBX', mapfields, cb);
+    var Basic = new CIC('Basic', 'JCICSBX', mapfields, cb, cicDialog);
     Basic.connect()
   }
 </script>
