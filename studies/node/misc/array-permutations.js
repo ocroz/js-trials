@@ -26,9 +26,11 @@ function getIssues (input, next) {
     // fetch remote api here => received response is issues[]
     const issueIndex = issues.findIndex(issue => issue.key === input.issues[0])
     const rankBeforeIssueIndex = issues.findIndex(issue => issue.key === input.rankBeforeIssue)
-    const thisRank = issues[issueIndex].fields[cfRank]
-    issues[issueIndex].fields[cfRank] = issues[rankBeforeIssueIndex].fields[cfRank]
-    issues[rankBeforeIssueIndex].fields[cfRank] = thisRank
+    if (issues[issueIndex].fields[cfRank] > issues[rankBeforeIssueIndex].fields[cfRank]) {
+      const thisRank = issues[issueIndex].fields[cfRank]
+      issues[issueIndex].fields[cfRank] = issues[rankBeforeIssueIndex].fields[cfRank]
+      issues[rankBeforeIssueIndex].fields[cfRank] = thisRank
+    }
 
     next && next()
   }, 20)
@@ -49,7 +51,7 @@ function processSeq (i) {
     newSort()
     // console.log(i, `{${issues[i].key} ${issues[i].fields[cfRank]}}`, `{${issuesByRank[i].key} ${issuesByRank[i].fields[cfRank]}}`)
     if (issues[i].key !== issuesByRank[i].key) {
-      const input = { issues: [issues[i].key], rankBeforeIssue: issuesByRank[i].key }
+      const input = { issues: [issuesByRank[i].key], rankBeforeIssue: issues[i].key }
       rankIssues(input, () => getIssues(input, () => processSeq(i - 1)))
     } else {
       processSeq(i - 1)
