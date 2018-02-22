@@ -25,18 +25,20 @@ function loadCIC (cicHtml, cicDialog, cicIframe) { // eslint-disable-line no-unu
 }
 
 // CIC render iframe (ran within iframe when the last HTML element is loaded well)
-function renderCIC (cicDialog, cicFunction) { // eslint-disable-line no-unused-vars
+function renderCIC (cicDialog, cicFunction, mapfields) { // eslint-disable-line no-unused-vars
   if (!cicDialog) { throw new Error('renderCIC() needs a cicDialog element') }
   if (!cicFunction) { throw new Error('renderCIC() needs a cicFunction function') }
 
   function showDialog () { // eslint-disable-line no-unused-vars
     if (window.parent.AJS) {
       // Confluence dialog
-      window[cicFunction](hideDialog, cicDialog)
+      window[cicFunction](hideDialog, cicDialog, window.parent[mapfields])
     } else {
       // Bootstrap dialog
       window.parent.$('#' + cicDialog).modal('show')
-      window.parent.$(window.parent.document).ready(function () { window[cicFunction](hideDialog, cicDialog) })
+      window.parent.$(window.parent.document).ready(function () {
+        window[cicFunction](hideDialog, cicDialog, window.parent[mapfields])
+      })
     }
   }
   function hideDialog () {
