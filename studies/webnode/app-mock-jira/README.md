@@ -1,6 +1,8 @@
-# App Express Pug
+# App Mock Jira
 
-Steps from jade:
+Mock JIRA at http://localhost:4545/jira.
 
-- [Renaming jade -> pug](https://github.com/pugjs/pug/issues/2184): Update the application
-- [form action interpolation](https://github.com/pugjs/pug/issues/2346): Update the views
+To:
+- Implement few REST API functions
+- Render an issue at http://localhost:4545/jira/browse/:key
+- Embed a custom jira issue collector

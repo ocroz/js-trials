@@ -3,6 +3,7 @@
 const { getMyself, getIssueTypes, getPriorities, getStatuses } = require('./system')
 
 let issues = []
+const cfRank = 'customfield_11450'
 
 function addIssue (issueData) {
   // error first
@@ -29,6 +30,7 @@ function addIssue (issueData) {
   fields.resolution = { name: 'Unresolved' }
   fields.comment = { comments: [] }
   fields.updated = fields.created = new Date()
+  fields[cfRank] = issues.length + 1
   const issue = { active, key, fields }
   issues.push(issue)
   return issue
@@ -88,8 +90,25 @@ function updateComment (key, cid, body) {
   issues[issueIndex].fields.updated = new Date()
 }
 
+function rankIssues (newRanks) {
+  const rankBeforeIssueIndex = issues.findIndex(issue => issue.key === newRanks.rankBeforeIssue)
+  const issueIndex = issues.findIndex(issue => issue.key === newRanks.issues[0])
+
+  console.log('rank', {
+    issue: issues[issueIndex].key + ' (' + issues[issueIndex].fields[cfRank] + ')',
+    rankBeforeIssue: issues[rankBeforeIssueIndex].key + ' (' + issues[rankBeforeIssueIndex].fields[cfRank] + ')'
+  }, issues[issueIndex].fields[cfRank] > issues[rankBeforeIssueIndex].fields[cfRank])
+
+  if (issues[issueIndex].fields[cfRank] > issues[rankBeforeIssueIndex].fields[cfRank]) {
+    const beforeIssueRank = issues[rankBeforeIssueIndex].fields[cfRank]
+    issues[rankBeforeIssueIndex].fields[cfRank] = issues[issueIndex].fields[cfRank]
+    issues[issueIndex].fields[cfRank] = beforeIssueRank
+  }
+}
+
 module.exports = {
   /* eslint-disable object-property-newline */
   addIssue, deleteIssue, getIssue, getIssues,
-  addComment, deleteComment, getComment, updateComment
+  addComment, deleteComment, getComment, updateComment,
+  rankIssues
 }
