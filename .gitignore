@@ -57,3 +57,5 @@ typings/
 # dotenv environment variables file
 .env
 
+# Unzipped document
+Training_Git_Total-20160511_20160513/
