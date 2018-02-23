@@ -1,0 +1,18 @@
+<!--
+<p>{{issue.key}}: {{issue.fields.summary}}</p>
+-->
+
+<div *ngIf="issue">
+
+  <p>
+    <a routerLink="/issue/{{issue.key}}">{{issue.key}}</a>
+    : {{issue.fields.summary}}
+
+  <!--
+    (<button (click)="deleteIssue()">Delete Issue</button>)
+  -->
+    (<a routerLink="/issues" (click)="deleteIssue()">Delete</a>)
+
+  </p>
+
+</div>
