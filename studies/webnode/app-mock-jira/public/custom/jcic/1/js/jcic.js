@@ -184,7 +184,7 @@ function connect (that) {
       } else {
         console.error('CIC failed to contact JIRA ' + that.jira, response.data)
         var title = 'Please first login to JIRA server'
-        var message = '<p>Go and login at:<br /><a href="' + that.jira + '">' + that.jira + '</a></p><p>Then come back here.</p>'
+        var message = '<p>Go and login at: <a href="' + that.jira + '" target="_blank">' + that.jira + '</a><br />Then come back here.</p>'
         showMessage(that, title, message)
       }
     }
