@@ -296,7 +296,10 @@ function xhrJira (cb, jiraurl, method, request, input) {
     cb && cb(response)
   }
   xhr.onerror = function () {
-    console.error('onerror', xhr)
+    console.error('Error on ' + method + ' ' + url, xhr)
+    var data = { success: false, status: xhr.status, statusText: xhr.statusText }
+    var response = { success: false, data: data }
+    cb && cb(response)
   }
   xhr.onloadend = function () {
     console.log('END OF REST CALL')
