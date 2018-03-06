@@ -53,7 +53,7 @@ function renderCIC (cicDialog, cicFunction, mapfields) { // eslint-disable-line 
 
 // CIC show submitted issue (ran within iframe when the issue has been submitted)
 function showSubmitted (that, title, message) {
-  var modalContentId = 'submitted'
+  var modalContentId = that.collector + '-submitted'
   var modalHeight = '238px'
   var modalDialog, modalContent, modalHeader, modalBody, modalFooter, modalActions, cicDialog
   if (window.parent === window) {
@@ -80,6 +80,7 @@ function showSubmitted (that, title, message) {
     window.parent.AJS.$('#' + modalContentId + '-btn').click(function (e) {
       e.preventDefault()
       window.parent.AJS.dialog2('#' + modalContentId).hide()
+      window.parent.document.getElementById(modalContentId).outerHTML = ''
     })
   } else {
     // We reuse the dialog and append a new modal content after the iframe
