@@ -1,0 +1,47 @@
+<!-- css/js include for jquery, bootstrap, and bootstrap-select (include jcic at last) -->
+<link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+<script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+<script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+<!-- All 3 attributes 'id', 'title', and 'style="display: none;"' are mandatory -->
+<div id="IssueTypePriority" title="IssueType/Priority Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
+
+  <!-- Add the class 'jira:issuetypes' to build a select list which picks up all the issue type values from JIRA -->
+  <select id="issuetype" class="jira:issuetypes" name="Issue Type" title="Select Issue Type"></select>
+  <!-- Add the class 'jira:priorities' to build a select list which picks up all the priority values from JIRA -->
+  <select id="priority" class="jira:priorities" name="Priority" title="Select Priority" required></select>
+
+  <textarea id="description" name="Description" placeholder="Description of the issue" rows="3" required></textarea>
+</div>
+
+<script type="text/javascript">
+  function createIssueTypePriority (cb, cicDialog) { // Get mapfields() as third parameter (cb, cicDialog, mapfields)...
+    function mapfields (that) { // ...or define it here
+      return {
+        'fields': {
+          'summary': that.value('summary'), // 'summary' is the id you have defined in the above HTML element
+          'issuetype': { name: that.value('issuetype') }, // same for 'issuetype'
+          'priority': { name: that.value('priority') },
+          'description': that.value('description')
+        }
+      }
+    }
+
+    // All the fields listed inside the above HTML element of id 'IssueTypePriority' will be shown in the CIC form
+    // The issue will be submitted in project JCICSBX
+    // Say how to update the JIRA issue fields from the CIC form fields via mapfields()
+    // Pass the 2 last parameters which you got as input too
+    var IssueTypePriority = new CIC('IssueTypePriority', 'JCICSBX', mapfields, cb, cicDialog);
+    IssueTypePriority.connect()
+  }
+</script>
+
+<!-- load jcic.js at last with attribute 'onload' to run renderCIC() only when the iframe is completely loaded -->
+<!-- give the IDs of the dialog where this html is injected to correctly render it -->
+<!-- give the name of the above function to be called by renderCIC() when the iframe is completely loaded -->
+<!-- [optional] the 3rd param is the name of the mapfields() function defined in iframe's parent (useful for debug) -->
+<script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createIssueTypePriorityDialog', 'createIssueTypePriority', 'mapfields')"></script>

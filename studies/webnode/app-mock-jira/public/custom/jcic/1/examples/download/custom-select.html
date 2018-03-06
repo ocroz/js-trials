@@ -1,0 +1,41 @@
+<link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+<script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+<script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+<div id="CustomSelect" title="Custom Select Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
+
+  <!-- Add a HTML select list with its values -->
+  <!-- Possibly add the attribute 'multiple' too -->
+  <select id="fruit" name="Fruit" title="Select Fruit">
+    <option>Apple</option>
+    <option>Orange</option>
+    <option>Banana</option>
+  </select>
+
+</div>
+
+<script type="text/javascript">
+  var JIRAURL = 'https://atlassian-test.hq.k.grp/jira'
+
+  function createCustomSelect (cb, cicDialog) {
+    function mapfields (that) {
+      return {
+        'fields': {
+          'summary': that.value('summary'),
+          'issuetype': {'name': 'Improvement'},
+          'priority': {'name': 'Major'},
+          'description': ((that.value('fruit') || '') && that.value('fruit') + '\n') // Put the custom select value into the description
+        }
+      }
+    }
+
+    var CustomSelect = new CIC('CustomSelect', 'JCICSBX', mapfields, cb, cicDialog);
+    CustomSelect.connect()
+  }
+</script>
+
+<script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createCustomSelectDialog', 'createCustomSelect')"></script>

@@ -1,22 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>JIRA Custom Issue Collector</title>
+<!-- css/js include for jquery, bootstrap, and bootstrap-select (include jcic at last) -->
+<link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+<script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-  <link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
-  <!-- Bootstrap's JavaScript requires jQuery version 1.9.1 or higher, but lower than version 4 -->
-  <script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
-  <script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-  <link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
-  <script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
-
-  <script src="/custom/jcic/1/js/jcic.js"></script>
-</head>
-<body>
-
-<button id="SumDescBtn" class="btn btn-default" onclick="createSumDesc()">Summary and Description</button>
+<link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+<script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
 
 <!-- All 3 attributes 'id', 'title', and 'style="display: none;"' are mandatory -->
 <div id="SumDesc" title="Summary/Description Submit Form" style="display: none;">
@@ -33,8 +21,9 @@
 </div>
 
 <script type="text/javascript">
-  function createSumDesc (cb) { // eslint-disable-line no-unused-vars
-    function mapfields (that) { // access any CIC field value via: that.value('field')
+  function createSumDesc (cb, cicDialog) { // Get mapfields() as third parameter (cb, cicDialog, mapfields)...
+    function mapfields (that) { // ...or define it here
+      // Access any CIC field value via: that.value('field')
       return {
         'fields': {
           'summary': that.value('summary'), // 'summary' is the id you have defined in the above HTML element
@@ -48,11 +37,14 @@
     // All the fields listed inside the above HTML element of id 'SumDesc' will be shown in the CIC form
     // The issue will be submitted in project JCICSBX
     // Say how to update the JIRA issue fields from the CIC form fields via mapfields()
-    // Pass a calback cb() to run actions on process exit
-    var SumDesc = new CIC('SumDesc', 'JCICSBX', mapfields, cb) // eslint-disable-line no-undef
+    // Pass the 2 last parameters which you got as input too
+    var SumDesc = new CIC('SumDesc', 'JCICSBX', mapfields, cb, cicDialog);
     SumDesc.connect()
   }
 </script>
 
-</body>
-</html>
+<!-- load jcic.js at last with attribute 'onload' to run renderCIC() only when the iframe is completely loaded -->
+<!-- give the IDs of the dialog where this html is injected to correctly render it -->
+<!-- give the name of the above function to be called by renderCIC() when the iframe is completely loaded -->
+<!-- [optional] the 3rd param is the name of the mapfields() function defined in iframe's parent (useful for debug) -->
+<script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createSumDescDialog', 'createSumDesc', 'mapfields')"></script>

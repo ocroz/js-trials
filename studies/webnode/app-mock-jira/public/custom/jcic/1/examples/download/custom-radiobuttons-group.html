@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+<script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+<script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+<div id="CustomRadioButtonsGroup" title="Custom Radio Buttons Group Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
+
+  <!-- Add a HTML group of radio buttons -->
+  <!-- The name of every label element must match the id of the div element -->
+  <div id="car" class="radio" title="Car">
+    <label class="radio"><input type="radio" name="car" value="Mercedes">Mercedes</label>
+    <label class="radio"><input type="radio" name="car" value="Renault">Renault</label>
+    <label class="radio"><input type="radio" name="car" value="Volvo">Volvo</label>
+  </div>
+
+  <!-- Possibly put the values on one line -->
+  <div id="volume" class="radio" title="Car volume">
+    <label class="radio-inline"><input type="radio" name="volume" value="Small">Small</label>
+    <label class="radio-inline"><input type="radio" name="volume" value="Medium">Medium</label>
+    <label class="radio-inline"><input type="radio" name="volume" value="Large">Large</label>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  var JIRAURL = 'https://atlassian-test.hq.k.grp/jira'
+
+  function createCustomRadioButtonsGroup (cb, cicDialog) {
+    function mapfields (that) {
+      return {
+        'fields': {
+          'summary': that.value('summary'),
+          'issuetype': {'name': 'Improvement'},
+          'priority': {'name': 'Major'},
+          'description':
+            ((that.value('car') || '') && that.value('car') + '\n') +
+            ((that.value('volume') || '') && that.value('volume') + '\n') // Put the custom radio values into the description
+        }
+      }
+    }
+
+    var CustomRadioButtonsGroup = new CIC('CustomRadioButtonsGroup', 'JCICSBX', mapfields, cb, cicDialog);
+    CustomRadioButtonsGroup.connect()
+  }
+</script>
+
+<script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createCustomRadioButtonsGroupDialog', 'createCustomRadioButtonsGroup')"></script>

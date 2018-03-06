@@ -1,0 +1,59 @@
+<!-- css/js include for jquery, bootstrap, and bootstrap-select (include jcic at last) -->
+<link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+<script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+<script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+<!-- All 3 attributes 'id', 'title', and 'style="display: none;"' are mandatory -->
+<div id="ComponentsVersions" title="Components/Versions Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text"/>
+
+  <!-- Add the class 'jira:components' to build a select list which picks up all the project's components from JIRA -->
+  <!-- Add the attributes 'multiple' and/or 'data-live-search="true"' for better rendering -->
+  <select id="components" class="jira:components" multiple data-live-search="true" name="Component" title="Select Component"></select>
+
+  <!-- Add the class 'jira:versions' to build a select list which picks up all the project's versions from JIRA -->
+  <!-- The versions are mappable to the issue fields 'Affects Version/s' and 'Fix Version/s' -->
+  <select id="affectversions" class="jira:versions" multiple data-live-search="true" name="Affected Version" title="Select Affected Version"></select>
+  <select id="fixversion" class="jira:versions" name="Fix Version" title="Select Fix Version"></select>
+
+  <textarea id="description" name="Description" placeholder="Description of the issue" rows="4" required></textarea>
+</div>
+
+<script type="text/javascript">
+  function createComponentsVersions (cb, cicDialog) { // Get mapfields() as third parameter (cb, cicDialog, mapfields)...
+    function mapfields (that) { // ...or define it here
+      // Access any CIC field value via: that.value('field')
+      return {
+        'fields': {
+          'summary': that.value('summary'),
+          'issuetype': {'name': 'Improvement'},
+          'priority': {'name': 'Major'},
+          'components': that.value('components') && that.value('components').map(function (name) {
+            return {name: name} // the 'components' fields in the collector above is an array due to its attribute 'multiple'
+          }),
+          'versions': that.value('affectversions') && that.value('affectversions').map(function (name) {
+            return {name: name} // same for the 'versions' fields
+          }),
+          'fixVersions': that.value('fixversion') && [{'name': that.value('fixversion')}], // this single value must be mapped as an array of one element
+          'description': that.value('description')
+        }
+      }
+    }
+
+    // All the fields listed inside the above HTML element of id 'ComponentsVersions' will be shown in the CIC form
+    // The issue will be submitted in project JCICSBX
+    // Say how to update the JIRA issue fields from the CIC form fields via mapfields()
+    // Pass the 2 last parameters which you got as input too
+    var ComponentsVersions = new CIC('ComponentsVersions', 'JCICSBX', mapfields, cb, cicDialog);
+    ComponentsVersions.connect()
+  }
+</script>
+
+<!-- load jcic.js at last with attribute 'onload' to run renderCIC() only when the iframe is completely loaded -->
+<!-- give the IDs of the dialog where this html is injected to correctly render it -->
+<!-- give the name of the above function to be called by renderCIC() when the iframe is completely loaded -->
+<!-- [optional] the 3rd param is the name of the mapfields() function defined in iframe's parent (useful for debug) -->
+<script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createComponentsVersionsDialog', 'createComponentsVersions', 'mapfields')"></script>

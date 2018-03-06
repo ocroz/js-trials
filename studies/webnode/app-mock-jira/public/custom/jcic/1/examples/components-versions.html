@@ -16,41 +16,36 @@
 </head>
 <body>
 
-<button id="SumDescBtn" class="btn btn-default" onclick="createSumDesc()">Summary and Description</button>
+<button id="IssueTypePriorityBtn" class="btn btn-default" onclick="createIssueTypePriority()">Issue Type and Priority</button>
 
-<!-- All 3 attributes 'id', 'title', and 'style="display: none;"' are mandatory -->
-<div id="SumDesc" title="Summary/Description Submit Form" style="display: none;">
-  <!-- The attributes 'id' and 'name' and mandatory -->
-  <!-- 'id' makes you able to access the field value in mapfields() - see the javascript below -->
-  <!-- 'name' is the label of the field in the CIC form -->
-  <!-- optionally 'placeholder' is the text shown within the field before the user puts some data in it -->
-  <!-- Add the attribute 'required' to make it required in the CIC form -->
-
-  <!-- Define type="text" for an 'input' field -->
+<div id="IssueTypePriority" title="IssueType/Priority Submit Form" style="display: none;">
   <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
-  <!-- Adjust the number of rows for every 'textarea' field -->
   <textarea id="description" name="Description" placeholder="Description of the issue" rows="3" required></textarea>
+  <!-- Add the class 'jira:issuetypes' to build a select list which picks up all the issue type values from JIRA -->
+  <select id="issuetype" class="jira:issuetypes" name="Issue Type" title="Select Issue Type"></select>
+  <!-- Add the class 'jira:priorities' to build a select list which picks up all the priority values from JIRA -->
+  <select id="priority" class="jira:priorities" name="Priority" title="Select Priority" required></select>
 </div>
 
 <script type="text/javascript">
-  function createSumDesc (cb) { // eslint-disable-line no-unused-vars
+  function createIssueTypePriority (cb) { // eslint-disable-line no-unused-vars
     function mapfields (that) { // access any CIC field value via: that.value('field')
       return {
         'fields': {
           'summary': that.value('summary'), // 'summary' is the id you have defined in the above HTML element
-          'issuetype': {'name': 'Improvement'}, // force a value for this required field in JIRA
-          'priority': {'name': 'Major'}, // same for this other required field in JIRA
-          'description': that.value('description')
+          'issuetype': {'name': 'Improvement'},
+          'priority': {'name': 'Major'},
+          'description': that.value('summary')
         }
       }
     }
 
-    // All the fields listed inside the above HTML element of id 'SumDesc' will be shown in the CIC form
+    // All the fields listed inside the above HTML element of id 'IssueTypePriority' will be shown in the CIC form
     // The issue will be submitted in project JCICSBX
     // Say how to update the JIRA issue fields from the CIC form fields via mapfields()
     // Pass a calback cb() to run actions on process exit
-    var SumDesc = new CIC('SumDesc', 'JCICSBX', mapfields, cb) // eslint-disable-line no-undef
-    SumDesc.connect()
+    var IssueTypePriority = new CIC('IssueTypePriority', 'JCICSBX', mapfields, cb) // eslint-disable-line no-undef
+    IssueTypePriority.connect()
   }
 </script>
 

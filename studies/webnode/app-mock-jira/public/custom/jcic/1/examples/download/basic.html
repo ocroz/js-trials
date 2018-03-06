@@ -10,8 +10,8 @@
 </div>
 
 <script type="text/javascript">
-  function createBasic (cb, cicDialog) { // Get mapfields() as third parameter (cb, cicDialog, mapfields)...
-    function mapfields (that) { // ...or define it here
+  function createBasic (cb, cicDialog) {
+    function mapfields (that) {
       return {
         'fields': {
           'summary': that.value('summary'),
@@ -26,7 +26,4 @@
   }
 </script>
 
-<!-- load jcic.js at last with attribute 'onload' to run renderCIC() only when the iframe is completely loaded -->
-<!-- give the IDs of the dialog and iframe where this html is injected to correctly render them -->
-<!-- [optional] the 3rd param is the name of the mapfields() function defined in iframe's parent (useful for debug) -->
 <script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createBasicDialog', 'createBasic', 'mapfields')"></script>

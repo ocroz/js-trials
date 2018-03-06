@@ -1,0 +1,49 @@
+<link rel="stylesheet" href="/custom/lib/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="/custom/lib/jquery/3.2.1/jquery.min.js"></script>
+<script src="/custom/lib/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="/custom/lib/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+<script src="/custom/lib/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+<div id="CustomCheckboxesGroup" title="Custom Checkboxes Group Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
+
+  <!-- Add a HTML group of checkboxes -->
+  <div id="clothes" class="checkbox" title="Clothes">
+    <label class="checkbox"><input type="checkbox" value="Hat">Hat</label>
+    <label class="checkbox"><input type="checkbox" value="Shirt">Shirt</label>
+    <label class="checkbox"><input type="checkbox" value="Pant">Pant</label>
+  </div>
+
+  <!-- Possibly put the values on one line -->
+  <div id="colors" class="checkbox" title="Clothing colors">
+    <label class="checkbox-inline"><input type="checkbox" value="Red">Red</label>
+    <label class="checkbox-inline"><input type="checkbox" value="Green">Green</label>
+    <label class="checkbox-inline"><input type="checkbox" value="Blue">Blue</label>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  var JIRAURL = 'https://atlassian-test.hq.k.grp/jira'
+
+  function createCustomCheckboxesGroup (cb, cicDialog) {
+    function mapfields (that) {
+      return {
+        'fields': {
+          'summary': that.value('summary'),
+          'issuetype': {'name': 'Improvement'},
+          'priority': {'name': 'Major'},
+          'description':
+            ((that.value('clothes') || '') && that.value('clothes').join(', ') + '\n') +
+            ((that.value('colors') || '') && that.value('colors').join(', ') + '\n') // Put the custom checkbox values into the description
+        }
+      }
+    }
+
+    var CustomCheckboxesGroup = new CIC('CustomCheckboxesGroup', 'JCICSBX', mapfields, cb, cicDialog);
+    CustomCheckboxesGroup.connect()
+  }
+</script>
+
+<script src="/custom/jcic/1/js/jcic.js" onload="renderCIC('createCustomCheckboxesGroupDialog', 'createCustomCheckboxesGroup')"></script>
