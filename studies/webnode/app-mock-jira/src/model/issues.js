@@ -41,6 +41,7 @@ function deleteIssue (key) {
   console.log(`Delete issue ${key} (issueIndex: ${issueIndex})`)
   issues[issueIndex].active = false
   issues[issueIndex].fields.updated = new Date()
+  return true
 }
 
 function getIssue (key) {
@@ -69,6 +70,7 @@ function addComment (key, body) {
   const comment = { active, id, author, body, created }
   issues[issueIndex].fields.comment.comments.push(comment)
   issues[issueIndex].fields.updated = new Date()
+  return comment
 }
 
 function deleteComment (key, cid) {
@@ -76,18 +78,19 @@ function deleteComment (key, cid) {
   console.log(`Delete comment ${cid} of issue ${key} (issueIndex: ${issueIndex})`)
   issues[issueIndex].fields.comment.comments[cid].active = false
   issues[issueIndex].fields.updated = new Date()
+  return true
 }
 
 function getComment (key, cid) {
   const issueIndex = issues.findIndex(issue => issue.key === key)
-  const data = issues[issueIndex].fields.comment.comments[cid]
-  return data
+  return issues[issueIndex].fields.comment.comments[cid]
 }
 
 function updateComment (key, cid, body) {
   const issueIndex = issues.findIndex(issue => issue.key === key)
   issues[issueIndex].fields.comment.comments[cid].body = body
   issues[issueIndex].fields.updated = new Date()
+  return issues[issueIndex].fields.comment.comments[cid]
 }
 
 function rankIssues (newRanks) {
@@ -104,6 +107,7 @@ function rankIssues (newRanks) {
     issues[rankBeforeIssueIndex].fields[cfRank] = issues[issueIndex].fields[cfRank]
     issues[issueIndex].fields[cfRank] = beforeIssueRank
   }
+  return true
 }
 
 module.exports = {

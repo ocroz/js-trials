@@ -61,10 +61,10 @@ function _addFake (req, res) {
     assignee: myself,
     description: 'A description'
   }}
-  addIssue(issueData)
+  const data = addIssue(issueData)
   // < For testing
 
-  res.end()
+  res.json(data)
 }
 
 function _getIssue (req, res) {
@@ -94,13 +94,13 @@ function _putIssue (req, res) {
 function _deleteIssue (req, res) {
   console.log('delete', req.originalUrl)
   deleteIssue(req.params.key)
-  res.end()
+  res.status(204).end()
 }
 
 function _postComment (req, res) {
   console.log('post', req.originalUrl, req.body)
-  addComment(req.params.key, req.body.body)
-  res.end()
+  const data = addComment(req.params.key, req.body.body)
+  res.json(data)
 }
 
 function _getComment (req, res) {
@@ -111,12 +111,12 @@ function _getComment (req, res) {
 
 function _putComment (req, res) {
   console.log('put', req.originalUrl, req.body)
-  updateComment(req.params.key, req.params.cid, req.body.body)
-  res.end()
+  const data = updateComment(req.params.key, req.params.cid, req.body.body)
+  res.json(data)
 }
 
 function _deleteComment (req, res) {
   console.log('delete', req.originalUrl)
   deleteComment(req.params.key, req.params.cid)
-  res.end()
+  res.status(204).end()
 }
