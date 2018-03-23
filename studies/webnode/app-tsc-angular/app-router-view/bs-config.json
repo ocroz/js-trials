@@ -1,0 +1,13 @@
+{
+  "server": {
+    "baseDir": "src",
+    "routes": {
+      "/node_modules": "node_modules"
+    }
+  },
+  "browser": "chrome",
+  "port": 3030,
+  "ui": {
+    "port": 3031
+  }
+}

@@ -1,0 +1,9 @@
+<div *ngIf="!active;then link else text"></div>
+
+<ng-template #link>
+  <a routerLink="{{view}}" (click)="onClick()">{{name}}</a>
+</ng-template>
+
+<ng-template #text>
+  {{name}}
+</ng-template>

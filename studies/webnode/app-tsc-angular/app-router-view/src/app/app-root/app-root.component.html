@@ -1,0 +1,10 @@
+<h1>{{title}}</h1>
+
+<nav>
+  <link-view view="/" name="Home"></link-view>
+  <link-view view="/issues" name="Issues"></link-view>
+  <span *ngIf="matches !== null">
+    <link-view view="{{matches[0]}}" name="{{matches[1]}}"></link-view>
+  </span>
+</nav>
+<router-outlet></router-outlet>

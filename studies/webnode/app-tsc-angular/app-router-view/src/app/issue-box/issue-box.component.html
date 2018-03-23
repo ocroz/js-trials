@@ -1,0 +1,11 @@
+<div *ngIf="issue">
+
+  <p>
+    <link-view view="/issue/{{issue.key}}" name="{{issue.key}}"></link-view>
+
+    : {{issue.fields.summary}}
+
+    (<a routerLink="/issues" (click)="deleteIssue()">Delete</a>)
+  </p>
+
+</div>
