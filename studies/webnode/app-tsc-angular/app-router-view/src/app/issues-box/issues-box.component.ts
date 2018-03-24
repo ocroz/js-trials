@@ -14,9 +14,10 @@ import { IssueService }  from '../services/issue.service';
 })
 export class IssuesBoxComponent implements OnInit {
 
-  @select$(['data', 'issues'], null) issues$: Observable<Issue[]>;
+  // @select$(['data', 'issues'], null) issues$: Observable<Issue[]>;
 
   private store: NgRedux<IAppState>;
+  private issues$: Observable<Issue[]>;
   private selectedIssue: Issue;
 
   constructor(
@@ -28,6 +29,11 @@ export class IssuesBoxComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.issues$ = this.ngRedux.select(['data', 'issues']);
+    this.issues$.subscribe((issues: Issue[]) => {
+      const key = this.store.getState().data.activeIssue;
+      this.selectedIssue = this.issueService.getIssue(key); // refresh selectedIssue after addFakeIssue()
+    })
     if (!this.store.getState().data.isFetching) {
       this.getIssues();
     }
