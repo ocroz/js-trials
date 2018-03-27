@@ -1,0 +1,15 @@
+<h3>List of Issues</h3>
+
+<p>
+  <button mat-raised-button class="mat-default" (click)="addFakeIssue()">Add Fake Issue</button>
+</p>
+
+<ul>
+  <li *ngFor="let issue of issues$ | async"
+    [class.selected]="issue === selectedIssue"
+  > <!-- (click)="onSelect(issue)" -->
+    <app-issue [issue]="issue"></app-issue>
+  </li>
+</ul>
+
+<app-issue-box [issue]="selectedIssue"></app-issue-box>

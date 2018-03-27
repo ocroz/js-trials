@@ -84,7 +84,7 @@ class IssueBoxComp extends Component {
                     <img src={issue.fields.status.iconUrl} height={iconSize} width={iconSize} />&nbsp;
                     {issue.fields.status.name}<br />
                     {issue.fields.resolution.name}<br />
-                    {(issue.fields.labels || []).map(item => item).join(', ')}
+                    {(issue.fields.fixVersions || []).map(item => item).join(', ')}
                   </Col>
                 </Col>
               </div>

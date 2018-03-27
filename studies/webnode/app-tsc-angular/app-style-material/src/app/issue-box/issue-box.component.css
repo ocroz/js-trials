@@ -1,0 +1,16 @@
+.mat-small {
+  min-width: 1%;
+  height: 0px;
+  padding-right: 2px;
+  padding-left: 2px;
+}
+
+.mat-left {
+  position: absolute;
+  left: 5px;
+}
+
+.mat-right {
+  position: absolute;
+  right: 5px;
+}

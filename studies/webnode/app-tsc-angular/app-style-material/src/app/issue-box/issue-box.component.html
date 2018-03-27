@@ -1,0 +1,263 @@
+<div *ngIf="isFetching && !issue">
+  Loading...
+</div>
+
+<div *ngIf="!isFetching && !issue">
+  Empty.
+</div>
+
+<div *ngIf="issue">
+
+  <!-- issue.key -->
+  <mat-grid-list cols="2" rowHeight="30px">
+    <mat-grid-tile><div class="mat-left">
+      <link-view view="/issue/{{issue.key}}" name="{{issue.key}}"></link-view>
+    </div></mat-grid-tile>
+    <mat-grid-tile><div class="mat-right">
+      <a mat-button color="primary" routerLink="/issues" (click)="deleteIssue()">Delete</a>
+    </div></mat-grid-tile>
+  </mat-grid-list>
+
+  <hr />
+
+  <!-- issue.fields.summary -->
+  <mat-grid-list cols="1" rowHeight="30px">
+    <mat-grid-tile><div class="mat-left">
+      <b>Summary:</b>&nbsp;&nbsp;&nbsp;&nbsp;{{issue.fields.summary}}
+    </div></mat-grid-tile>
+  </mat-grid-list>
+
+  <mat-grid-list cols="24" rowHeight="30px">
+
+  <!-- ROW 1 -->
+
+    <!-- issue.fields.issuetype -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Type:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="1">
+      <img src="{{issue.fields.issuetype.iconUrl}}" height="16px;" width="16px;" /> <!-- {{iconSize}} -->
+    </mat-grid-tile>
+    <mat-grid-tile colspan="3"><div class="mat-left">
+      {{issue.fields.issuetype.name}}
+    </div></mat-grid-tile>
+
+    <!-- issue.fields.status -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Status:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="1">
+      <img src="{{issue.fields.status.iconUrl}}" height="16px;" width="16px;" /> <!-- {{iconSize}} -->
+    </mat-grid-tile>
+    <mat-grid-tile colspan="3"><div class="mat-left">
+      {{issue.fields.status.name}}
+    </div></mat-grid-tile>
+
+    <!-- issue.fields.assignee -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Assignee:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      {{issue.fields.assignee.name}}
+    </div></mat-grid-tile>
+
+  <!-- ROW 2 -->
+
+    <!-- issue.fields.priority -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Priority:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="1">
+      <img src="{{issue.fields.priority.iconUrl}}" height="16px;" width="16px;" /> <!-- {{iconSize}} -->
+    </mat-grid-tile>
+    <mat-grid-tile colspan="3"><div class="mat-left">
+      {{issue.fields.priority.name}}
+    </div></mat-grid-tile>
+
+    <!-- issue.fields.resolution -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Resolution:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      {{issue.fields.resolution.name}}
+    </div></mat-grid-tile>
+
+    <!-- issue.fields.reporter -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Reporter:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      {{issue.fields.reporter.name}}
+    </div></mat-grid-tile>
+
+  <!-- ROW 3 -->
+
+    <!-- issue.fields.versions -->
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Affects&nbsp;Version/s:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      <span ng-repeat="item in issue.fields.versions">
+        <span *ngIf="$index !== 0">{{', '}}</span>
+        <span *ngIf="$index">{{$index}}-{{item}}-{{item.name}}</span>
+      </span>
+    </div></mat-grid-tile>
+
+    <!-- issue.fields.fixVersions -->
+<!--
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Fix&nbsp;Version/s:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      <span ng-repeat="item in (issue.fields.fixVersions || [])">
+        <span *ngIf="$index">{{', '}}</span>{{item.name}}
+      </span>
+    </div></mat-grid-tile>
+-->
+    <!-- empty -->
+<!--
+    <mat-grid-tile colspan="8">
+    </mat-grid-tile>
+-->
+
+  <!-- ROW 4 -->
+
+    <!-- issue.fields.components -->
+<!--
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Component/s:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      <span ng-repeat="item in (issue.fields.components || [])">
+        <span *ngIf="$index">{{', '}}</span>{{item.name}}
+      </span>
+    </div></mat-grid-tile>
+-->
+
+    <!-- empty -->
+    <mat-grid-tile colspan="8">
+    </mat-grid-tile>
+
+    <!-- empty -->
+    <mat-grid-tile colspan="8">
+    </mat-grid-tile>
+
+    <!-- issue.fields.created -->
+<!--
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Created:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      <span title={{moment(issue.fields.created).format('YYYY/MM/DD HH:mm:ss')}}>
+        {{moment(issue.fields.created).fromNow()}}
+      </span>
+    </div></mat-grid-tile>
+-->
+
+  <!-- ROW 5 -->
+
+    <!-- issue.fields.labels -->
+<!--
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Labels:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      <span ng-repeat="item in (issue.fields.labels || [])">
+        <span *ngIf="$index">{{', '}}</span>{{item.name}}
+      </span>
+    </div></mat-grid-tile>
+-->
+
+    <!-- empty -->
+    <mat-grid-tile colspan="8">
+    </mat-grid-tile>
+
+    <!-- empty -->
+    <mat-grid-tile colspan="8">
+    </mat-grid-tile>
+
+    <!-- issue.fields.updated -->
+<!--
+    <mat-grid-tile colspan="4"><div class="mat-right">
+      <b>Updated:</b>
+    </div></mat-grid-tile>
+    <mat-grid-tile colspan="4"><div class="mat-left">
+      <span title={{moment(issue.fields.updated).format('YYYY/MM/DD HH:mm:ss')}}>
+        {{moment(issue.fields.updated).fromNow()}}
+      </span>
+    </div></mat-grid-tile>
+-->
+
+  </mat-grid-list>
+
+  <!-- issue.fields.description -->
+  <mat-grid-list cols="1">
+    <mat-grid-tile><div class="mat-left">
+      <p><b>Description:</b></p>
+      <pre>{{issue.fields.description}}</pre>
+    </div></mat-grid-tile>
+  </mat-grid-list>
+
+  <hr />
+
+  <!-- issue.fields.comment.comments -->
+
+  <div *ngIf="isFetching && issue.fields.comment.comments.length === 0">
+    Loading...
+  </div>
+
+  <div *ngIf="!isFetching && issue.fields.comment.comments.length === 0">
+    Empty.
+  </div>
+
+  <div *ngIf="issue.fields.comment.comments.length">
+    <mat-grid-list cols="1">
+      <mat-grid-tile><div class="mat-left">
+        <b>Comments:</b>
+      </div></mat-grid-tile>
+<!--
+      <ul>
+        <li *ngFor="let comment of (issue.fields.comment.comments || [])">
+          <mat-grid-tile><div class="mat-left">
+            <i>
+              Posted by {{comment.author.name}}{{' '}}
+              <span title={{moment(comment.created).format('YYYY/MM/DD HH:mm:ss')}}>
+                {{moment(comment.created).fromNow()}}
+              </span>{{' '}}
+              (<button mat-button class="mat-small" color="primary" (click)="deleteComment(comment)">Delete</button>)
+            </i>
+            <br />
+            <pre>{{comment.body}}</pre>
+          </div></mat-grid-tile>
+        </li>
+      </ul>
+-->
+<!--
+      {{(issue.fields.comment.comments || []).map(comment => (
+        <mat-grid-tile><div class="mat-left">
+          <i>
+            Posted by {{comment.author.name}}{{' '}}
+            <span title={{moment(comment.created).format('YYYY/MM/DD HH:mm:ss')}}>
+              {{moment(comment.created).fromNow()}}
+            </span>{{' '}}
+            (<button mat-button class="mat-small" color="primary" (click)="deleteComment(comment)">Delete</button>)
+          </i>
+          <br />
+          <pre>{{comment.body}}</pre>
+        </div></mat-grid-tile>
+      ))}}
+-->
+    </mat-grid-list>
+
+<!--
+    <form (submit)="submitComment()" (blur)="blurComment()">
+      <textarea rows="1" placeholder="Add comment:" (focus)="focusComment() />
+      <div *ngIf="isCommentOpen">
+        <button mat-button color="primary">Submit</button>
+      </div>
+    </form>
+-->
+
+  </div>
+
+</div>
