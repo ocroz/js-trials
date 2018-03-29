@@ -2,115 +2,6 @@
 
 /* globals JIRAURL $ XMLHttpRequest */
 
-// CIC load iframe (ran within parent of iframe)
-// NOTE: The last element of the HTML must have an attribute onload that triggers renderCIC()
-function loadCIC (cicHtml, cicDialog, cicIframe) { // eslint-disable-line no-unused-vars
-  if (!cicHtml) { throw new Error('loadCIC() needs a cicHtml file URL') }
-  if (!cicDialog) { throw new Error('loadCIC() needs a cicDialog element') }
-  if (!cicIframe) { throw new Error('loadCIC() needs a cicIframe element') }
-
-  if (window.AJS) {
-    // In Confluence the dialog must be opened before to load the HTML into the iframe
-    window.AJS.dialog2('#' + cicDialog).show()
-  }
-
-  // Load the HTML into the iframe
-  var xhr = new XMLHttpRequest()
-  xhr.open('GET', cicHtml, true)
-  xhr.onload = function () {
-    var html = xhr.response
-    var d = $('#' + cicIframe)[0].contentWindow.document; d.open(); d.write(html); d.close()
-  }
-  xhr.send()
-}
-
-// CIC render iframe (ran within iframe when the last HTML element is loaded well)
-function renderCIC (cicDialog, cicFunction, mapfields) { // eslint-disable-line no-unused-vars
-  if (!cicDialog) { throw new Error('renderCIC() needs a cicDialog element') }
-  if (!cicFunction) { throw new Error('renderCIC() needs a cicFunction function') }
-
-  function showDialog () { // eslint-disable-line no-unused-vars
-    if (window.parent.AJS) {
-      // Confluence dialog
-      window[cicFunction](hideDialog, cicDialog, window.parent[mapfields])
-    } else {
-      // Bootstrap dialog
-      window.parent.$('#' + cicDialog).modal('show')
-      window.parent.$(window.parent.document).ready(function () {
-        window[cicFunction](hideDialog, cicDialog, window.parent[mapfields])
-      })
-    }
-  }
-  function hideDialog () {
-    if (window.parent.AJS) {
-      window.parent.AJS.dialog2('#' + cicDialog).hide()
-    } else {
-      window.parent.$('#' + cicDialog).modal('hide')
-    }
-  }
-  showDialog()
-}
-
-// CIC show submitted issue (ran within iframe when the issue has been submitted)
-function showSubmitted (that, title, message) {
-  var modalContentId = that.collector + '-submitted'
-  var modalHeight = '238px'
-  var modalDialog, modalContent, modalHeader, modalBody, modalFooter, modalActions, cicDialog
-  if (window.parent === window) {
-    // We are not running within an iframe
-    showMessage(that, title, message)
-  } else if (window.parent.AJS) {
-    // In Confluence we first close the dialog that contains the iframe, then we create a new dialog for the final message
-    window.parent.AJS.dialog2('#' + that.cicDialog).hide()
-
-    // Confluence dialog
-    modalDialog = document.createDocumentFragment()
-    modalContent = addElement(modalDialog, 'section', {class: 'aui-layer aui-dialog2', id: modalContentId, 'aria-hidden': true, 'data-aui-modal': true, role: 'dialog', style: 'height:110px; width:700px;'})
-    modalHeader = addElement(modalContent, 'div', {class: 'aui-dialog2-header'})
-    addElement(modalHeader, 'h4', {class: 'aui-dialog2-header-main'}, title)
-    modalBody = addElement(modalContent, 'div', {class: 'aui-dialog2-content'})
-    modalBody.innerHTML += message
-    modalFooter = addElement(modalContent, 'div', {class: 'aui-dialog2-footer'})
-    modalActions = addElement(modalFooter, 'div', {class: 'aui-dialog2-footer-actions'})
-    addElement(modalActions, 'button', {class: 'aui-button aui-button-primary exit', id: modalContentId + '-btn'}, 'Close')
-    window.parent.document.body.appendChild(modalDialog)
-    window.parent.AJS.dialog2('#' + modalContentId).show()
-
-    // Modal Close Handler
-    window.parent.AJS.$('#' + modalContentId + '-btn').click(function (e) {
-      e.preventDefault()
-      window.parent.AJS.dialog2('#' + modalContentId).hide()
-      window.parent.document.getElementById(modalContentId).outerHTML = ''
-    })
-  } else {
-    // We reuse the dialog and append a new modal content after the iframe
-    // Bootstrap dialog
-    modalDialog = document.createDocumentFragment()
-    modalContent = addElement(modalDialog, 'div', {class: 'modal-content', id: modalContentId})
-    modalHeader = addElement(modalContent, 'div', {class: 'modal-header'})
-    addElement(modalHeader, 'h4', {class: 'modal-title'}, title)
-    modalBody = addElement(modalContent, 'div', {class: 'modal-body'})
-    modalBody.innerHTML += message
-    modalFooter = addElement(modalContent, 'div', {class: 'modal-footer'})
-    addElement(modalFooter, 'button', {class: 'btn btn-default exit', 'data-dismiss': 'modal'}, 'Close')
-    cicDialog = window.parent.document.getElementById(that.cicDialog)
-    cicDialog.appendChild(modalDialog)
-    modalHeight = cicDialog.style.height
-    cicDialog.style.height = '100%'
-
-    // Modal Close Handler
-    window.parent.$('.exit').click(function (e) {
-      restoreDialog() // We restore the dialog to its original settings
-    })
-  }
-  function restoreDialog () {
-    var modalContent = window.parent.document.getElementById(modalContentId)
-    window.parent.$('#' + modalContent.parentNode.id).modal('hide')
-    window.parent.document.getElementById(modalContent.parentNode.id).style.height = modalHeight
-    modalContent.parentNode.removeChild(modalContent)
-  }
-}
-
 // CIC constructor
 function CIC (collector, project, mapfields, cb, cicDialog) { // eslint-disable-line no-unused-vars
   // Check params
@@ -123,6 +14,7 @@ function CIC (collector, project, mapfields, cb, cicDialog) { // eslint-disable-
   // CIC static attributes
   this.collector = this.label = collector
   this.modal = collector + '-modal'
+  this.modals = []
   this.project = project
   this.cicDialog = cicDialog
   this.formValues = {}
@@ -245,9 +137,9 @@ function submit (that) {
       var title = 'New issue submitted'
       var message = '<a href="' + issueurl + '">' + response.data.key + '</a>'
       console.log('ISSUE SUBMITTED:', issueurl)
-      $('#' + that.modal).modal('hide')
+      window.AJS.dialog2('#' + that.modals.pop()).hide()
       that.issue = { key: response.data.key, url: issueurl }
-      showSubmitted(that, title, message)
+      showMessage(that, title, message)
     } else {
       console.error('Fail to submit issue:', response.data)
       // alert(JSON.stringify(response.data))
@@ -327,6 +219,8 @@ function showMessage (that, title, message, event) {
 }
 
 function showForm (that) {
+  var auiSelect2Fields = []
+
   // Modal Header, Body, Footer
   var modalTitle = document.getElementById(that.collector).title || that.collector + ' Submit Form'
   var modalBody = addFormFields()
@@ -334,6 +228,18 @@ function showForm (that) {
 
   // Show Modal
   showModal(that, modalTitle, modalBody, modalEvents)
+
+  // Modal auiSelect2 fields
+  auiSelect2Fields.forEach(function (id) {
+    window.AJS.$('#' + that.modal + ' #' + id).auiSelect2()
+
+    // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
+    window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
+      if (e.target.classList.contains('select2-disabled')) {
+        e.target.style.display = 'none'
+      }
+    })
+  })
 
   // Modal Form Submit Handler
   $('#' + that.modal).submit(function (e) {
@@ -343,9 +249,6 @@ function showForm (that) {
     return false
   })
 
-  // Apply .selectpicker() to the select lists
-  $('.selectpicker').selectpicker()
-
   // Add the Form Fields from the Collector
   function addFormFields () {
     var modalBody = document.createElement('div')
@@ -353,24 +256,84 @@ function showForm (that) {
     for (var i = 1; i < childNodes.length; i += 2) {
       var childNode = childNodes[i]
       if (childNode.nodeName === '#comment') { continue } // Ignore HTML comments
-      var modalBodyContent = document.createDocumentFragment()
-      var modalBodyRow = addElement(modalBodyContent, 'div', {class: 'row'})
-      var modalBodyColumnLeft = addElement(modalBodyRow, 'div', {class: 'col-lg-3 col-md-3 col-sm-3 col-xs-3'})
-      var modalBodyColumnRight = addElement(modalBodyRow, 'div', {class: 'col-lg-8 col-md-8 col-sm-8 col-xs-8'})
-      modalBody.appendChild(modalBodyContent)
+      var fieldContent = document.createDocumentFragment()
+      var fieldGroup = addElement(fieldContent, 'div', {class: 'field-group'})
+      modalBody.appendChild(fieldContent)
       var label = childNode.getAttribute('name') || childNode.getAttribute('title')
-      var required = childNode.required ? '*' : ''
-      modalBodyColumnLeft.innerHTML += '<p align="right">' + label + '<span style="color:red">' + required + '<span></p>'
-      var p = addElement(modalBodyColumnRight, 'p', {})
-      var newNode = document.createElement(childNode.localName)
-      p.appendChild(newNode)
-      newNode.outerHTML = childNode.outerHTML
+
+/*
+  input/textarea: label
+  select single/multi: label but aui-label for priorities and issuetypes
+  radio/checkboxes: legend
+
+select
+single/multi | optgroup | live search | image : solution
+  x                                           : select without auiSelect2()
+  x                           x               : select with auiSelect2()
+  x                           x           x   : aui-select
+  x               x                           : select without auiSelect2()
+  x               x           x               : multiple=false with auiSelect2() and select/multi-select plus disabled/hidden/selected option*
+         x                                    : n/a
+         x                    x               : multiple=true with auiSelect2() and multi-select
+         x        x                           : n/a
+         x        x           x               : multiple=true with auiSelect2() and multi-select
+
+*document.getElementsByClassName('select2-match')[0].parentNode.style.display = 'none'
+document.getElementsByClassName('select2-match')[0].parentNode.outerText === document.getElementById('component-id').children[0].outerText
+
+        <label for="text-input">Summary<span class="aui-icon icon-required">required</span></label>
+        <label for="textarea-id">Description</label>
+        <aui-label for="issuetype-id">Issue Type:</aui-label>
+        <legend>Radio buttons</legend>
+*/
+
+      var fieldLabel = null
+      var auiSelect = false
+      // if (childNode.localName === 'div') {
+      //   fieldLabel = addElement(fieldGroup, 'legend', null, label)
+      // } else
+      if (childNode.localName === 'select' && (
+        childNode.classList.contains('jira:priorities') || childNode.classList.contains('jira:issuetypes')
+      )) {
+        auiSelect = true
+        fieldLabel = addElement(fieldGroup, 'aui-label', {for: childNode.id}, label)
+      } else {
+        fieldLabel = addElement(fieldGroup, 'label', {for: childNode.id}, label)
+      }
+      childNode.required && addElement(fieldLabel, 'span', {class: 'aui-icon icon-required'}, 'required')
+
+      var newNode = document.createElement(auiSelect ? 'aui-select' : childNode.localName)
+      fieldGroup.appendChild(newNode)
+      newNode.outerHTML = auiSelect
+        ? childNode.outerHTML.replace(/(<)select|select(>)/g, '$1aui-select$2')
+        : childNode.outerHTML
+      var lastNode = fieldGroup.children.length - 1
       if (childNode.localName !== 'div') {
-        p.children[0].className = childNode.className + ' form-control'
+        childNode.localName === 'input' && fieldGroup.children[lastNode].classList.add('text')
+        childNode.localName === 'textarea' && fieldGroup.children[lastNode].classList.add('textarea')
+        if (childNode.localName === 'select') {
+          !childNode.title && fieldGroup.children[lastNode].setAttribute('title', childNode.getAttribute('placeholder'))
+          !childNode.placeholder && fieldGroup.children[lastNode].setAttribute('placeholder', childNode.getAttribute('title'))
+
+          if (fieldGroup.children[lastNode].localName === 'aui-select') {
+            fieldGroup.children[lastNode].children[1].remove() // Remove the useless select element
+            childNode.required && (fieldGroup.children[lastNode].children[0].required = true)
+          } else {
+            (childNode.multiple || childNode.hasAttribute('data-live-search')) && auiSelect2Fields.push(childNode.id)
+            if (!childNode.multiple) {
+              var title = addElement(fieldGroup.children[lastNode], 'option', {disabled: true, hidden: true, selected: true, value: ''})
+              addElement(title, 'span', {style: 'display: none;'}, childNode.title)
+              fieldGroup.children[lastNode].classList.add('select')
+            } else {
+              fieldGroup.children[lastNode].classList.add('multi-select')
+            }
+          }
+        }
+        fieldGroup.children[lastNode].classList.add('medium-long-field')
       }
       if (childNode.localName === 'textarea' && childNode.placeholder) {
-        p.children[0].value = ''
-      } // Fix a bug in Internet Explorer
+        fieldGroup.children[lastNode].value = '' // Fix a bug in Internet Explorer
+      }
     }
     addJiraOptions(modalBody)
     return modalBody
@@ -378,45 +341,39 @@ function showForm (that) {
 
   // Add JIRA options to the select lists
   function addJiraOptions (form) {
-    var selects = form.getElementsByTagName('select')
-    var i, j, item, attributes
+    var selects = form.querySelectorAll('select,aui-select')
+    var i, j, item
     for (i = 0; i < selects.length; i++) {
       var select = selects[i]
-      select.className = select.className + ' selectpicker'
       var selectType = select.className.match(/jira:[^ ]*/)
       if (selectType) {
         var list = selectType[0].split(':')[1]
-        if (select.options.length === 0) {
-          if (!select.title) {
-            select.setAttribute('title', select.getAttribute('placeholder'))
-          }
+        if (!select.options || select.options.length === 0 || (select.options.length === 1 && select.options[0].disabled)) {
           if (that[list]) {
             if (list === 'versions') {
               var groupUnreleased = addElement(select, 'optgroup', {label: 'Unreleased'})
               for (j = 0; j < that[list].length; j++) {
                 item = that[list][j]
                 if (!item.archived && !item.released) { // unarchived and unreleased
-                  attributes = {'data-content': item.name}
-                  addElement(groupUnreleased, 'option', attributes, item.name)
+                  addElement(groupUnreleased, 'option', null, item.name)
                 }
               }
               var groupReleased = addElement(select, 'optgroup', {label: 'Released'})
               for (j = 0; j < that[list].length; j++) {
                 item = that[list][j]
                 if (!item.archived && item.released) { // unarchived and released
-                  attributes = {'data-content': item.name}
-                  addElement(groupReleased, 'option', attributes, item.name)
+                  addElement(groupReleased, 'option', null, item.name)
                 }
               }
             } else {
               for (j = 0; j < that[list].length; j++) {
                 item = that[list][j]
-                attributes = {'data-content': item.name}
                 if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
-                  if ((list === 'issuetypes') || (list === 'priorities')) {
-                    attributes = {'data-content': '<img src="' + item.iconUrl + '" height="24px" width="24px" />&nbsp;&nbsp;' + item.name}
-                  } // Why not using 'data-thumbnail' instead?
-                  addElement(select, 'option', attributes, item.name)
+                  if (list === 'issuetypes' || list === 'priorities') {
+                    addElement(select._datalist, 'aui-option', {'img-src': item.iconUrl}, item.name)
+                  } else {
+                    addElement(select, 'option', null, item.name)
+                  }
                 }
               }
             }
@@ -435,12 +392,12 @@ function showForm (that) {
         if (!element.multiple) {
           // Single value
           that.formValues[element.id] = element.value !== '' ? element.value : undefined
-        } else if (element.parentNode.childNodes[0].title !== element.title) {
-          // Multiple values
-          that.formValues[element.id] = element.parentNode.childNodes[0].title.split(', ')
         } else {
-          // No  value selected
-          that.formValues[element.id] = undefined
+          // Multiple values
+          that.formValues[element.id] = []
+          element.querySelectorAll('option').forEach(function (item) {
+            item.selected && that.formValues[element.id].push(item.value)
+          })
         }
       } else {
         // Checkbox and Radio buttons
@@ -461,10 +418,11 @@ function showForm (that) {
 }
 
 function showModal (that, modalTitle, modalBody, modalEvents) {
+  var collectorNode = document.getElementById(that.collector)
   var modal = createModalStructure(that.modal)
 
   // Modal Header
-  addElement(modal.header, 'h4', {class: 'modal-title'}, modalTitle)
+  addElement(modal.header, 'h4', {class: 'aui-dialog2-header-main'}, modalTitle)
 
   // Modal Body
   modal.body.appendChild(modalBody)
@@ -472,21 +430,26 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   // Modal Footer
   if (modalEvents && modalEvents.submit) {
     // Exit if cancel, or submit
-    addElement(modal.footer, 'button', {class: 'btn btn-link exit', 'data-dismiss': 'modal'}, 'Cancel')
-    addElement(modal.footer, 'button', {class: 'btn btn-primary'}, 'Submit')
+    addElement(modal.footer, 'button', {class: 'aui-button aui-button-link close exit'}, 'Cancel')
+    addElement(modal.footer, 'button', {class: 'aui-button aui-button-primary'}, 'Submit')
   } else if (modalEvents && modalEvents.continue) {
     // Do not exit, so remove class .exit
-    addElement(modal.footer, 'button', {class: 'btn btn-default', 'data-dismiss': 'modal'}, 'Continue')
+    addElement(modal.footer, 'button', {class: 'aui-button close'}, 'Continue')
   } else {
     // Exit on close
-    addElement(modal.footer, 'button', {class: 'btn btn-default exit', 'data-dismiss': 'modal'}, 'Close')
+    addElement(modal.footer, 'button', {class: 'aui-button close exit'}, 'Close')
   }
 
   // Show Modal
-  document.getElementById(that.collector).parentNode.appendChild(modal.fragment)
-  $('#' + that.modal).modal('show')
+  collectorNode.parentNode.insertBefore(modal.fragment, collectorNode)
+  window.AJS.dialog2('#' + that.modal).show()
+  that.modals.push(that.modal)
 
-  // Modal Close Handler
+  // Modal Close Handlers
+  $('.close').click(function (e) {
+    e.preventDefault()
+    window.AJS.dialog2('#' + that.modals.pop()).hide()
+  })
   $('.exit').click(function (e) {
     that.exit()
   })
@@ -501,19 +464,15 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
 
     // Create the modal structure
     var modalFragment = document.createDocumentFragment()
-    // const container = addElement(modalFragment, 'div', { class: 'container' })
-    var modal = addElement(modalFragment, 'div', {class: 'modal fade', id: modalId, role: 'dialog', 'data-backdrop': 'static', 'data-keyboard': 'false'})
-    var modalDialog = addElement(modal, 'div', {class: 'modal-dialog'})
-    var modalContent = addElement(modalDialog, 'div', {class: 'modal-content'})
-    var modalForm = addElement(modalContent, 'form', {action: 'javascript:void(0)'})
-    // const modalFormGroup = addElement(modalForm, 'div', { class: 'form-group' });
-    var modalHeader = addElement(modalForm, 'div', {class: 'modal-header'})
-    addElement(modalHeader, 'button', {class: 'close exit', 'data-dismiss': 'modal'}, 'x')
-    var modalBody = addElement(modalForm, 'div', {class: 'modal-body'})
-    var modalFooter = addElement(modalForm, 'div', {class: 'modal-footer'})
+    var modalContent = addElement(modalFragment, 'section', {class: 'aui-layer aui-dialog2 aui-dialog2-medium', id: modalId, 'aria-hidden': true, 'data-aui-modal': true, role: 'dialog'})
+    var modalForm = addElement(modalContent, 'form', {class: 'aui'})
+    var modalHeader = addElement(modalForm, 'div', {class: 'aui-dialog2-header'})
+    var modalBody = addElement(modalForm, 'div', {class: 'aui-dialog2-content'})
+    var modalFooter = addElement(modalForm, 'div', {class: 'aui-dialog2-footer'})
+    var modalActions = addElement(modalFooter, 'div', {class: 'aui-dialog2-footer-actions'})
 
     // Modal nodes under which to add other elements
-    return {fragment: modalFragment, form: modalForm, header: modalHeader, body: modalBody, footer: modalFooter}
+    return {fragment: modalFragment, form: modalForm, header: modalHeader, body: modalBody, footer: modalActions}
   }
 }
 

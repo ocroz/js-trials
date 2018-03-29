@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JIRA Custom Issue Collector</title>
+
+  <!-- External dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script src="/custom/lib/aui/5.9.24/js/aui.js"></script>
+  <script src="/custom/lib/aui/5.9.24/js/aui-experimental.js"></script>
+  <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui.css"/>
+  <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui-experimental.css"/>
+  <!-- / External dependencies -->
+
+  <link rel="stylesheet" href="/custom/jcic/2/css/jcic.css">
+  <script src="/custom/jcic/2/js/jcic.js"></script>
+</head>
+<body>
+
+<button id="BasicBtn" class="aui-button" onclick="createBasic()">Submit into JCICSBX</button>
+
+<div id="Basic" title="Basic Submit Form" style="display: none;">
+  <input id="summary" name="Summary" placeholder="Summary of the issue" type="text" required/>
+</div>
+
+<script type="text/javascript">
+  function createBasic () {
+    function mapfields (that) {
+      return {
+        'fields': {
+          'summary': that.value('summary'),
+          'issuetype': {'name': 'Improvement'},
+          'priority': {'name': 'Major'}
+        }
+      }
+    }
+
+    var Basic = new CIC('Basic', 'JCICSBX', mapfields)
+    Basic.connect()
+  }
+</script>
+
+</body>
+</html>

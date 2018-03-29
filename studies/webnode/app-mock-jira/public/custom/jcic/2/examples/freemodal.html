@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Free Atlassian Modal</title>
+
+  <!-- External dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/1.4.1/jquery-migrate.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.js"></script>
+
+  <script src="/custom/lib/aui/5.9.24/js/aui.js"></script>
+  <script src="/custom/lib/aui/5.9.24/js/aui-experimental.js"></script>
+  <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui.css"/>
+  <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui-experimental.css"/>
+  <!-- / External dependencies -->
+
+</head>
+<body>
+
+<style type="text/css">
+section.aui-layer.aui-dialog2 {
+  height:100%;
+}
+form.aui {
+  height:calc(100% - 320px);
+}
+</style>
+
+<button class="aui-button" onclick="openDialog1()">Open Dialog1</button>
+<button class="aui-button" onclick="openDialog2()">Open Dialog2</button>
+
+<section id="static-dialog" class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden=true data-aui-modal=true role="dialog">
+  <form class="aui">
+    <header class="aui-dialog2-header">
+      <h2 class="aui-dialog2-header-main">The modal dialog title</h2>
+<!--  The following close button fails when the modal has the attribute 'data-aui-modal=true'
+      <a class="aui-dialog2-header-close">
+        <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>
+      </a>
+-->
+    </header>
+    <div class="aui-dialog2-content">
+      <div class="field-group">
+        <label for="text-input">Summary<span class="aui-icon icon-required">required</span></label>
+        <input class="text medium-long-field" type="text" id="text-input" name="summary" title="Summary" placeholder="Your summary here...">
+        <span class="aui-icon icon-inline-help"><span>Help</span></span>
+        <span class="field-help hidden"><br />This text will be toggled if the user clicks the help icon.</span>
+        <div class="description">Summary subfield description</div>
+        <div class="error">Error message here</div>
+      </div>
+      <div class="field-group">
+        <label for="textarea-id">Description</label>
+        <textarea class="textarea medium-long-field" name="description" id="textarea-id" title="Description" rows=3 placeholder="Your description here..."></textarea>
+        <span class="aui-icon icon-inline-help"><span>Help</span></span>
+        <span class="field-help hidden"><br />This text will be toggled if the user clicks the help icon.</span>
+        <div class="description">Description subfield description</div>
+        <div class="error">Error message here</div>
+      </div>
+      <div id="expander-with-replace-text-content" class="aui-expander-content">
+        <div class="field-group">
+          <aui-label for="issuetype-id">Issue Type:</aui-label>
+          <aui-select id="issuetype-id" name="issuetype" placeholder="Select Issue Type" class="medium-long-field">
+            <aui-option img-src="/jira/images/icons/issuetypes/task.svg">Task</aui-option>
+            <aui-option img-src="/jira/images/icons/issuetypes/newfeature.svg">New Feature</aui-option>
+            <aui-option img-src="/jira/images/icons/issuetypes/improvement.svg">Improvement</aui-option>
+            <aui-option img-src="/jira/images/icons/issuetypes/bug.svg">Bug</aui-option>
+          </aui-select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Single Select subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+        <div class="field-group">
+          <aui-label for="priority-id">Priority:</aui-label>
+          <aui-select id="priority-id" name="priority" placeholder="Select Priority" class="medium-long-field">
+            <aui-option img-src="/jira/images/icons/priorities/blocker.svg">Blocker</aui-option>
+            <aui-option img-src="/jira/images/icons/priorities/critical.svg">Critical</aui-option>
+            <aui-option img-src="/jira/images/icons/priorities/major.svg">Major</aui-option>
+            <aui-option img-src="/jira/images/icons/priorities/minor.svg">Minor</aui-option>
+            <aui-option img-src="/jira/images/icons/priorities/trivial.svg">Trivial</aui-option>
+          </aui-select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Single Select subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+        <div class="field-group">
+          <aui-label for="car-id">Car:</aui-label>
+          <aui-select id="car-id" name="car" placeholder="Select Car" class="medium-long-field">
+            <aui-optgroup label="Peugeot">
+              <aui-option>307</aui-option>
+              <aui-option>607</aui-option>
+            </aui-optgroup>
+            <aui-optgroup label="Renault"> <!-- This fails in a single select -->
+              <aui-option>Clio</aui-option>
+              <aui-option>Megane</aui-option>
+            </aui-optgroup>
+          </aui-select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Single Select subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+<!--
+        <div class="field-group">
+          <aui-label for="cellular-id">Cellular:</aui-label>
+          <aui-select id="cellular-id" name="cellular" placeholder="Apple" class="medium-long-field">
+            <aui-option>iPhone 9</aui-option>
+            <aui-option>iPhone 8</aui-option>
+          </aui-select>
+          <aui-select id="cellular-id" name="cellular" placeholder="Samsung" class="medium-long-field">
+            <aui-option>S8</aui-option>
+            <aui-option>S9</aui-option>
+          </aui-select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Single Select subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+-->
+        <div class="field-group">
+          <label for="priority-select-id">Priority:</label>
+          <select id="priority-select-id" class="select medium-long-field" name="priority-select" title="Select Priority" placeholder="Select Priority">
+            <option disabled=true hidden=true selected=true value=""><span style="display: none;">Select Priority</span></option>
+            <option><span><img src="/jira/images/icons/priorities/blocker.svg"/>Blocker</span></option>
+            <option style="background-image:url(/jira/images/icons/priorities/critical.svg);">Critical</option>
+            <option data-content="<img src='/jira/images/icons/priorities/major.svg'/>&nbsp;&nbsp;Major">Major</option>
+            <option><img src="/jira/images/icons/priorities/minor.svg"/>Minor</option>
+            <option><img src="/jira/images/icons/priorities/trivial.svg"/>Trivial</option>
+          </select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Single Select subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+        <div class="field-group">
+          <label for="component-id">Component</label>
+          <select id="component-id" class="select medium-long-field" name="component" title="Select Component" placeholder="Select Component">
+            <option disabled=true hidden=true selected=true value=""><span style="display: none;">Select Component</span></option>
+            <optgroup label="Unreleased">
+              <option>option one</option>
+              <option>option two</option>
+              <option>option three</option>
+            </optgroup>
+            <optgroup label="Released">
+              <option>option four</option>
+              <option>option five</option>
+              <option>option six</option>
+              <option>option seven</option>
+              <option>option height</option>
+              <option>option nine</option>
+            </optgroup>
+          </select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden"><br />This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Dropdown subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+        <div class="field-group">
+          <label for="multiselect">Components</label>
+          <select id="multiselect" class="multi-select medium-long-field" size="4" multiple="multiple" name="multiselect" title="Multiselect Components" placeholder="Multiselect Components">
+            <!-- <option disabled=true hidden=true selected=true value="">Multiselect Something</option> -->
+            <optgroup label="Unreleased">
+              <option>option one</option>
+              <option>option two</option>
+              <option>option three</option>
+            </optgroup>
+            <optgroup label="Released">
+              <option>option four</option>
+              <option>option five</option>
+              <option>option six</option>
+              <option>option seven</option>
+              <option>option height</option>
+              <option>option nine</option>
+            </optgroup>
+          </select>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden"><br />This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Multiselect subfield description</div>
+          <div class="error">Error message here</div>
+        </div>
+        <fieldset class="group" id="radioButton">
+          <legend>Radio buttons</legend>
+          <div class="radio">
+            <input class="radio" type="radio" checked="checked" name="radiobuttons" id="radioButtonOne">
+            <label for="radioButtonOne">Save as a blog post</label>
+          </div>
+          <div class="radio">
+            <input class="radio" type="radio" name="radiobuttons" id="radioButtonTwo">
+            <label for="radioButtonTwo">Save as a page</label>
+          </div>
+          <div class="radio">
+            <input class="radio" type="radio" name="radiobuttons" id="radioButtonThree">
+            <label for="radioButtonThree">Save to your drafts</label>
+          </div>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Radio buttons subset description</div>
+          <div class="error">Error message here</div>
+        </fieldset>
+        <fieldset class="group" id="checkBox">
+          <legend>Description of the set of checkboxes</legend>
+          <div class="checkbox">
+            <!-- <input class="checkbox" type="checkbox" name="checkBoxZero" value="chat" checked=true>Receive chat alert</input> -->
+            <input class="checkbox" type="checkbox" name="checkBoxOne" id="checkBoxOne">
+            <label for="checkBoxOne">Receive email</label>
+          </div>
+          <div class="checkbox">
+            <input class="checkbox" type="checkbox" name="checkBoxTwo" id="checkBoxTwo">
+            <label for="checkBoxTwo">Receive push notification</label>
+          </div>
+          <div class="checkbox">
+            <input class="checkbox" type="checkbox" name="checkBoxThree" id="checkBoxThree">
+            <label for="checkBoxThree">Receive in-app notification</label>
+          </div>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden">This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Checkboxes subset description</div>
+          <div class="error">Error message here</div>
+        </fieldset>
+        <fieldset class="group">
+          <legend>Description of the dropdown trigger</legend>
+          <a href="#dropdown2-checkbox-radio-interactive-trigger" aria-owns="dropdown2-checkbox-radio-interactive"
+             aria-haspopup="true" class="aui-button aui-style-default aui-dropdown2-trigger">
+              Dropdown trigger
+          </a>
+          <span class="aui-icon icon-inline-help"><span>Help</span></span>
+          <span class="field-help hidden"><br />This text will be toggled if the user clicks the help icon.</span>
+          <div class="description">Dropdown trigger subset description</div>
+          <div class="error">Error message here</div>
+        </fieldset>
+      </div>
+      <!-- Trigger for the following Dropdown -->
+      <a id="replace-text-trigger" data-replace-text="Read less" class="aui-expander-trigger" aria-controls="expander-with-replace-text-content">Read more</a>
+      <!-- Dropdown -->
+      <div id="dropdown2-checkbox-radio-interactive" class="aui-dropdown2 aui-style-default">
+        <div class="aui-dropdown2-section">
+          <ul>
+            <li><a class="aui-dropdown2-radio interactive checked">Option 1</a></li>
+            <li><a class="aui-dropdown2-radio interactive">Option 2</a></li>
+            <li><a class="aui-dropdown2-radio interactive">Option 3</a></li>
+          </ul>
+        </div>
+        <div class="aui-dropdown2-section">
+          <ul>
+            <li><a id="spellcheck" class="aui-dropdown2-checkbox interactive">Check spelling while typing</a></li>
+            <li><a class="aui-dropdown2-checkbox interactive">Check punctuation while typing</a></li>
+            <li><a class="aui-dropdown2-checkbox interactive checked disabled">Enable gravity</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <footer class="aui-dialog2-footer">
+      <div class="aui-dialog2-footer-actions">
+        <button class="aui-button aui-button-primary">Okay</button>
+        <button class="aui-button">Next</button>
+        <button class="aui-button aui-button-link" id="static-dialog-close">Close</button>
+      </div>
+    </footer>
+  </form>
+</section>
+
+<script type="text/javascript">
+  function openDialog1 () {
+    var title = 'Atlassian Dialog 2'
+    var message = 'Sandbox playground'
+    var modalContentId = 'atlassian-dialog2'
+
+    // Confluence dialog
+    var modalDialog = document.createDocumentFragment()
+    var modalContent = addElement(modalDialog, 'section', {class: 'aui-layer aui-dialog2 aui-dialog2-medium', id: modalContentId, 'aria-hidden': true, role: 'dialog'})
+    var modalHeader = addElement(modalContent, 'div', {class: 'aui-dialog2-header'})
+    addElement(modalHeader, 'h4', {class: 'aui-dialog2-header-main'}, title)
+    var modalHeaderClose = addElement(modalHeader, 'a', {class: 'aui-dialog2-header-close'})
+    addElement(modalHeaderClose, 'span', {class: 'aui-icon aui-icon-small aui-iconfont-close-dialog'}, 'Close')
+    var modalBody = addElement(modalContent, 'div', {class: 'aui-dialog2-content'})
+    modalBody.innerHTML += message
+    var modalFooter = addElement(modalContent, 'div', {class: 'aui-dialog2-footer'})
+    var modalActions = addElement(modalFooter, 'div', {class: 'aui-dialog2-footer-actions'})
+    addElement(modalActions, 'button', {class: 'aui-button aui-button-primary exit', id: modalContentId + '-btn'}, 'Close')
+    window.document.body.appendChild(modalDialog)
+    window.AJS.dialog2('#' + modalContentId).show()
+
+    // Modal Close Handler
+    window.AJS.$('#' + modalContentId + '-btn').click(function (e) {
+      e.preventDefault()
+      window.AJS.dialog2('#' + modalContentId).hide()
+      window.document.getElementById(modalContentId).outerHTML = ''
+    })
+  }
+
+  // Add Element
+  function addElement (fragment, element, attributes, text) {
+    var newNode = document.createElement(element)
+    for (var attribute in attributes) {
+      newNode.setAttribute([attribute], attributes[attribute])
+    }
+    if (text) { newNode.textContent = text }
+    fragment.appendChild(newNode)
+    return newNode
+  }
+
+  var dialog2Opened = false
+  function openDialog2 () {
+    window.AJS.dialog2('#static-dialog').show()
+    if (!dialog2Opened) {
+      dialog2Opened = true
+
+      // auiSelect2()
+      window.AJS.$('#component-id').auiSelect2()
+      window.AJS.$('#multiselect').auiSelect2()
+
+      // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
+      window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
+        if (e.target.classList.contains('select2-disabled')) {
+          e.target.style.display = 'none'
+        }
+      })
+
+      // Radio buttons
+      window.AJS.$('#radioButton').find('input,label').click(function (e) {
+        e.preventDefault()
+        var target = e.target.hasAttribute('for')
+          ? document.getElementById(e.target.attributes.for.value)
+          : e.target
+        setTimeout(function () {
+          target.checked = true
+        }, 1)
+      })
+
+      // Checkboxes
+      window.AJS.$('#checkBox').find('input,label').click(function (e) {
+        e.preventDefault()
+        var target = e.target.hasAttribute('for')
+          ? document.getElementById(e.target.attributes.for.value)
+          : e.target
+        setTimeout(function () {
+          target.checked = !target.checked
+        }, 1)
+      })
+
+      // Modal handlers: Help, Submit, and Close
+      window.AJS.inlineHelp()
+      window.AJS.$('#static-dialog').on('click submit', function (e) {
+        e.preventDefault()
+      })
+      window.AJS.$('#static-dialog-close').click(function (e) {
+        e.preventDefault()
+        window.AJS.dialog2('#static-dialog').hide()
+      })
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+section.aui-layer.aui-dialog2 {
+  height: 100%;
+}
+
+form.aui {
+  height: calc(100% - 320px);
+}
