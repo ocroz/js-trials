@@ -32,6 +32,7 @@
       'redux-logger': 'npm:redux-logger/dist/redux-logger.js',
       'tslib': 'npm:tslib/tslib.js',
       '@angular/material': 'npm:@angular/material/bundles/material.umd.js',
+      'moment': 'npm:moment/moment.js',
 
       // CDK individual packages
       '@angular/cdk': 'npm:@angular/cdk/bundles/cdk.umd.js',

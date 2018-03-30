@@ -1,8 +1,10 @@
-<div *ngIf="isFetching && !issue">
+<p></p>
+
+<div *ngIf="!issue && isFetching$ | async">
   Loading...
 </div>
 
-<div *ngIf="!isFetching && !issue">
+<div *ngIf="!issue && !isFetching$ | async">
   Empty.
 </div>
 
@@ -18,7 +20,7 @@
     </div></mat-grid-tile>
   </mat-grid-list>
 
-  <hr />
+  <mat-divider></mat-divider>
 
   <!-- issue.fields.summary -->
   <mat-grid-list cols="1" rowHeight="30px">
@@ -27,7 +29,7 @@
     </div></mat-grid-tile>
   </mat-grid-list>
 
-  <mat-grid-list cols="24" rowHeight="30px">
+  <mat-grid-list cols="24" rowHeight="20px">
 
   <!-- ROW 1 -->
 
@@ -97,167 +99,114 @@
       <b>Affects&nbsp;Version/s:</b>
     </div></mat-grid-tile>
     <mat-grid-tile colspan="4"><div class="mat-left">
-      <span ng-repeat="item in issue.fields.versions">
-        <span *ngIf="$index !== 0">{{', '}}</span>
-        <span *ngIf="$index">{{$index}}-{{item}}-{{item.name}}</span>
-      </span>
+      <!-- <log-html [data]="{versions:issue.fields.versions}"></log-html> -->
+      <span *ngFor="let item of issue.fields.versions; index as i;"><span *ngIf="i">{{', '}}</span>{{item.name}}</span>
     </div></mat-grid-tile>
 
     <!-- issue.fields.fixVersions -->
-<!--
     <mat-grid-tile colspan="4"><div class="mat-right">
       <b>Fix&nbsp;Version/s:</b>
     </div></mat-grid-tile>
     <mat-grid-tile colspan="4"><div class="mat-left">
-      <span ng-repeat="item in (issue.fields.fixVersions || [])">
-        <span *ngIf="$index">{{', '}}</span>{{item.name}}
-      </span>
+      <span *ngFor="let item of issue.fields.fixVersions; index as i;"><span *ngIf="i">{{', '}}</span>{{item.name}}</span>
     </div></mat-grid-tile>
--->
+
     <!-- empty -->
-<!--
     <mat-grid-tile colspan="8">
     </mat-grid-tile>
--->
 
   <!-- ROW 4 -->
 
     <!-- issue.fields.components -->
-<!--
     <mat-grid-tile colspan="4"><div class="mat-right">
       <b>Component/s:</b>
     </div></mat-grid-tile>
     <mat-grid-tile colspan="4"><div class="mat-left">
-      <span ng-repeat="item in (issue.fields.components || [])">
-        <span *ngIf="$index">{{', '}}</span>{{item.name}}
-      </span>
+      <span *ngFor="let item of issue.fields.components; index as i;"><span *ngIf="i">{{', '}}</span>{{item.name}}</span>
     </div></mat-grid-tile>
--->
-
-    <!-- empty -->
-    <mat-grid-tile colspan="8">
-    </mat-grid-tile>
 
     <!-- empty -->
     <mat-grid-tile colspan="8">
     </mat-grid-tile>
 
     <!-- issue.fields.created -->
-<!--
     <mat-grid-tile colspan="4"><div class="mat-right">
       <b>Created:</b>
     </div></mat-grid-tile>
     <mat-grid-tile colspan="4"><div class="mat-left">
-      <span title={{moment(issue.fields.created).format('YYYY/MM/DD HH:mm:ss')}}>
-        {{moment(issue.fields.created).fromNow()}}
+      <span title={{momentFormatted(issue.fields.created)}}>
+        {{momentFromNow(issue.fields.created)}}
       </span>
     </div></mat-grid-tile>
--->
 
   <!-- ROW 5 -->
 
     <!-- issue.fields.labels -->
-<!--
     <mat-grid-tile colspan="4"><div class="mat-right">
       <b>Labels:</b>
     </div></mat-grid-tile>
     <mat-grid-tile colspan="4"><div class="mat-left">
-      <span ng-repeat="item in (issue.fields.labels || [])">
-        <span *ngIf="$index">{{', '}}</span>{{item.name}}
-      </span>
+      <span *ngFor="let item of issue.fields.labels; index as i;"><span *ngIf="i">{{', '}}</span>{{item}}</span>
     </div></mat-grid-tile>
--->
-
-    <!-- empty -->
-    <mat-grid-tile colspan="8">
-    </mat-grid-tile>
 
     <!-- empty -->
     <mat-grid-tile colspan="8">
     </mat-grid-tile>
 
     <!-- issue.fields.updated -->
-<!--
     <mat-grid-tile colspan="4"><div class="mat-right">
       <b>Updated:</b>
     </div></mat-grid-tile>
     <mat-grid-tile colspan="4"><div class="mat-left">
-      <span title={{moment(issue.fields.updated).format('YYYY/MM/DD HH:mm:ss')}}>
-        {{moment(issue.fields.updated).fromNow()}}
+      <span title={{momentFormatted(issue.fields.updated)}}>
+        {{momentFromNow(issue.fields.updated)}}
       </span>
     </div></mat-grid-tile>
--->
 
   </mat-grid-list>
 
   <!-- issue.fields.description -->
-  <mat-grid-list cols="1">
-    <mat-grid-tile><div class="mat-left">
-      <p><b>Description:</b></p>
-      <pre>{{issue.fields.description}}</pre>
-    </div></mat-grid-tile>
-  </mat-grid-list>
-
-  <hr />
+  <br /><b>Description:</b><br />
+  <pre>{{issue.fields.description}}</pre>
 
   <!-- issue.fields.comment.comments -->
 
-  <div *ngIf="isFetching && issue.fields.comment.comments.length === 0">
-    Loading...
+  <div *ngIf="issue.fields.comment.comments.length === 0 && (isFetching$ | async)">
+    <p>Loading...</p>
   </div>
 
-  <div *ngIf="!isFetching && issue.fields.comment.comments.length === 0">
-    Empty.
+  <div *ngIf="issue.fields.comment.comments.length === 0 && !(isFetching$ | async)">
+    <p>No comment yet.</p>
   </div>
 
   <div *ngIf="issue.fields.comment.comments.length">
-    <mat-grid-list cols="1">
-      <mat-grid-tile><div class="mat-left">
-        <b>Comments:</b>
-      </div></mat-grid-tile>
-<!--
-      <ul>
-        <li *ngFor="let comment of (issue.fields.comment.comments || [])">
-          <mat-grid-tile><div class="mat-left">
-            <i>
-              Posted by {{comment.author.name}}{{' '}}
-              <span title={{moment(comment.created).format('YYYY/MM/DD HH:mm:ss')}}>
-                {{moment(comment.created).fromNow()}}
-              </span>{{' '}}
-              (<button mat-button class="mat-small" color="primary" (click)="deleteComment(comment)">Delete</button>)
-            </i>
-            <br />
-            <pre>{{comment.body}}</pre>
-          </div></mat-grid-tile>
-        </li>
-      </ul>
--->
-<!--
-      {{(issue.fields.comment.comments || []).map(comment => (
-        <mat-grid-tile><div class="mat-left">
-          <i>
-            Posted by {{comment.author.name}}{{' '}}
-            <span title={{moment(comment.created).format('YYYY/MM/DD HH:mm:ss')}}>
-              {{moment(comment.created).fromNow()}}
-            </span>{{' '}}
-            (<button mat-button class="mat-small" color="primary" (click)="deleteComment(comment)">Delete</button>)
-          </i>
-          <br />
-          <pre>{{comment.body}}</pre>
-        </div></mat-grid-tile>
-      ))}}
--->
-    </mat-grid-list>
-
-<!--
-    <form (submit)="submitComment()" (blur)="blurComment()">
-      <textarea rows="1" placeholder="Add comment:" (focus)="focusComment() />
-      <div *ngIf="isCommentOpen">
-        <button mat-button color="primary">Submit</button>
-      </div>
-    </form>
--->
-
+    <b>Comments:</b><br />
+    <span *ngFor="let comment of issue.fields.comment.comments">
+      <i>
+        Posted by {{comment.author.name}}{{' '}}
+        <span title={{momentFormatted(comment.created)}}>
+          {{momentFromNow(comment.created)}}
+        </span>{{' '}}
+      </i>
+      (<button mat-button class="mat-small" color="primary" (click)="deleteComment(comment)">Delete</button>)
+      <br />
+      <pre>{{comment.body}}</pre>
+    </span>
   </div>
+
+  <form class="form-container" (submit)="submitComment($event)">
+    <mat-form-field>
+      <textarea matInput matTextareaAutosize matAutosizeMinRows="1"
+        placeholder="Add comment:" (focus)="focusComment($event)" (blur)="blurComment($event)"
+      ></textarea> <!-- matAutosizeMaxRows="5" -->
+    </mat-form-field>
+<!--
+    <br />
+    <textarea rows="1" placeholder="Add comment:" (focus)="focusComment($event)" (blur)="blurComment($event)"></textarea>
+-->
+    <div *ngIf="isCommentOpen">
+      <button mat-button color="primary">Submit</button>
+    </div>
+  </form>
 
 </div>

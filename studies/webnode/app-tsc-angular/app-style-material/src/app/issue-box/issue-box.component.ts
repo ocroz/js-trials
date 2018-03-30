@@ -1,6 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NgRedux, select } from '@angular-redux/store';
+import { NgRedux, select$ } from '@angular-redux/store';
+import { Observable } from 'rxjs/Observable';
+import * as Moment from 'moment';
 
 import { Issue } from '../classes/issue';
 import { IAppState } from '../store/model';
@@ -16,12 +18,12 @@ import { DataActions, ViewActions } from '../store/actions';
 export class IssueBoxComponent implements OnInit {
 
   @Input() issue: Issue;
-  @select(['data', 'isFetching']) isFetching: boolean;
+  @select$(['data', 'isFetching'], null) isFetching$: Observable<boolean>;
 
   private store: NgRedux<IAppState>;
   private iconSize = "16px;"
   private isCommentOpen = false;
-  private commentRows = 1;
+  // private commentRows = 1;
 
   constructor(
     private route: ActivatedRoute,
@@ -53,6 +55,11 @@ export class IssueBoxComponent implements OnInit {
         if (!this.store.getState().data.isFetching) {
           this.issueService.getIssues();
         }
+      } else {
+        // Subcribe to get further updates on issue fields or comments
+        this.ngRedux.select(['data', 'issues']).subscribe((issues: Issue[]) => {
+          this.issue = this.issueService.getIssue(this.store.getState().data.activeIssue);
+        })
       }
     }
   }
@@ -66,27 +73,35 @@ export class IssueBoxComponent implements OnInit {
     this.issueService.deleteComment(this.issue.key, comment.id);
   }
 
-  closeComment(): void {
-    // this.refs.comment.value = ''
-    // this.refs.comment.rows = this.commentRows
+  closeComment(commentBox: any): void {
+    commentBox.value = ''
+    // commentBox.rows = this.commentRows
     this.isCommentOpen = false;
   }
 
   submitComment(event: any): void {
     event.preventDefault();
-    this.closeComment();
-    // this.issueService.postComment(this.issue.key, {body: comment});
+    this.issueService.postComment(this.issue.key, {body: event.target[0].value});
+    this.closeComment(event.target[0]);
   }
 
   blurComment(event: any): void {
     if (!event.relatedTarget || event.relatedTarget.type !== 'submit') {
-      this.closeComment()
+      this.closeComment(event.currentTarget)
     }
   }
 
   focusComment(event: any): void {
-    this.commentRows = event.target.rows
-    event.target.rows = 3
+    // this.commentRows = event.target.rows
+    // event.target.rows = 3
     this.isCommentOpen = true;
+  }
+
+  momentFromNow(time: string): string {
+    return Moment(time).fromNow()
+  }
+
+  momentFormatted(time: string): string {
+    return Moment(time).format('YYYY/MM/DD HH:mm:ss')
   }
 }

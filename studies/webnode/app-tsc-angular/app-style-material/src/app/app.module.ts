@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms'; // <-- NgModel lives here
 import { NgReduxModule } from '@angular-redux/store';
 
@@ -16,10 +17,12 @@ import { IssueService } from './services/issue.service';
 
 import { AppRoutingModule } from './app.routing.module';
 import { AppStylesMatModule } from './app.styles.mat.module';
+import { LogHtmlComponent } from './app.utils.log.module';
 
 @NgModule({
   imports:      [
     BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
     NgReduxModule,
@@ -33,6 +36,7 @@ import { AppStylesMatModule } from './app.styles.mat.module';
     IssueBoxComponent,
     IssuesBoxComponent,
     LinkViewComponent,
+    LogHtmlComponent,
   ],
   providers: [
     StoreModule,
