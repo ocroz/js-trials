@@ -15,7 +15,7 @@ app.locals.title = 'App Mock Jira'
 app.set('views', Path.resolve(__dirname, 'views'))
 app.set('view engine', 'pug')
 
-app.get('/jcic/download/:file', (req, res) => {
+app.get('/jcic1/download/:file', (req, res) => {
   res.redirect('/custom/jcic/1/examples/download/' + req.params.file)
 })
 app.get('/custom/jcic/1/examples/download/:file', (req, res) => {
@@ -30,9 +30,15 @@ app.get('/custom/jcic/1/examples/download/:file', (req, res) => {
 app.use(express.static(Path.resolve(__dirname, '../public')))
 
 app.use(
-  '/jcic',
+  '/jcic1',
   express.static(Path.resolve(__dirname, '../public/custom/jcic/1/examples')),
   serveIndex(Path.resolve(__dirname, '../public/custom/jcic/1/examples'), {'icons': true})
+)
+
+app.use(
+  '/jcic2',
+  express.static(Path.resolve(__dirname, '../public/custom/jcic/2/examples')),
+  serveIndex(Path.resolve(__dirname, '../public/custom/jcic/2/examples'), {'icons': true})
 )
 
 app.use(bodyParser.json())
