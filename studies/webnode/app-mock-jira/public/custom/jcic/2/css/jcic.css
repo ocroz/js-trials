@@ -21,12 +21,19 @@ form.aui {
   box-shadow: 0 0 2px #FF0000 !important;
 }
 
+.aui-select-highlights {
+  border-width: 1px !important;
+  border-radius: 3px !important;
+  border-color: red !important;
+  box-shadow: 0 0 2px #FF0000 !important;
+}
+
 .select2-offscreen:not(.select2-focusser) {
   position: absolute !important;
   top: 32px !important;
   left: 50% !important;
 }
 
-select:invalid {
+:invalid {
   color: gray !important;
 }

@@ -454,30 +454,25 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   window.AJS.dialog2('#' + that.modal).show()
   that.modals.push(that.modal)
 
-  // Fix bug for all browsers but Chrome when the textarea or select is required
-  var elements = window.AJS.$('#' + that.modal + ' textarea,select')
+  // Fix bug for all browsers but Chrome when the select is required
+  var elements = window.AJS.$('#' + that.modal + ' select')
   for (var i = 0; i < elements.length; i++) {
     elements[i].outerHTML = elements[i].outerHTML
   }
 
-  // Fix feature for Chrome to highlight the empty required form fields that make the submit to fail
-  // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-  if (!!window.chrome && !!window.chrome.webstore) { // Browser is Chrome
-    $('.submit').click(function (e) {
-      var requiredFields = window.AJS.$('#' + that.modal + ' :required')
-      for (var i = 0; i < requiredFields.length; i++) {
-        requiredFields[i].classList.add('form-highlights')
-      }
-    })
+  // Fix bug for firefox when the textarea is required
+  if (typeof InstallTrigger !== 'undefined') { // Browser is Firefox
+    elements = window.AJS.$('#' + that.modal + ' textarea')
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].outerHTML = elements[i].outerHTML
+    }
   }
 
   // Fixes that need the new DOM at the next tick
   window.setTimeout(function () {
-    var i
-
     // Fix bug for all browsers but Chrome when the aui-select is required
     var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
-    for (i = 0; i < auiSelects.length; i++) {
+    for (var i = 0; i < auiSelects.length; i++) {
       auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
         window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
     }
@@ -489,6 +484,41 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
       }, 1)
     })
   }, 1)
+
+  // Fixes that fire on submit
+  $('.submit').click(function (e) {
+    // Fix feature for Chrome to highlight the empty required form fields that make the submit to fail
+    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+    if (!!window.chrome && !!window.chrome.webstore) { // Browser is Chrome
+      var requiredFields = window.AJS.$('#' + that.modal + ' :required')
+      for (var i = 0; i < requiredFields.length; i++) {
+        requiredFields[i].classList.add('form-highlights')
+      }
+    }
+
+    // Fix for all browsers when the aui-select is required
+    window.setTimeout(function () {
+      auiSelectHighlights()
+    }, 1)
+    window.setTimeout(function () {
+      $('.aui-select-highlights input, .aui-select-highlights ~ input').focusout(function (e) {
+        auiSelectHighlights()
+      })
+    }, 1)
+    function auiSelectHighlights () {
+      var selects = $('select.select2-offscreen:required')
+      for (var i = 0; i < selects.length; i++) {
+        var targets=selects[i].parentNode.querySelectorAll('div a, div ul')
+        for (var j = 0; j < selects.length; j++) {
+          if (targets[j]) {
+            selects[i].value
+              ? (targets[j].classList.remove('aui-select-highlights'))
+              : (targets[j].classList.add('aui-select-highlights'))
+          }
+        }
+      }
+    }
+  })
 
   // Modal Close Handlers
   $('.close').click(function (e) {
