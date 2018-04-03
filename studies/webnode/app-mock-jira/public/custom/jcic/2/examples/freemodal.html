@@ -4,10 +4,7 @@
   <title>Free Atlassian Modal</title>
 
   <!-- External dependencies -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/1.4.1/jquery-migrate.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.js"></script>
-
+  <script src="/custom/lib/jquery/1.7.2/jquery.min.js"></script>
   <script src="/custom/lib/aui/5.9.24/js/aui.js"></script>
   <script src="/custom/lib/aui/5.9.24/js/aui-experimental.js"></script>
   <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui.css"/>
@@ -125,7 +122,7 @@ form.aui {
             <option><span><img src="/jira/images/icons/priorities/blocker.svg"/>Blocker</span></option>
             <option style="background-image:url(/jira/images/icons/priorities/critical.svg);">Critical</option>
             <option data-content="<img src='/jira/images/icons/priorities/major.svg'/>&nbsp;&nbsp;Major">Major</option>
-            <option><img src="/jira/images/icons/priorities/minor.svg"/>Minor</option>
+            <option img-src="/jira/images/icons/priorities/minor.svg">Minor</option>
             <option><img src="/jira/images/icons/priorities/trivial.svg"/>Trivial</option>
           </select>
           <span class="aui-icon icon-inline-help"><span>Help</span></span>
@@ -220,35 +217,35 @@ form.aui {
         </fieldset>
         <fieldset class="group">
           <legend>Description of the dropdown trigger</legend>
+          <!-- Trigger for the following Dropdown -->
           <a href="#dropdown2-checkbox-radio-interactive-trigger" aria-owns="dropdown2-checkbox-radio-interactive"
-             aria-haspopup="true" class="aui-button aui-style-default aui-dropdown2-trigger">
+             aria-haspopup="true" class="aui-button aui-style-default aui-dropdown2-trigger medium-long-field">
               Dropdown trigger
           </a>
           <span class="aui-icon icon-inline-help"><span>Help</span></span>
           <span class="field-help hidden"><br />This text will be toggled if the user clicks the help icon.</span>
           <div class="description">Dropdown trigger subset description</div>
           <div class="error">Error message here</div>
+          <!-- Dropdown -->
+          <div id="dropdown2-checkbox-radio-interactive" class="aui-dropdown2 aui-style-default">
+            <div class="aui-dropdown2-section">
+              <ul>
+                <li><a class="aui-dropdown2-radio interactive checked"><img src="/jira/images/icons/priorities/trivial.svg" height="24px" width="24px"/>Option 1</a></li>
+                <li><a class="aui-dropdown2-radio interactive">Option 2</a></li>
+                <li><a class="aui-dropdown2-radio interactive">Option 3</a></li>
+              </ul>
+            </div>
+            <div class="aui-dropdown2-section">
+              <ul>
+                <li><a id="spellcheck" class="aui-dropdown2-checkbox interactive">Check spelling while typing</a></li>
+                <li><a class="aui-dropdown2-checkbox interactive">Check punctuation while typing</a></li>
+                <li><a class="aui-dropdown2-checkbox interactive checked disabled">Enable gravity</a></li>
+              </ul>
+            </div>
+          </div>
         </fieldset>
       </div>
-      <!-- Trigger for the following Dropdown -->
       <a id="replace-text-trigger" data-replace-text="Read less" class="aui-expander-trigger" aria-controls="expander-with-replace-text-content">Read more</a>
-      <!-- Dropdown -->
-      <div id="dropdown2-checkbox-radio-interactive" class="aui-dropdown2 aui-style-default">
-        <div class="aui-dropdown2-section">
-          <ul>
-            <li><a class="aui-dropdown2-radio interactive checked">Option 1</a></li>
-            <li><a class="aui-dropdown2-radio interactive">Option 2</a></li>
-            <li><a class="aui-dropdown2-radio interactive">Option 3</a></li>
-          </ul>
-        </div>
-        <div class="aui-dropdown2-section">
-          <ul>
-            <li><a id="spellcheck" class="aui-dropdown2-checkbox interactive">Check spelling while typing</a></li>
-            <li><a class="aui-dropdown2-checkbox interactive">Check punctuation while typing</a></li>
-            <li><a class="aui-dropdown2-checkbox interactive checked disabled">Enable gravity</a></li>
-          </ul>
-        </div>
-      </div>
     </div>
     <footer class="aui-dialog2-footer">
       <div class="aui-dialog2-footer-actions">

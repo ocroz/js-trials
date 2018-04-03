@@ -316,8 +316,8 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
           !childNode.placeholder && fieldGroup.children[lastNode].setAttribute('placeholder', childNode.getAttribute('title'))
 
           if (fieldGroup.children[lastNode].localName === 'aui-select') {
-            fieldGroup.children[lastNode].children[1].remove() // Remove the useless select element
-            childNode.required && (fieldGroup.children[lastNode].children[0].required = true)
+            childNode.required && fieldGroup.children[lastNode].children[0] &&
+              (fieldGroup.children[lastNode].children[0].required = true)
           } else {
             (childNode.multiple || childNode.hasAttribute('data-live-search')) && auiSelect2Fields.push(childNode.id)
             if (!childNode.multiple) {
@@ -370,7 +370,8 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
                 item = that[list][j]
                 if (!item.subtask) { // all but subtasks of issuetypes, no impact on priorities and components
                   if (list === 'issuetypes' || list === 'priorities') {
-                    addElement(select._datalist, 'aui-option', {'img-src': item.iconUrl}, item.name)
+                    // Use select._datalist for Chrome only
+                    addElement(select._datalist || select, 'aui-option', {'img-src': item.iconUrl}, item.name)
                   } else {
                     addElement(select, 'option', null, item.name)
                   }
@@ -395,9 +396,10 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
         } else {
           // Multiple values
           that.formValues[element.id] = []
-          element.querySelectorAll('option').forEach(function (item) {
-            item.selected && that.formValues[element.id].push(item.value)
-          })
+          var options = element.querySelectorAll('option')
+          for (var j = 0; j < options.length; j++) {
+            options[j].selected && that.formValues[element.id].push(options[j].value)
+          }
         }
       } else {
         // Checkbox and Radio buttons
@@ -429,9 +431,10 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
 
   // Modal Footer
   if (modalEvents && modalEvents.submit) {
-    // Exit if cancel, or submit
+    // Exit if cancel, or submit (Note: pressing enter on an input will select the first defined button)
+    addElement(modal.footer, 'button', {class: 'form-btn-hidden submit', 'aria-hidden': true, tabindex: -1})
     addElement(modal.footer, 'button', {class: 'aui-button aui-button-link close exit'}, 'Cancel')
-    addElement(modal.footer, 'button', {class: 'aui-button aui-button-primary'}, 'Submit')
+    addElement(modal.footer, 'button', {class: 'aui-button aui-button-primary submit'}, 'Submit')
   } else if (modalEvents && modalEvents.continue) {
     // Do not exit, so remove class .exit
     addElement(modal.footer, 'button', {class: 'aui-button close'}, 'Continue')
@@ -444,6 +447,43 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   collectorNode.parentNode.insertBefore(modal.fragment, collectorNode)
   window.AJS.dialog2('#' + that.modal).show()
   that.modals.push(that.modal)
+
+  // Fix bug for Firefox when the textarea is required
+  // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+  if (typeof InstallTrigger !== 'undefined') { // Browser is Firefox
+    var textareas = window.AJS.$('#' + that.modal + ' textarea')
+    for (var i = 0; i < textareas.length; i++) {
+      textareas[i].outerHTML = textareas[i].outerHTML
+    }
+  }
+
+  // Fix bug for all browsers but Chrome when the aui-select is required
+  window.setTimeout(function() {
+    var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
+    for (var i = 0; i < auiSelects.length; i++) {
+      auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
+        window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
+    }
+  }, 1);
+
+  // Fix bug for Internet Explorer when clicking on aui-select button and aui-select value is empty
+  window.setTimeout(function() {
+    window.AJS.$('#' + that.modal + ' aui-select button').on('click', function(e) {
+      window.setTimeout(function() {
+        e.target.parentNode.getElementsByTagName('input')[0].click()
+      }, 1)
+    })
+  }, 1);
+
+  // Fix feature for Chrome to highlight the empty required form fields that make the submit to fail
+  if (!!window.chrome && !!window.chrome.webstore) { // Browser is Chrome
+    $('.submit').click(function (e) {
+      var requiredFields = window.AJS.$('#' + that.modal + ' :required')
+      for (var i = 0; i < requiredFields.length; i++) {
+        requiredFields[i].classList.add('form-highlights')
+      }
+    })
+  }
 
   // Modal Close Handlers
   $('.close').click(function (e) {

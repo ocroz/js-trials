@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <title>JIRA Custom Issue Collector</title>
 
-  <!-- External dependencies -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <!-- External dependencies: DO NOT USE THE MIN VERSIONS OF AUI -->
+  <script src="/custom/lib/jquery/1.7.2/jquery.min.js"></script>
   <script src="/custom/lib/aui/5.9.24/js/aui.js"></script>
   <script src="/custom/lib/aui/5.9.24/js/aui-experimental.js"></script>
   <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui.css"/>
@@ -26,9 +26,9 @@
   <select id="priority" class="jira:priorities" name="Priority" title="Select Priority" required></select>
   <select id="issuetype" class="jira:issuetypes" name="Issue Type" title="Select Issue Type"></select>
   <select id="components" class="jira:components" multiple name="Component" title="Select Component"></select>
-  <select id="affectversions" class="jira:versions" multiple data-live-search="true" name="Affected Version" title="Select Affected Version"></select>
-  <select id="fixversion" class="jira:versions" data-live-search="true" name="Fix Version" title="Select Fix Version"></select>
-  <select id="fruit" name="Fruit" title="Select Fruit">
+  <select id="affectversions" class="jira:versions" multiple data-live-search="true" name="Affected Version" title="Select Affected Version" required></select>
+  <select id="fixversion" class="jira:versions" data-live-search="true" name="Fix Version" title="Select Fix Version" required></select>
+  <select id="fruit" name="Fruit" title="Select Fruit" required>
     <option>Apple</option>
     <option>Orange</option>
     <option>Banana</option>
@@ -38,12 +38,12 @@
     <div><label><input type="checkbox" class="checkbox" value="Option 2">Option 2</label></div>
     <div><label><input type="checkbox" class="checkbox" value="Option 3">Option 3</label></div>
   </div>
-  <div id="checkbox-2" class="checkbox" title="Checkbox 2">
+  <div id="checkbox-2" class="checkbox" title="Checkbox 2" required>
     <label><input type="checkbox" class="checkbox" value="Option 4">Option 4</label> <!-- rm div -->
     <label><input type="checkbox" class="--------" value="Option 5">Option 5</label> <!-- rm class -->
     <label><input type="checkbox" class="--------" value="Option 6">Option 6</label>
   </div>
-  <div id="radio-1" class="radio" title="Radiobox 1">
+  <div id="radio-1" class="radio" title="Radiobox 1" required>
     <div><label><input type="radio" class="radio" name="radio-1" value="Option 1">Option 1</label></div>
     <div><label><input type="radio" class="radio" name="radio-1" value="Option 2">Option 2</label></div>
     <div><label><input type="radio" class="radio" name="radio-1" value="Option 3">Option 3</label></div>
