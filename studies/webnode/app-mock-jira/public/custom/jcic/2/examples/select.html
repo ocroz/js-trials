@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Select placeholder :invalid</title>
+
+  <!-- External dependencies: DO NOT USE THE MIN VERSIONS OF AUI -->
+  <script src="/custom/lib/jquery/1.7.2/jquery.min.js"></script>
+  <script src="/custom/lib/aui/5.9.24/js/aui.js"></script>
+  <script src="/custom/lib/aui/5.9.24/js/aui-experimental.js"></script>
+  <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui.css"/>
+  <link rel="stylesheet" type="text/css" href="/custom/lib/aui/5.9.24/css/aui-experimental.css"/>
+  <!-- / External dependencies -->
+
+  <link rel="stylesheet" href="/custom/jcic/2/css/jcic.css">
+  <script src="/custom/jcic/2/js/jcic.js"></script>
+</head>
+<body>
+
+<style type="text/css">
+/*
+  select:invalid {
+    color: gray !important;
+  }
+  select option {
+    color: black;
+  }
+*/
+</style>
+
+<form class="aui">
+  <div class="field-group">
+    <label for="fruit">Fruit<span class="aui-icon icon-required">required</span></label>
+    <select id="fruit" required class="select medium-long-field form-highlights">
+      <option disabled selected hidden value>Select Fruit</option>
+      <option>Apple</option>
+      <option>Orange</option>
+      <option>Banana</option>
+    </select>
+  </div>
+</form>
+
+<button class="aui-button" onclick="window.AJS.dialog2('#select-in-modal').show()">Open Dialog1</button>
+
+<section id="select-in-modal" class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden=true data-aui-modal=true role="dialog">
+  <form class="aui">
+    <header class="aui-dialog2-header">
+      <h2 class="aui-dialog2-header-main">Select in Modal</h2>
+    </header>
+    <div class="aui-dialog2-content">
+      <div class="field-group">
+        <label for="fruit">Fruit<span class="aui-icon icon-required">required</span></label>
+        <select id="fruit" required class="select medium-long-field form-highlights">
+          <option disabled selected hidden value>Select Fruit</option>
+          <option>Apple</option>
+          <option>Orange</option>
+          <option>Banana</option>
+        </select>
+      </div>
+    </div>
+  </form>
+</section>
+
+</body>
+</html>

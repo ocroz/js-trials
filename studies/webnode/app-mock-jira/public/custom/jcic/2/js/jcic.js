@@ -321,8 +321,13 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
           } else {
             (childNode.multiple || childNode.hasAttribute('data-live-search')) && auiSelect2Fields.push(childNode.id)
             if (!childNode.multiple) {
-              var title = addElement(fieldGroup.children[lastNode], 'option', {disabled: true, hidden: true, selected: true, value: ''})
-              addElement(title, 'span', {style: 'display: none;'}, childNode.title)
+              // placeholder option must be first
+              addElement(
+                fieldGroup.children[lastNode],
+                'option', {disabled: true, hidden: true, selected: true, value: ''}, childNode.title || childNode.placeholder,
+                fieldGroup.children[lastNode][0] // insert before first option
+              )
+
               fieldGroup.children[lastNode].classList.add('select')
             } else {
               fieldGroup.children[lastNode].classList.add('multi-select')
@@ -387,7 +392,8 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
   // Get form values
   function getFormValues () {
     var elements = $('#' + that.modal + ' [id]')
-    for (var i = 0; i < elements.length; i++) {
+    var i, j
+    for (i = 0; i < elements.length; i++) {
       var element = elements[i]
       if (element.localName !== 'div') {
         if (!element.multiple) {
@@ -397,7 +403,7 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
           // Multiple values
           that.formValues[element.id] = []
           var options = element.querySelectorAll('option')
-          for (var j = 0; j < options.length; j++) {
+          for (j = 0; j < options.length; j++) {
             options[j].selected && that.formValues[element.id].push(options[j].value)
           }
         }
@@ -406,7 +412,7 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
         var inputs = document.querySelectorAll('#' + that.modal + ' ' + '#' + element.id + ' ' + 'input')
         var type = 'checkbox'
         var values = []
-        for (var j = 0; j < inputs.length; j++) {
+        for (j = 0; j < inputs.length; j++) {
           var input = inputs[j]
           if (input.checked) {
             type = input.type
@@ -448,34 +454,14 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   window.AJS.dialog2('#' + that.modal).show()
   that.modals.push(that.modal)
 
-  // Fix bug for Firefox when the textarea is required
-  // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-  if (typeof InstallTrigger !== 'undefined') { // Browser is Firefox
-    var textareas = window.AJS.$('#' + that.modal + ' textarea')
-    for (var i = 0; i < textareas.length; i++) {
-      textareas[i].outerHTML = textareas[i].outerHTML
-    }
+  // Fix bug for all browsers but Chrome when the textarea or select is required
+  var elements = window.AJS.$('#' + that.modal + ' textarea,select')
+  for (var i = 0; i < elements.length; i++) {
+    elements[i].outerHTML = elements[i].outerHTML
   }
 
-  // Fix bug for all browsers but Chrome when the aui-select is required
-  window.setTimeout(function() {
-    var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
-    for (var i = 0; i < auiSelects.length; i++) {
-      auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
-        window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
-    }
-  }, 1);
-
-  // Fix bug for Internet Explorer when clicking on aui-select button and aui-select value is empty
-  window.setTimeout(function() {
-    window.AJS.$('#' + that.modal + ' aui-select button').on('click', function(e) {
-      window.setTimeout(function() {
-        e.target.parentNode.getElementsByTagName('input')[0].click()
-      }, 1)
-    })
-  }, 1);
-
   // Fix feature for Chrome to highlight the empty required form fields that make the submit to fail
+  // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
   if (!!window.chrome && !!window.chrome.webstore) { // Browser is Chrome
     $('.submit').click(function (e) {
       var requiredFields = window.AJS.$('#' + that.modal + ' :required')
@@ -484,6 +470,25 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
       }
     })
   }
+
+  // Fixes that need the new DOM at the next tick
+  window.setTimeout(function () {
+    var i
+
+    // Fix bug for all browsers but Chrome when the aui-select is required
+    var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
+    for (i = 0; i < auiSelects.length; i++) {
+      auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
+        window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
+    }
+
+    // Fix bug for Internet Explorer when clicking on aui-select button and aui-select value is empty
+    window.AJS.$('#' + that.modal + ' aui-select button').on('click', function (e) {
+      window.setTimeout(function () {
+        e.target.parentNode.getElementsByTagName('input')[0].click()
+      }, 1)
+    })
+  }, 1)
 
   // Modal Close Handlers
   $('.close').click(function (e) {
@@ -517,12 +522,12 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
 }
 
 // Add Element
-function addElement (fragment, element, attributes, text) {
+function addElement (fragment, element, attributes, text, beforeElement) {
   var newNode = document.createElement(element)
   for (var attribute in attributes) {
     newNode.setAttribute([attribute], attributes[attribute])
   }
   if (text) { newNode.textContent = text }
-  fragment.appendChild(newNode)
+  beforeElement ? (fragment.insertBefore(newNode, beforeElement)) : (fragment.appendChild(newNode))
   return newNode
 }
