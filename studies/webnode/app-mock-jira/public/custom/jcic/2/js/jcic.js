@@ -244,7 +244,9 @@ function showForm (that) {
   // Modal Form Submit Handler
   $('#' + that.modal).submit(function (e) {
     e.preventDefault()
-    getFormValues()
+    if (!auiForm.validateFields(that)) {
+      return false // Some required fields are still empty
+    }
     that.submit()
     return false
   })
@@ -300,7 +302,9 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
       } else {
         fieldLabel = addElement(fieldGroup, 'label', {for: childNode.id}, label)
       }
-      childNode.required && addElement(fieldLabel, 'span', {class: 'aui-icon icon-required'}, 'required')
+      if (childNode.hasAttribute('required')) { // .required fails on div elements
+        addElement(fieldLabel, 'span', {class: 'aui-icon icon-required'}, 'required')
+      }
 
       var newNode = document.createElement(auiSelect ? 'aui-select' : childNode.localName)
       fieldGroup.appendChild(newNode)
@@ -322,9 +326,10 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
             (childNode.multiple || childNode.hasAttribute('data-live-search')) && auiSelect2Fields.push(childNode.id)
             if (!childNode.multiple) {
               // placeholder option must be first
+              var hidden = !(thisBrowser.isIE || thisBrowser.isEdge) ? true : null
               addElement(
                 fieldGroup.children[lastNode],
-                'option', {disabled: true, hidden: true, selected: true, value: ''}, childNode.title || childNode.placeholder,
+                'option', {disabled: true, hidden: hidden, selected: true, value: ''}, childNode.title || childNode.placeholder,
                 fieldGroup.children[lastNode][0] // insert before first option
               )
 
@@ -388,9 +393,35 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
       }
     }
   }
+}
 
-  // Get form values
-  function getFormValues () {
+// https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+var thisBrowser = {
+  // Opera 8.0+
+  isOpera: (!!window.opr && !!window.opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0,
+
+  // Firefox 1.0+
+  isFirefox: typeof InstallTrigger !== 'undefined',
+
+  // Safari 3.0+ "[object HTMLElementConstructor]"
+  isSafari: /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === '[object SafariRemoteNotification]' })(!window['safari'] || (typeof window.safari !== 'undefined' && window.safari.pushNotification)),
+
+  // Internet Explorer 6-11
+  isIE: /* @cc_on!@ */false || !!document.documentMode,
+
+  // Edge 20+
+  isEdge: !this.isIE && !!window.StyleMedia,
+
+  // Chrome 1+
+  isChrome: !!window.chrome && !!window.chrome.webstore,
+
+  // Blink engine detection
+  isBlink: (this.isChrome || this.isOpera) && !!window.CSS
+}
+
+var auiForm = {
+  // Get field values
+  getFieldValues: function (that) {
     var elements = $('#' + that.modal + ' [id]')
     var i, j
     for (i = 0; i < elements.length; i++) {
@@ -422,6 +453,130 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
         that.formValues[element.id] = type === 'checkbox' ? values : values[0]
       }
     }
+  },
+
+  prepareFields: function (that) {
+    var i
+
+    // Fix bug for all browsers but Chrome when the select is required
+    var elements = window.AJS.$('#' + that.modal + ' select')
+    for (i = 0; i < elements.length; i++) {
+      elements[i].outerHTML = elements[i].outerHTML
+    }
+
+    // Fix bug for firefox when the textarea is required
+    if (thisBrowser.isFirefox) {
+      elements = window.AJS.$('#' + that.modal + ' textarea')
+      for (i = 0; i < elements.length; i++) {
+        elements[i].outerHTML = elements[i].outerHTML
+      }
+    }
+
+    // Fixes that need the new DOM at the next tick
+    window.setTimeout(function () {
+      // Fix bug for all browsers but Chrome when the aui-select is required
+      var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
+      for (i = 0; i < auiSelects.length; i++) {
+        auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
+          window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
+      }
+
+      // Fix bug for Internet Explorer when the selected image is too big
+      if (thisBrowser.isIE) {
+        window.AJS.$('#' + that.modal + ' aui-select input').focusout(function (e) {
+          e.target.setAttribute('style', e.target.getAttribute('style') + ' background-size: 16px 16px;')
+        })
+      }
+
+      // Fix bug for Internet Explorer when clicking on aui-select button and aui-select value is empty
+      window.AJS.$('#' + that.modal + ' aui-select button').on('click', function (e) {
+        window.setTimeout(function () {
+          e.target.parentNode.getElementsByTagName('input')[0].click()
+        }, 1)
+      })
+    }, 1)
+  },
+
+  validateFields: function (that) {
+    var i
+    this.getFieldValues(that)
+
+    // Highlight the empty required form fields that make the submit to fail
+    var requiredFields = window.AJS.$('#' + that.modal + ' :required')
+    for (i = 0; i < requiredFields.length; i++) {
+      requiredFields[i].classList.add('form-highlights')
+    }
+    auiSelectHighlights()
+
+    // Return true only if all the required fields are valued
+    var fields = window.AJS.$('#' + that.modal + ' :required')
+    for (i = 0; i < fields.length; i++) {
+      if (!fields[i].value) {
+        auiRequiredTooltip(fields[i])
+        return false
+      }
+    }
+    fields = window.AJS.$('#' + that.modal + ' div[required]') // checkboxes and radio buttons
+    for (i = 0; i < fields.length; i++) {
+      if (!that.value(fields[i].id).length) {
+        auiRequiredTooltip(fields[i])
+        return false
+      }
+    }
+    return true
+
+    // Highlight the select2 fields
+    function auiSelectHighlights () {
+      window.setTimeout(function () {
+        select2ToggleClass()
+        divToggleClass()
+      }, 1)
+
+      window.setTimeout(function () {
+        // input is either children (multi-select) or next to div.select2-highlights (single select with live search)
+        window.AJS.$('.select2-highlights input, .select2-highlights ~ input').focusout(function (e) {
+          select2ToggleClass()
+        })
+      }, 1)
+
+      function select2ToggleClass () {
+        var selects = $('select.select2-offscreen:required')
+        for (var i = 0; i < selects.length; i++) {
+          var target = selects[i].parentNode.querySelectorAll('div a, div ul')[0]
+          if (selects[i].value) {
+            target.classList.remove('select2-highlights')
+          } else {
+            target.classList.add('select2-highlights')
+          }
+        }
+      }
+
+      function divToggleClass () {
+        var divs = $('#' + that.modal + ' div[required]')
+        for (var i = 0; i < divs.length; i++) {
+          if (that.value(divs[i].id).length) {
+            divs[i].classList.remove('div-highlights')
+          } else {
+            divs[i].classList.add('div-highlights')
+          }
+        }
+      }
+    }
+
+    // Activate a tooltip for 3s on the first empty required field
+    function auiRequiredTooltip (target) {
+      var id = 'required-tooltip'
+      if (!window.AJS.$('#' + id).length) {
+        var position = target.parentNode.localName === 'aui-select' ? 'position:absolute;' : 'position:relative;'
+        addElement(target.parentNode, 'a', {id: id, style: position, title: 'Please put a value for this field'})
+        window.AJS.$('#' + id).tooltip()
+        window.AJS.$('#' + id).trigger('mouseover')
+        window.setTimeout(function () {
+          window.AJS.$('#' + id).tooltip('destroy')
+          window.AJS.$('#' + id).remove()
+        }, 3000)
+      }
+    }
   }
 }
 
@@ -438,9 +593,9 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   // Modal Footer
   if (modalEvents && modalEvents.submit) {
     // Exit if cancel, or submit (Note: pressing enter on an input will select the first defined button)
-    addElement(modal.footer, 'button', {class: 'form-btn-hidden submit', 'aria-hidden': true, tabindex: -1})
+    addElement(modal.footer, 'button', {class: 'form-btn-hidden', 'aria-hidden': true, tabindex: -1})
     addElement(modal.footer, 'button', {class: 'aui-button aui-button-link close exit'}, 'Cancel')
-    addElement(modal.footer, 'button', {class: 'aui-button aui-button-primary submit'}, 'Submit')
+    addElement(modal.footer, 'button', {class: 'aui-button aui-button-primary'}, 'Submit')
   } else if (modalEvents && modalEvents.continue) {
     // Do not exit, so remove class .exit
     addElement(modal.footer, 'button', {class: 'aui-button close'}, 'Continue')
@@ -454,71 +609,8 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   window.AJS.dialog2('#' + that.modal).show()
   that.modals.push(that.modal)
 
-  // Fix bug for all browsers but Chrome when the select is required
-  var elements = window.AJS.$('#' + that.modal + ' select')
-  for (var i = 0; i < elements.length; i++) {
-    elements[i].outerHTML = elements[i].outerHTML
-  }
-
-  // Fix bug for firefox when the textarea is required
-  if (typeof InstallTrigger !== 'undefined') { // Browser is Firefox
-    elements = window.AJS.$('#' + that.modal + ' textarea')
-    for (var i = 0; i < elements.length; i++) {
-      elements[i].outerHTML = elements[i].outerHTML
-    }
-  }
-
-  // Fixes that need the new DOM at the next tick
-  window.setTimeout(function () {
-    // Fix bug for all browsers but Chrome when the aui-select is required
-    var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
-    for (var i = 0; i < auiSelects.length; i++) {
-      auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
-        window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
-    }
-
-    // Fix bug for Internet Explorer when clicking on aui-select button and aui-select value is empty
-    window.AJS.$('#' + that.modal + ' aui-select button').on('click', function (e) {
-      window.setTimeout(function () {
-        e.target.parentNode.getElementsByTagName('input')[0].click()
-      }, 1)
-    })
-  }, 1)
-
-  // Fixes that fire on submit
-  $('.submit').click(function (e) {
-    // Fix feature for Chrome to highlight the empty required form fields that make the submit to fail
-    // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-    if (!!window.chrome && !!window.chrome.webstore) { // Browser is Chrome
-      var requiredFields = window.AJS.$('#' + that.modal + ' :required')
-      for (var i = 0; i < requiredFields.length; i++) {
-        requiredFields[i].classList.add('form-highlights')
-      }
-    }
-
-    // Fix for all browsers when the aui-select is required
-    window.setTimeout(function () {
-      auiSelectHighlights()
-    }, 1)
-    window.setTimeout(function () {
-      $('.aui-select-highlights input, .aui-select-highlights ~ input').focusout(function (e) {
-        auiSelectHighlights()
-      })
-    }, 1)
-    function auiSelectHighlights () {
-      var selects = $('select.select2-offscreen:required')
-      for (var i = 0; i < selects.length; i++) {
-        var targets=selects[i].parentNode.querySelectorAll('div a, div ul')
-        for (var j = 0; j < selects.length; j++) {
-          if (targets[j]) {
-            selects[i].value
-              ? (targets[j].classList.remove('aui-select-highlights'))
-              : (targets[j].classList.add('aui-select-highlights'))
-          }
-        }
-      }
-    }
-  })
+  // Prepare the form fields for their validation
+  modalEvents && modalEvents.submit && auiForm.prepareFields(that)
 
   // Modal Close Handlers
   $('.close').click(function (e) {
@@ -540,7 +632,7 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
     // Create the modal structure
     var modalFragment = document.createDocumentFragment()
     var modalContent = addElement(modalFragment, 'section', {class: 'aui-layer aui-dialog2 aui-dialog2-medium', id: modalId, 'aria-hidden': true, 'data-aui-modal': true, role: 'dialog'})
-    var modalForm = addElement(modalContent, 'form', {class: 'aui'})
+    var modalForm = addElement(modalContent, 'form', {class: 'aui', novalidate: true})
     var modalHeader = addElement(modalForm, 'div', {class: 'aui-dialog2-header'})
     var modalBody = addElement(modalForm, 'div', {class: 'aui-dialog2-content'})
     var modalFooter = addElement(modalForm, 'div', {class: 'aui-dialog2-footer'})
@@ -555,9 +647,13 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
 function addElement (fragment, element, attributes, text, beforeElement) {
   var newNode = document.createElement(element)
   for (var attribute in attributes) {
-    newNode.setAttribute([attribute], attributes[attribute])
+    attributes[attribute] !== null && newNode.setAttribute([attribute], attributes[attribute])
   }
   if (text) { newNode.textContent = text }
-  beforeElement ? (fragment.insertBefore(newNode, beforeElement)) : (fragment.appendChild(newNode))
+  if (beforeElement) {
+    fragment.insertBefore(newNode, beforeElement)
+  } else {
+    fragment.appendChild(newNode)
+  }
   return newNode
 }

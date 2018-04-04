@@ -21,7 +21,14 @@ form.aui {
   box-shadow: 0 0 2px #FF0000 !important;
 }
 
-.aui-select-highlights {
+.div-highlights {
+  border-bottom: solid;
+  border-color: red;
+  border-width: 2px;
+  width: 328px;
+}
+
+.select2-highlights {
   border-width: 1px !important;
   border-radius: 3px !important;
   border-color: red !important;
@@ -35,5 +42,10 @@ form.aui {
 }
 
 :invalid {
-  color: gray !important;
+  color: dimgray !important;
+}
+
+:disabled {
+  background-color: white !important;
+  color: dimgray !important;
 }
