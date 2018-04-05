@@ -228,7 +228,7 @@ function showForm (that) {
   showModal(that, modalTitle, modalBody, modalEvents)
 
   // Activate AUI features
-  that.onModalShown()
+  that.auiOnModalShown()
 
   // Modal Form Submit Handler
   $('#' + that.modal).submit(function (e) {
@@ -252,43 +252,31 @@ function showForm (that) {
       var fieldGroup = addElement(fieldContent, 'div', {class: 'field-group'})
       modalBody.appendChild(fieldContent)
       var label = childNode.getAttribute('name') || childNode.getAttribute('title')
+      var fieldLabel = addElement(fieldGroup, 'label', {for: childNode.id}, label)
+      if (childNode.hasAttribute('required')) { // .required fails on div elements
+        addElement(fieldLabel, 'span', {class: 'aui-icon icon-required'}, 'required')
+      }
 
 /*
-  input/textarea/div(radio/checkboxes): label
-  select single/multi: label but aui-label for priorities and issuetypes
-
-  <label for="input-id">Summary<span class="aui-icon icon-required">required</span></label>
-  <label for="textarea-id">Description</label>
-  <aui-label for="issuetype-id">Issue Type:</aui-label>
-  <label for="div-id">Checkboxes/Radio buttons</label>
-
-select
+select solutions:
 single/multi | optgroup | live search | image : solution
   x                                           : select without auiSelect2()
-  x                           x               : select with auiSelect2()
-  x                           x           x   : aui-select
+  x                           x               : select with auiSelect2() +disabled/hidden/selected option
+  x                           x           x   : aui-select but with label (not aui-label) for consistency
   x               x                           : select without auiSelect2()
-  x               x           x               : multiple=false with auiSelect2() and select/multi-select plus disabled/hidden/selected option*
-         x                                    : n/a
+  x               x           x               : select with auiSelect2() +disabled/hidden/selected option
+         x                                    : n/a -> must be auiSelect2() so with live search
          x                    x               : multiple=true with auiSelect2() and multi-select
-         x        x                           : n/a
+         x        x                           : n/a -> must be auiSelect2() so with live search
          x        x           x               : multiple=true with auiSelect2() and multi-select
 */
 
-      var fieldLabel = null
       var auiSelect = false
       if (childNode.localName === 'select' && (
         childNode.classList.contains('jira:priorities') || childNode.classList.contains('jira:issuetypes')
       )) {
         auiSelect = true
-        fieldLabel = addElement(fieldGroup, 'aui-label', {for: childNode.id}, label)
-      } else {
-        fieldLabel = addElement(fieldGroup, 'label', {for: childNode.id}, label)
       }
-      if (childNode.hasAttribute('required')) { // .required fails on div elements
-        addElement(fieldLabel, 'span', {class: 'aui-icon icon-required'}, 'required')
-      }
-
       var newNode = document.createElement(auiSelect ? 'aui-select' : childNode.localName)
       fieldGroup.appendChild(newNode)
       newNode.outerHTML = auiSelect
@@ -299,8 +287,8 @@ single/multi | optgroup | live search | image : solution
         childNode.localName === 'input' && fieldGroup.children[lastNode].classList.add('text')
         childNode.localName === 'textarea' && fieldGroup.children[lastNode].classList.add('textarea')
         if (childNode.localName === 'select') {
-          !childNode.title && fieldGroup.children[lastNode].setAttribute('title', childNode.getAttribute('placeholder'))
-          !childNode.placeholder && fieldGroup.children[lastNode].setAttribute('placeholder', childNode.getAttribute('title'))
+          // !childNode.title && fieldGroup.children[lastNode].setAttribute('title', childNode.getAttribute('placeholder'))
+          // !childNode.placeholder && fieldGroup.children[lastNode].setAttribute('placeholder', childNode.getAttribute('title'))
 
           if (fieldGroup.children[lastNode].localName === 'aui-select') {
             childNode.required && fieldGroup.children[lastNode].children[0] &&
@@ -364,7 +352,7 @@ single/multi | optgroup | live search | image : solution
                     // Use select._datalist for Chrome only
                     addElement(select._datalist || select, 'aui-option', {'img-src': item.iconUrl}, item.name)
                   } else {
-                    addElement(select, 'option', null, item.name)
+                    addElement(select, 'option', {id: j}, item.name)
                   }
                 }
               }
@@ -402,11 +390,11 @@ var thisBrowser = {
 
 function startAuiFeatures (that, auiSelect2Fields) {
   // Register to onModalShown and onFormSubmit events
-  that.onModalShown = onModalShown
+  that.auiOnModalShown = auiOnModalShown
   that.getAndValidateFormFieldValues = getAndValidateFormFieldValues
 
   // The modal is now shown
-  function onModalShown () {
+  function auiOnModalShown () {
     var elements, i
 
     // Fix bug for all browsers but Chrome when the select is required
@@ -417,7 +405,21 @@ function startAuiFeatures (that, auiSelect2Fields) {
 
     // Activate the select2 fields
     auiSelect2Fields.forEach(function (id) {
-      window.AJS.$('#' + that.modal + ' #' + id).auiSelect2()
+      window.AJS.$('#' + that.modal + ' #' + id).auiSelect2({
+        // templateSelection: function (data) {
+        //   if (data.id === '') { // adjust for custom placeholder values
+        //     return 'Custom styled placeholder text'
+        //   }
+        //   return data.text
+        // },
+        // placeholder: {
+        //   id: '-1', // the value of the option
+        //   text: 'Select an option'
+        // },
+        placeholder: 'Select item/s',
+        containerCssClass: 'placeholder',
+        allowClear: true
+      })
 
       // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
       window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
@@ -471,7 +473,7 @@ function startAuiFeatures (that, auiSelect2Fields) {
   }
 
   // The form is being submitted
-  function getAndValidateFormFieldValues() {
+  function getAndValidateFormFieldValues () {
     getFieldValues()
     return formValidation()
 
