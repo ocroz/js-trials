@@ -219,8 +219,6 @@ function showMessage (that, title, message, event) {
 }
 
 function showForm (that) {
-  var auiSelect2Fields = []
-
   // Modal Header, Body, Footer
   var modalTitle = document.getElementById(that.collector).title || that.collector + ' Submit Form'
   var modalBody = addFormFields()
@@ -229,23 +227,14 @@ function showForm (that) {
   // Show Modal
   showModal(that, modalTitle, modalBody, modalEvents)
 
-  // Modal auiSelect2 fields
-  auiSelect2Fields.forEach(function (id) {
-    window.AJS.$('#' + that.modal + ' #' + id).auiSelect2()
-
-    // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
-    window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
-      if (e.target.classList.contains('select2-disabled')) {
-        e.target.style.display = 'none'
-      }
-    })
-  })
+  // Activate AUI features
+  that.onModalShown()
 
   // Modal Form Submit Handler
   $('#' + that.modal).submit(function (e) {
     e.preventDefault()
-    if (!auiForm.validateFields(that)) {
-      return false // Some required fields are still empty
+    if (!that.getAndValidateFormFieldValues()) {
+      return false // The validation failed for few fields
     }
     that.submit()
     return false
@@ -253,6 +242,7 @@ function showForm (that) {
 
   // Add the Form Fields from the Collector
   function addFormFields () {
+    var auiSelect2Fields = []
     var modalBody = document.createElement('div')
     var childNodes = document.getElementById(that.collector).childNodes
     for (var i = 1; i < childNodes.length; i += 2) {
@@ -264,9 +254,13 @@ function showForm (that) {
       var label = childNode.getAttribute('name') || childNode.getAttribute('title')
 
 /*
-  input/textarea: label
+  input/textarea/div(radio/checkboxes): label
   select single/multi: label but aui-label for priorities and issuetypes
-  radio/checkboxes: legend
+
+  <label for="input-id">Summary<span class="aui-icon icon-required">required</span></label>
+  <label for="textarea-id">Description</label>
+  <aui-label for="issuetype-id">Issue Type:</aui-label>
+  <label for="div-id">Checkboxes/Radio buttons</label>
 
 select
 single/multi | optgroup | live search | image : solution
@@ -279,21 +273,10 @@ single/multi | optgroup | live search | image : solution
          x                    x               : multiple=true with auiSelect2() and multi-select
          x        x                           : n/a
          x        x           x               : multiple=true with auiSelect2() and multi-select
-
-*document.getElementsByClassName('select2-match')[0].parentNode.style.display = 'none'
-document.getElementsByClassName('select2-match')[0].parentNode.outerText === document.getElementById('component-id').children[0].outerText
-
-        <label for="text-input">Summary<span class="aui-icon icon-required">required</span></label>
-        <label for="textarea-id">Description</label>
-        <aui-label for="issuetype-id">Issue Type:</aui-label>
-        <legend>Radio buttons</legend>
 */
 
       var fieldLabel = null
       var auiSelect = false
-      // if (childNode.localName === 'div') {
-      //   fieldLabel = addElement(fieldGroup, 'legend', null, label)
-      // } else
       if (childNode.localName === 'select' && (
         childNode.classList.contains('jira:priorities') || childNode.classList.contains('jira:issuetypes')
       )) {
@@ -341,11 +324,9 @@ document.getElementsByClassName('select2-match')[0].parentNode.outerText === doc
         }
         fieldGroup.children[lastNode].classList.add('medium-long-field')
       }
-      if (childNode.localName === 'textarea' && childNode.placeholder) {
-        fieldGroup.children[lastNode].value = '' // Fix a bug in Internet Explorer
-      }
     }
     addJiraOptions(modalBody)
+    startAuiFeatures(that, auiSelect2Fields)
     return modalBody
   }
 
@@ -419,55 +400,47 @@ var thisBrowser = {
   isBlink: (this.isChrome || this.isOpera) && !!window.CSS
 }
 
-var auiForm = {
-  // Get field values
-  getFieldValues: function (that) {
-    var elements = $('#' + that.modal + ' [id]')
-    var i, j
-    for (i = 0; i < elements.length; i++) {
-      var element = elements[i]
-      if (element.localName !== 'div') {
-        if (!element.multiple) {
-          // Single value
-          that.formValues[element.id] = element.value !== '' ? element.value : undefined
-        } else {
-          // Multiple values
-          that.formValues[element.id] = []
-          var options = element.querySelectorAll('option')
-          for (j = 0; j < options.length; j++) {
-            options[j].selected && that.formValues[element.id].push(options[j].value)
-          }
-        }
-      } else {
-        // Checkbox and Radio buttons
-        var inputs = document.querySelectorAll('#' + that.modal + ' ' + '#' + element.id + ' ' + 'input')
-        var type = 'checkbox'
-        var values = []
-        for (j = 0; j < inputs.length; j++) {
-          var input = inputs[j]
-          if (input.checked) {
-            type = input.type
-            values.push(input.value)
-          }
-        }
-        that.formValues[element.id] = type === 'checkbox' ? values : values[0]
-      }
-    }
-  },
+function startAuiFeatures (that, auiSelect2Fields) {
+  // Register to onModalShown and onFormSubmit events
+  that.onModalShown = onModalShown
+  that.getAndValidateFormFieldValues = getAndValidateFormFieldValues
 
-  prepareFields: function (that) {
-    var i
+  // The modal is now shown
+  function onModalShown () {
+    var elements, i
 
     // Fix bug for all browsers but Chrome when the select is required
-    var elements = window.AJS.$('#' + that.modal + ' select')
+    elements = window.AJS.$('#' + that.modal + ' select')
     for (i = 0; i < elements.length; i++) {
       elements[i].outerHTML = elements[i].outerHTML
     }
 
-    // Fix bug for firefox when the textarea is required
-    if (thisBrowser.isFirefox) {
-      elements = window.AJS.$('#' + that.modal + ' textarea')
-      for (i = 0; i < elements.length; i++) {
+    // Activate the select2 fields
+    auiSelect2Fields.forEach(function (id) {
+      window.AJS.$('#' + that.modal + ' #' + id).auiSelect2()
+
+      // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
+      window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
+        if (e.target.classList.contains('select2-disabled')) {
+          e.target.style.display = 'none'
+        }
+      })
+    })
+
+    // Fix feature for Chrome with an alternative of ms-clear in Internet Explorer and Edge
+    elements = window.AJS.$('#' + that.modal + ' aui-select input')
+    for (i = 0; i < elements.length; i++) {
+      elements[i].type = 'search'
+    }
+
+    // Fix bug for Internet Explorer when the textarea has a placeholder
+    // Fix bug for Firefox when the textarea is required
+    elements = window.AJS.$('#' + that.modal + ' textarea')
+    for (i = 0; i < elements.length; i++) {
+      if (elements[i].placeholder) {
+        elements[i].value = ''
+      }
+      if (thisBrowser.isFirefox) {
         elements[i].outerHTML = elements[i].outerHTML
       }
     }
@@ -475,10 +448,10 @@ var auiForm = {
     // Fixes that need the new DOM at the next tick
     window.setTimeout(function () {
       // Fix bug for all browsers but Chrome when the aui-select is required
-      var auiSelects = window.AJS.$('#' + that.modal + ' aui-select')
-      for (i = 0; i < auiSelects.length; i++) {
-        auiSelects[i].parentNode.getElementsByTagName('input')[0].required =
-          window.AJS.$('#' + that.collector + ' #' + auiSelects[i].id)[0].required
+      elements = window.AJS.$('#' + that.modal + ' aui-select')
+      for (i = 0; i < elements.length; i++) {
+        elements[i].parentNode.getElementsByTagName('input')[0].required =
+          window.AJS.$('#' + that.collector + ' #' + elements[i].id)[0].required
       }
 
       // Fix bug for Internet Explorer when the selected image is too big
@@ -495,38 +468,70 @@ var auiForm = {
         }, 1)
       })
     }, 1)
-  },
+  }
 
-  validateFields: function (that) {
-    var i
-    this.getFieldValues(that)
+  // The form is being submitted
+  function getAndValidateFormFieldValues() {
+    getFieldValues()
+    return formValidation()
 
-    // Highlight the empty required form fields that make the submit to fail
-    var requiredFields = window.AJS.$('#' + that.modal + ' :required')
-    for (i = 0; i < requiredFields.length; i++) {
-      requiredFields[i].classList.add('form-highlights')
-    }
-    auiSelectHighlights()
-
-    // Return true only if all the required fields are valued
-    var fields = window.AJS.$('#' + that.modal + ' :required')
-    for (i = 0; i < fields.length; i++) {
-      if (!fields[i].value) {
-        auiRequiredTooltip(fields[i])
-        return false
+    function getFieldValues () {
+      var elements = $('#' + that.modal + ' [id]')
+      var i, j
+      for (i = 0; i < elements.length; i++) {
+        var element = elements[i]
+        if (element.localName !== 'div') {
+          if (!element.multiple) {
+            // Single value
+            that.formValues[element.id] = element.value !== '' ? element.value : undefined
+          } else {
+            // Multiple values
+            that.formValues[element.id] = []
+            var options = element.querySelectorAll('option')
+            for (j = 0; j < options.length; j++) {
+              options[j].selected && that.formValues[element.id].push(options[j].value)
+            }
+          }
+        } else {
+          // Checkbox and Radio buttons
+          var inputs = document.querySelectorAll('#' + that.modal + ' ' + '#' + element.id + ' ' + 'input')
+          var type = 'checkbox'
+          var values = []
+          for (j = 0; j < inputs.length; j++) {
+            var input = inputs[j]
+            if (input.checked) {
+              type = input.type
+              values.push(input.value)
+            }
+          }
+          that.formValues[element.id] = type === 'checkbox' ? values : values[0]
+        }
       }
     }
-    fields = window.AJS.$('#' + that.modal + ' div[required]') // checkboxes and radio buttons
-    for (i = 0; i < fields.length; i++) {
-      if (!that.value(fields[i].id).length) {
-        auiRequiredTooltip(fields[i])
+  }
+
+  function formValidation () {
+    var elements, i
+
+    // Highlight the empty required form fields that make the submit to fail
+    elements = window.AJS.$('#' + that.modal + ' :required')
+    for (i = 0; i < elements.length; i++) {
+      elements[i].classList.add('form-highlights')
+    }
+    auiHighlights() // same for the select2 and div fields
+
+    // Return true only if all the required fields are valued
+    elements = window.AJS.$('#' + that.modal + ' *[required]') // :required fails on div elements
+    for (i = 0; i < elements.length; i++) {
+      if (!(that.value(elements[i].id) && that.value(elements[i].id).length)) {
+        auiRequiredTooltip(elements[i])
         return false
       }
     }
     return true
 
-    // Highlight the select2 fields
-    function auiSelectHighlights () {
+    // Highlight the select2 and div fields
+    function auiHighlights () {
       window.setTimeout(function () {
         select2ToggleClass()
         divToggleClass()
@@ -608,9 +613,6 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
   collectorNode.parentNode.insertBefore(modal.fragment, collectorNode)
   window.AJS.dialog2('#' + that.modal).show()
   that.modals.push(that.modal)
-
-  // Prepare the form fields for their validation
-  modalEvents && modalEvents.submit && auiForm.prepareFields(that)
 
   // Modal Close Handlers
   $('.close').click(function (e) {
