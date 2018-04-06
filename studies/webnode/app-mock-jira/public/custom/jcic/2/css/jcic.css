@@ -6,7 +6,7 @@ form.aui {
   height: calc(100% - 320px);
 }
 
-/* form default hidden primary button triggered when pressing enter from an input */
+/* modal form default hidden primary button triggered when pressing enter from an input field */
 .form-btn-hidden {
   width: 0;
   height: 0;
@@ -15,41 +15,46 @@ form.aui {
   margin: 0;
 }
 
-/* highlight the required input and textarea fields when they are invalid */
-.form-highlights:required:invalid {
+/* highlight the required fields when they are invalid */
+.form-highlights:required:invalid { /* input and textarea */
   border-width: 1px !important;
   border-radius: 3px !important;
   border-color: red !important;
   box-shadow: 0 0 2px #FF0000 !important;
 }
-
-/* toggled class on select2 fields focusout to [un]highlight when they are [in]valid */
-.select2-highlights {
+.select2-highlights { /* toggled class for the required select2 fields on focusout to [un]highlight when they are [in]valid */
   border-width: 1px !important;
   border-radius: 3px !important;
   border-color: red !important;
   box-shadow: 0 0 2px #FF0000 !important;
 }
-
-/* toggled class on div(checkboxes/radio-buttons) fields focusout to [un]highlight when they are [in]valid */
-.div-highlights {
+.div-highlights { /* toggled class for the required div(checkboxes/radio-buttons) fields on focusout to [un]highlight when they are [in]valid */
   border-bottom: solid;
   border-color: red;
   border-width: 2px;
   width: 328px;
 }
 
-/*
-.select2-offscreen:not(.select2-focusser) {
-  position: absolute !important;
-  top: 32px !important;
-  left: 50% !important;
+/* placeholder */
+::placeholder { /* input and textarea for Chrome and Forefox */
+  background-color: white !important;
+  color: gray !important;
+  opacity: 0.6 !important;
 }
-*/
-
-/* +toggled(.select2-chosen) */
-.placeholder, ::placeholder, :invalid {
-  color: red !important;
+:-ms-input-placeholder { /* input and textarea for Internet Explorer */
+  background-color: white !important;
+  color: gray !important;
+  opacity: 0.6 !important;
+}
+::-ms-input-placeholder { /* input and textarea for Edge */
+  background-color: white !important;
+  color: gray !important;
+  opacity: 0.6 !important;
+}
+.placeholder { /* all selects */
+  background-color: white !important;
+  color: gray !important;
+  opacity: 0.6 !important;
 }
 
 /* the first select option disabled/selected (not select2 field) used as placeholder

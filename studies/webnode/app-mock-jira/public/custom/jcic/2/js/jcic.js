@@ -1,9 +1,9 @@
 'use strict'
 
-/* globals JIRAURL $ XMLHttpRequest */
+/* globals AJS JIRAURL XMLHttpRequest */
 
 // CIC constructor
-function CIC (collector, project, mapfields, cb, cicDialog) { // eslint-disable-line no-unused-vars
+function CIC (collector, project, mapfields, cb) { // eslint-disable-line no-unused-vars
   // Check params
   if (!(collector && project && mapfields)) {
     throw new Error('CIC constructor needs a collector, a project, and a mapfields function')
@@ -16,7 +16,6 @@ function CIC (collector, project, mapfields, cb, cicDialog) { // eslint-disable-
   this.modal = collector + '-modal'
   this.modals = []
   this.project = project
-  this.cicDialog = cicDialog
   this.formValues = {}
   this.jira = getJira()
   if (!this.jira) {
@@ -137,7 +136,7 @@ function submit (that) {
       var title = 'New issue submitted'
       var message = '<a href="' + issueurl + '">' + response.data.key + '</a>'
       console.log('ISSUE SUBMITTED:', issueurl)
-      window.AJS.dialog2('#' + that.modals.pop()).hide()
+      AJS.dialog2('#' + that.modals.pop()).hide()
       that.issue = { key: response.data.key, url: issueurl }
       showMessage(that, title, message)
     } else {
@@ -398,52 +397,56 @@ function startAuiFeatures (that, auiSelect2Fields) {
     var elements, i
 
     // Fix bug for all browsers but Chrome when the select is required
-    elements = window.AJS.$('#' + that.modal + ' select')
+    elements = AJS.$('#' + that.modal + ' select')
     for (i = 0; i < elements.length; i++) {
       elements[i].outerHTML = elements[i].outerHTML
     }
 
     // Activate the select2 fields
     auiSelect2Fields.forEach(function (id) {
-      window.AJS.$('#' + that.modal + ' #' + id).auiSelect2()
+      AJS.$('#' + that.modal + ' #' + id).auiSelect2()
 
       // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
-      window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
+      AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
         if (e.target.classList.contains('select2-disabled')) {
           e.target.style.display = 'none'
         }
       })
     })
 
-    // Fix for all browsers to apply the placeholder style(color)
-    var element = addElement(document.body, 'span', {class:'placeholder'})
-    var style = 'color: ' + getComputedStyle(element).color + ' !important;' // +possible other styles
+    // Fix for all browsers to apply the placeholder style on select elements
+    // - First collect the css properties of class .placeholder into style
+    var element = addElement(document.body, 'span', {class: 'placeholder'}) // temporary span for getComputedStyle()
+    var style = ''
+    var properties = ['background-color', 'color', 'opacity'] // +possible other styles
+    for (i = 0; i < properties.length; i++) {
+      style += properties[i] + ':' + window.getComputedStyle(element)[properties[i]] + '!important;'
+    }
     document.body.removeChild(element)
-    elements = window.AJS.$('.select2-default, .select2-chosen')
+    // - Secondly apply the style to the elements: multiselect.auiSelect2(), select.auiSelect2(), and select
+    elements = AJS.$('.select2-default, .select2-choice, #' + that.modal + ' select[id]:not(.select2-offscreen)')
     for (i = 0; i < elements.length; i++) {
       elements[i].setAttribute('style', (elements[i].getAttribute('style') || '') + style)
     }
-    window.AJS.$('.select2-highlights ~ input').focusout(function (e) {
-      var selects = $('select.select2-offscreen:required')
-      for (var i = 0; i < selects.length; i++) {
-        var target = selects[i].parentNode.querySelectorAll('div a ~ input')[0]
-        if (selects[i].value) {
-          target.removeAttribute('style')
-        } else {
-          target.setAttribute('style', style)
-        }
-      }
+    // - Then register to select focusout to toggle the style
+    AJS.$('#' + that.modal + ' div.select.select2-container').focusout(function (e) {
+      var select = AJS.$(this).closest('div.field-group')[0].getElementsByTagName('select')[0] // e.target.closest(element) fails on Edge and IE
+      var target = AJS.$(this).closest('div.field-group')[0].getElementsByTagName('a')[0]
+      select.value ? target.removeAttribute('style') : target.setAttribute('style', style)
+    })
+    AJS.$('#' + that.modal + ' select[id]:not(.select2-offscreen)').focusout(function (e) {
+      e.target.value ? e.target.removeAttribute('style') : e.target.setAttribute('style', style)
     })
 
     // Fix feature for Chrome with an alternative of ms-clear in Internet Explorer and Edge
-    elements = window.AJS.$('#' + that.modal + ' aui-select input')
+    elements = AJS.$('#' + that.modal + ' aui-select input')
     for (i = 0; i < elements.length; i++) {
       elements[i].type = 'search'
     }
 
     // Fix bug for Internet Explorer when the textarea has a placeholder
     // Fix bug for Firefox when the textarea is required
-    elements = window.AJS.$('#' + that.modal + ' textarea')
+    elements = AJS.$('#' + that.modal + ' textarea')
     for (i = 0; i < elements.length; i++) {
       if (elements[i].placeholder) {
         elements[i].value = ''
@@ -456,21 +459,21 @@ function startAuiFeatures (that, auiSelect2Fields) {
     // Fixes that need the new DOM at the next tick
     window.setTimeout(function () {
       // Fix bug for all browsers but Chrome when the aui-select is required
-      elements = window.AJS.$('#' + that.modal + ' aui-select')
+      elements = AJS.$('#' + that.modal + ' aui-select')
       for (i = 0; i < elements.length; i++) {
         elements[i].parentNode.getElementsByTagName('input')[0].required =
-          window.AJS.$('#' + that.collector + ' #' + elements[i].id)[0].required
+          AJS.$('#' + that.collector + ' #' + elements[i].id)[0].required
       }
 
-      // Fix bug for Internet Explorer when the selected image is too big
-      if (thisBrowser.isIE) {
-        window.AJS.$('#' + that.modal + ' aui-select input').focusout(function (e) {
-          e.target.setAttribute('style', e.target.getAttribute('style') + ' background-size: 16px 16px;')
+      // Fix bug for Internet Explorer and Safari when the selected image is too big
+      if (thisBrowser.isIE || thisBrowser.isSafari) {
+        AJS.$('#' + that.modal + ' aui-select input').focusout(function (e) {
+          !e.target.style['background-size'] && e.target.setAttribute('style', e.target.getAttribute('style') + '; background-size: 16px 16px;')
         })
       }
 
       // Fix bug for Internet Explorer when clicking on aui-select button and aui-select value is empty
-      window.AJS.$('#' + that.modal + ' aui-select button').on('click', function (e) {
+      AJS.$('#' + that.modal + ' aui-select button').on('click', function (e) {
         window.setTimeout(function () {
           e.target.parentNode.getElementsByTagName('input')[0].click()
         }, 1)
@@ -484,7 +487,7 @@ function startAuiFeatures (that, auiSelect2Fields) {
     return formValidation()
 
     function getFieldValues () {
-      var elements = $('#' + that.modal + ' [id]')
+      var elements = AJS.$('#' + that.modal + ' [id]')
       var i, j
       for (i = 0; i < elements.length; i++) {
         var element = elements[i]
@@ -522,14 +525,14 @@ function startAuiFeatures (that, auiSelect2Fields) {
     var elements, i
 
     // Highlight the empty required form fields that make the submit to fail
-    elements = window.AJS.$('#' + that.modal + ' :required')
+    elements = AJS.$('#' + that.modal + ' :required')
     for (i = 0; i < elements.length; i++) {
       elements[i].classList.add('form-highlights')
     }
     auiHighlights() // same for the select2 and div fields
 
     // Return true only if all the required fields are valued
-    elements = window.AJS.$('#' + that.modal + ' *[required]') // :required fails on div elements
+    elements = AJS.$('#' + that.modal + ' *[required]') // :required fails on div elements
     for (i = 0; i < elements.length; i++) {
       if (!(that.value(elements[i].id) && that.value(elements[i].id).length)) {
         auiRequiredTooltip(elements[i])
@@ -547,13 +550,13 @@ function startAuiFeatures (that, auiSelect2Fields) {
 
       window.setTimeout(function () {
         // input is either children (multi-select) or next to div.select2-highlights (single select with live search)
-        window.AJS.$('.select2-highlights input, .select2-highlights ~ input').focusout(function (e) {
+        AJS.$('.select2-highlights input, .select2-highlights ~ input').focusout(function (e) {
           select2ToggleClass()
         })
       }, 1)
 
       function select2ToggleClass () {
-        var selects = $('select.select2-offscreen:required')
+        var selects = AJS.$('select.select2-offscreen:required')
         for (var i = 0; i < selects.length; i++) {
           var target = selects[i].parentNode.querySelectorAll('div a, div ul')[0]
           if (selects[i].value) {
@@ -565,7 +568,7 @@ function startAuiFeatures (that, auiSelect2Fields) {
       }
 
       function divToggleClass () {
-        var divs = $('#' + that.modal + ' div[required]')
+        var divs = AJS.$('#' + that.modal + ' div[required]')
         for (var i = 0; i < divs.length; i++) {
           if (that.value(divs[i].id).length) {
             divs[i].classList.remove('div-highlights')
@@ -579,14 +582,14 @@ function startAuiFeatures (that, auiSelect2Fields) {
     // Activate a tooltip for 3s on the first empty required field
     function auiRequiredTooltip (target) {
       var id = 'required-tooltip'
-      if (!window.AJS.$('#' + id).length) {
+      if (!AJS.$('#' + id).length) {
         var position = target.parentNode.localName === 'aui-select' ? 'position:absolute;' : 'position:relative;'
         addElement(target.parentNode, 'a', {id: id, style: position, title: 'Please put a value for this field'})
-        window.AJS.$('#' + id).tooltip()
-        window.AJS.$('#' + id).trigger('mouseover')
+        AJS.$('#' + id).tooltip()
+        AJS.$('#' + id).trigger('mouseover')
         window.setTimeout(function () {
-          window.AJS.$('#' + id).tooltip('destroy')
-          window.AJS.$('#' + id).remove()
+          AJS.$('#' + id).tooltip('destroy')
+          AJS.$('#' + id).remove()
         }, 3000)
       }
     }
@@ -619,15 +622,15 @@ function showModal (that, modalTitle, modalBody, modalEvents) {
 
   // Show Modal
   collectorNode.parentNode.insertBefore(modal.fragment, collectorNode)
-  window.AJS.dialog2('#' + that.modal).show()
+  AJS.dialog2('#' + that.modal).show()
   that.modals.push(that.modal)
 
   // Modal Close Handlers
-  $('.close').click(function (e) {
+  AJS.$('.close').click(function (e) {
     e.preventDefault()
-    window.AJS.dialog2('#' + that.modals.pop()).hide()
+    AJS.dialog2('#' + that.modals.pop()).hide()
   })
-  $('.exit').click(function (e) {
+  AJS.$('.exit').click(function (e) {
     that.exit()
   })
 
