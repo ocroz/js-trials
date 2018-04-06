@@ -287,8 +287,8 @@ single/multi | optgroup | live search | image : solution
         childNode.localName === 'input' && fieldGroup.children[lastNode].classList.add('text')
         childNode.localName === 'textarea' && fieldGroup.children[lastNode].classList.add('textarea')
         if (childNode.localName === 'select') {
-          // !childNode.title && fieldGroup.children[lastNode].setAttribute('title', childNode.getAttribute('placeholder'))
-          // !childNode.placeholder && fieldGroup.children[lastNode].setAttribute('placeholder', childNode.getAttribute('title'))
+          !childNode.title && fieldGroup.children[lastNode].setAttribute('title', childNode.getAttribute('placeholder'))
+          !childNode.placeholder && fieldGroup.children[lastNode].setAttribute('placeholder', childNode.getAttribute('title'))
 
           if (fieldGroup.children[lastNode].localName === 'aui-select') {
             childNode.required && fieldGroup.children[lastNode].children[0] &&
@@ -405,21 +405,7 @@ function startAuiFeatures (that, auiSelect2Fields) {
 
     // Activate the select2 fields
     auiSelect2Fields.forEach(function (id) {
-      window.AJS.$('#' + that.modal + ' #' + id).auiSelect2({
-        // templateSelection: function (data) {
-        //   if (data.id === '') { // adjust for custom placeholder values
-        //     return 'Custom styled placeholder text'
-        //   }
-        //   return data.text
-        // },
-        // placeholder: {
-        //   id: '-1', // the value of the option
-        //   text: 'Select an option'
-        // },
-        placeholder: 'Select item/s',
-        containerCssClass: 'placeholder',
-        allowClear: true
-      })
+      window.AJS.$('#' + that.modal + ' #' + id).auiSelect2()
 
       // Hide the disabled elements. A hidden/disabled/selected element is only used as placeholder.
       window.AJS.$('.select2-results').on('DOMNodeInserted', function (e) {
@@ -427,6 +413,26 @@ function startAuiFeatures (that, auiSelect2Fields) {
           e.target.style.display = 'none'
         }
       })
+    })
+
+    // Fix for all browsers to apply the placeholder style(color)
+    var element = addElement(document.body, 'span', {class:'placeholder'})
+    var style = 'color: ' + getComputedStyle(element).color + ' !important;' // +possible other styles
+    document.body.removeChild(element)
+    elements = window.AJS.$('.select2-default, .select2-chosen')
+    for (i = 0; i < elements.length; i++) {
+      elements[i].setAttribute('style', (elements[i].getAttribute('style') || '') + style)
+    }
+    window.AJS.$('.select2-highlights ~ input').focusout(function (e) {
+      var selects = $('select.select2-offscreen:required')
+      for (var i = 0; i < selects.length; i++) {
+        var target = selects[i].parentNode.querySelectorAll('div a ~ input')[0]
+        if (selects[i].value) {
+          target.removeAttribute('style')
+        } else {
+          target.setAttribute('style', style)
+        }
+      }
     })
 
     // Fix feature for Chrome with an alternative of ms-clear in Internet Explorer and Edge
