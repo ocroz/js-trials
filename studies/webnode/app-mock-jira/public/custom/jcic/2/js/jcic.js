@@ -422,11 +422,16 @@ function startAuiFeatures (that, auiSelect2Fields) {
     for (i = 0; i < properties.length; i++) {
       style += properties[i] + ':' + window.getComputedStyle(element)[properties[i]] + '!important;'
     }
+    // var border = 'border:' + window.getComputedStyle(element)['border'] + '!important;'
     document.body.removeChild(element)
     // - Secondly apply the style to the elements: multiselect.auiSelect2(), select.auiSelect2(), and select
     elements = AJS.$('.select2-default, .select2-choice, #' + that.modal + ' select[id]:not(.select2-offscreen)')
     for (i = 0; i < elements.length; i++) {
-      elements[i].setAttribute('style', (elements[i].getAttribute('style') || '') + style)
+      elements[i].setAttribute(
+        'style',
+        (elements[i].getAttribute('style') || '') + style
+        // (elements[i].getAttribute('style') || '') + (elements[i].localName === 'a' ? style + border : style)
+      )
     }
     // - Then register to select focusout to toggle the style
     AJS.$('#' + that.modal + ' div.select.select2-container').focusout(function (e) {
