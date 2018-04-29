@@ -1,5 +1,6 @@
 'use strict'
 
+const { broadcast } = require('../controllers/web-sockets')
 const { getMyself, getIssueTypes, getPriorities, getStatuses } = require('./system')
 
 let issues = []
@@ -41,6 +42,8 @@ function deleteIssue (key) {
   console.log(`Delete issue ${key} (issueIndex: ${issueIndex})`)
   issues[issueIndex].active = false
   issues[issueIndex].fields.updated = new Date()
+
+  broadcast(getIssues([issues[issueIndex]])[issueIndex])
   return true
 }
 
@@ -51,8 +54,8 @@ function getIssue (key) {
   return issue
 }
 
-function getIssues () {
-  const data = issues.filter(issue => issue.active)
+function getIssues (theseIssues) {
+  const data = (theseIssues || issues).filter(issue => issue.active)
   data.forEach((issue, i) => {
     data[i].fields.comment.comments =
       data[i].fields.comment.comments
@@ -70,6 +73,8 @@ function addComment (key, body) {
   const comment = { active, id, author, body, created }
   issues[issueIndex].fields.comment.comments.push(comment)
   issues[issueIndex].fields.updated = new Date()
+
+  broadcast(getIssues([issues[issueIndex]])[issueIndex])
   return comment
 }
 
@@ -78,6 +83,8 @@ function deleteComment (key, cid) {
   console.log(`Delete comment ${cid} of issue ${key} (issueIndex: ${issueIndex})`)
   issues[issueIndex].fields.comment.comments[cid].active = false
   issues[issueIndex].fields.updated = new Date()
+
+  broadcast(getIssues([issues[issueIndex]])[issueIndex])
   return true
 }
 
@@ -90,6 +97,8 @@ function updateComment (key, cid, body) {
   const issueIndex = issues.findIndex(issue => issue.key === key)
   issues[issueIndex].fields.comment.comments[cid].body = body
   issues[issueIndex].fields.updated = new Date()
+
+  broadcast(getIssues([issues[issueIndex]])[issueIndex])
   return issues[issueIndex].fields.comment.comments[cid]
 }
 
@@ -107,6 +116,7 @@ function rankIssues (newRanks) {
     issues[rankBeforeIssueIndex].fields[cfRank] = issues[issueIndex].fields[cfRank]
     issues[issueIndex].fields[cfRank] = beforeIssueRank
   }
+
   return true
 }
 
