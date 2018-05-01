@@ -1,0 +1,19 @@
+div
+  -
+    var header = 'No comment yet:'
+    if (issue.fields.comment.comments.length > 0) { header = 'Comments:' }
+
+b #{header}
+p
+
+each comment in issue.fields.comment.comments
+  div
+    -
+      var created = {
+        title:  moment(comment.created).format('YYYY/MM/DD HH:mm:ss'),
+        fromNow: moment(comment.created).fromNow()
+      }
+  p
+    span Posted by #{comment.author.name}&nbsp;
+    span(title=`${created.title}`) #{created.fromNow}.
+    pre #{comment.body}<br>

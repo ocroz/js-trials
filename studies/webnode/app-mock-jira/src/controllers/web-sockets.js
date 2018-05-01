@@ -1,3 +1,5 @@
+'use strict'
+
 const io = require('socket.io')({path: '/ws'})
 
 let sockets = {}

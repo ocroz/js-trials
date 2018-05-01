@@ -2,8 +2,13 @@ html(lang="fr")
   head
     meta(charset="utf-8")
     title= pageTitle ? pageTitle + ' — ' + title : title
-    script(type="text/javascript" src="/lib/socket.io/2.1.0/socket.io.js")
     link(rel="icon" href="data:;base64,iVBORw0KGgo=")
     link(rel="stylesheet" href="/lib/bootstrap/3.3.7/css/bootstrap.min.css")
+    script(type="text/javascript" src="/lib/socket.io/2.1.0/socket.io.js")
+    script(type="text/javascript" src="/lib/pug/2.0.3/js/pug.js")
+    script(type="text/javascript" src="/lib/pug/2.0.3/js/generic.min.js")
+    script(type="text/javascript" src="/lib/moment/2.22.1/moment.min.js")
+    script(type="text/javascript" src="/lib/jquery/3.2.1/jquery.min.js")
+    script(type="text/javascript" src="/src/client.js")
   body
     block content

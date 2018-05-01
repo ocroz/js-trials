@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pug in the console</title>
+</head>
+<body>
+  <div id="pug">Sorry, this didn't work.</div>
+  <script type="text/javascript" src="js/pug.js"></script>
+  <script type="text/javascript" src="js/generic.min.js"></script>
+  <script>
+    // https://pugjs.org/api/reference.html
+    // https://github.com/pugjs/pug/issues/2876#issuecomment-333409805
+    document.getElementById('pug').innerHTML = window.pug.render('p Yay! It worked!')
+  </script>
+</body>
+</html>

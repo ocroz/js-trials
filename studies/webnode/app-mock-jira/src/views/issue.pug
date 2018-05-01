@@ -90,18 +90,5 @@ block content
   div(class='container')
     hr
 
-  div(class='container')
-    b Comments:
-    p
-
-    each comment in issue.fields.comment.comments
-      div
-        -
-          var created = {
-            title:  moment(comment.created).format('YYYY/MM/DD HH:mm:ss'),
-            fromNow: moment(comment.created).fromNow()
-          }
-      p
-        span Posted by #{comment.author.name}&nbsp;
-        span(title=`${created.title}`) #{created.fromNow}.
-        pre #{comment.body}<br>
+  div#comments(class='container')
+    include ../../public/src/views/comments
