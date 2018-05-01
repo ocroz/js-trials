@@ -133,7 +133,7 @@ class IssueBoxComp extends Component {
 
           <div className={container}><hr /></div>
 
-          <div className={container}>
+          <div className={container} style={{ opacity: isFetching ? 0.5 : 1 }}>
             {isFetching && comments.length === 0 && <p><b>Loading...</b></p>}
             {!isFetching && comments.length === 0 && <p><b>No comment yet</b></p>}
             {comments.length > 0 &&

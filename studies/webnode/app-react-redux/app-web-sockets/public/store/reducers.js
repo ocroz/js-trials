@@ -58,7 +58,7 @@ const dataReducer = (state = dataDefaultState, action) => {
       return {isFetching: false, issues: action.issues, activeIssue}
     case UPDATE_ISSUE:
       const issues = state.issues.map(issue => issue.key === action.issue.key ? action.issue : issue)
-      return {isFetching: state.isFetching, issues, activeIssue: state.activeIssue}
+      return {isFetching: true, issues, activeIssue: state.activeIssue}
     default:
       return state
   }
