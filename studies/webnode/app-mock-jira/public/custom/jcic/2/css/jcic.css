@@ -1,5 +1,5 @@
 /* responsive modal and form height to allow scroll down to the modal footer buttons always */
-/* these css classes can be removed with the later AUI versions */
+/* these css classes should be removed with the later AUI versions */
 section.aui-layer.aui-dialog2 {
   height: 100%;
 }
@@ -9,12 +9,11 @@ form.aui {
 
 /* border for the select.auiSelect2() too */
 /* this css class should be added with the later AUI versions
-a.select2-choice {
+.select2-choice-default {
   border: 1px solid !important;
-  border-color: rgb(193, 199, 208);
   border-color: #A6ACAF !important;
 }
-*/
+ */
 
 /* modal form default hidden primary button triggered when pressing enter from an input field */
 .form-btn-hidden {
