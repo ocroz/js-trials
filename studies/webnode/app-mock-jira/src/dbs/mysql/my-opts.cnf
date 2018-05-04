@@ -1,0 +1,4 @@
+[mysqld]
+datadir = ./src/dbs/mysql/db
+socket = ./src/dbs/mysql/mysql.sock
+port = 52401
