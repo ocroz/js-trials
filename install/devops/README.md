@@ -1,0 +1,126 @@
+# DevOps
+
+## Table of Contents
+1. [Installation](#installation)
+2. [Docker](#docker)
+3. [Kubernetes](#kubernetes)
+
+## References
+
+https://www.ibm.com/developerworks/cloud/library/cl-getting-started-docker-and-kubernetes/index.html
+
+## Installation
+
+### On Windows 10 Pro
+
+- IBM Cloud tools AND plugins.
+- Docker for Windows +Kitematic.
+- Note: Docker uses Hyper-V from the Windows distribution.
+- Kubernetes (might be installed via docker).
+
+### On Windows 10 Home
+
+- IBM Cloud tools AND plugins.
+- Docker Toolbox for Windows (inc. Kitematic).
+- VirtualBox (might be installed via docker).
+- Kubernetes (might be installed via docker).
+
+## Docker
+
+### Create a docker container
+
+Create a `Dockerfile` (or `git clone https://github.com/IBM/dWTVSimpleContainerApp`):
+
+```
+FROM ibmcom/ibmnode:latest
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY package.json /usr/src/app
+RUN npm install
+
+EXPOSE 6006
+
+COPY . /usr/src/app
+
+CMD ["node", "app.js"]
+```
+
+Run the docker commands:
+
+```bash
+docker version|info              # Docker is installed
+docker run hello-world        # Execute a docker image
+docker build -t basicapp:v1 .   # Build a docker image
+docker create basicapp:v1         # Create a container
+docker image ls                      # List the images
+docker container ls | docker ps  # List the containers
+```
+
+### SSH to server and container
+
+On Windows the VM disks are saved into:
+- Hyper-V: C:\Users\Public\Documents\Hyper-V\Virtual hard disks\MobyLinuxVM.vhdx
+- VirtualBox:
+
+Log into the underlying VM and look at the containers and images:
+
+```text
+docker run -it --rm --privileged --pid=host justincormack/nsenter1
+# ls /var/lib/docker/containers/
+# cat /var/lib/docker/image/overlay2/repositories.json
+# exit
+```
+
+Log into the container:
+
+```text
+docker exec -it ec03ec29cc02 bash
+# ps aux
+# which node
+# exit
+```
+
+### Open the app in browser
+
+Open `Kitematic`, select the appropriate `Container`, click on `Settings`, then `Hostname/Ports`, and `Configure Ports` with:
+
+| DOCKER PORT | PUBLISHED IP:PORT |
+| ---- | ---- |
+| 6006 | localhost:32008 |
+
+Then open the app at http://localhost:32008/ or http://vboxlocal:32008/.
+
+## Kubernetes
+
+Create the kubernetes cluster at the IBM Cloud, then:
+
+```bash
+bx login -a https://api.eu-de.bluemix.net
+bx plugin install container-service -r Bluemix
+bx plugin install container-registry -r Bluemix
+```
+
+```bash
+bx cs region-set eu-central
+bx cs cluster-config mycluster # Name of the cluster
+export KUBECONFIG=$HOME/.bluemix/.../mycluster/kube-config-mil01-mycluster.yml
+kubectl get nodes
+```
+
+Then either:
+
+```bash
+bx cr login
+bx cr namespace-add mybag # Name of the namespace
+bx cr build -t registry.eu-de.bluemix.net/mybag/basicapp:v1 . # Change URL, namespace, image, tag
+bx cr images
+```
+
+Or:
+
+```bash
+docker tag basicapp:v1 registry.eu-de.bluemix.net/mybag/basicapp:v2
+docker push registry.eu-de.bluemix.net/mybag/basicapp:v2
+```
