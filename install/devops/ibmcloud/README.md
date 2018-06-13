@@ -76,9 +76,18 @@ docker run -it --rm --privileged --pid=host justincormack/nsenter1
 Log into the container:
 
 ```text
-docker exec -it ec03ec29cc02 bash
+docker exec -it [CONTAINER_ID] bash
 # ps aux
 # which node
+# exit
+```
+
+Debug the container if it fails to startup:
+
+```text
+docker commit [CONTAINER_ID] temporary_image
+docker run --entrypoint=bash -it temporary_image
+# ls
 # exit
 ```
 
