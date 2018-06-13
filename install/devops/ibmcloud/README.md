@@ -1,4 +1,4 @@
-# DevOps
+# DevOps with `docker` and `kubernetes` on the IBM Cloud
 
 ## Table of Contents
 1. [Installation](#installation)
@@ -23,7 +23,7 @@ https://www.ibm.com/developerworks/cloud/library/cl-getting-started-docker-and-k
 - IBM Cloud tools AND plugins.
 - Docker Toolbox for Windows (inc. Kitematic).
 - VirtualBox (might be installed via docker).
-- Kubernetes (might be installed via docker).
+- Kubernetes.
 
 ## Docker
 
@@ -94,13 +94,17 @@ Then open the app at http://localhost:32008/ or http://vboxlocal:32008/.
 
 ## Kubernetes
 
-Create the kubernetes cluster at the IBM Cloud, then:
+Create the kubernetes cluster at the IBM Cloud, then...
+
+Login to your IBM Cloud, and install the plusgins.
 
 ```bash
 bx login -a https://api.eu-de.bluemix.net
 bx plugin install container-service -r Bluemix
 bx plugin install container-registry -r Bluemix
 ```
+
+Connect `kubectl` to your IBM Cloud.
 
 ```bash
 bx cs region-set eu-central
@@ -109,7 +113,7 @@ export KUBECONFIG=$HOME/.bluemix/.../mycluster/kube-config-mil01-mycluster.yml
 kubectl get nodes
 ```
 
-Then either:
+Create an image in your IBM Cloud with either:
 
 ```bash
 bx cr login
@@ -123,4 +127,13 @@ Or:
 ```bash
 docker tag basicapp:v1 registry.eu-de.bluemix.net/mybag/basicapp:v2
 docker push registry.eu-de.bluemix.net/mybag/basicapp:v2
+```
+
+Create the container and expose it to the world.
+
+```bash
+kubectl run apptest --image=registry.eu-de.bluemix.net/mybag/basicapp:v1
+kubectl expose deployment/apptest --type=NodePort --name=apptest-service --port=6006
+kubectl describe service apptest-service  # Get NodePort
+bx cs workers mycluster                  # Get public IP
 ```
