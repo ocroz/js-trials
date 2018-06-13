@@ -62,7 +62,7 @@ docker container ls | docker ps  # List the containers
 
 On Windows the VM disks are saved into:
 - Hyper-V: C:\Users\Public\Documents\Hyper-V\Virtual hard disks\MobyLinuxVM.vhdx
-- VirtualBox:
+- VirtualBox: C:\Users\Denise\\\.docker\machine\machines\default\disk.vmdk
 
 Log into the underlying VM and look at the containers and images:
 

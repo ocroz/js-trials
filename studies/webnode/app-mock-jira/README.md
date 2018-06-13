@@ -12,6 +12,7 @@ To:
 ```bash
 docker build -t app-mock-jira:v1 .
 docker run -e DOCKER_PORT=45450 -p 45450:4545 -d app-mock-jira:v1
+docker run -e DOCKER_HOST="192.168.99.100" -e DOCKER_PORT=45450 -p 45450:4545 -d app-mock-jira:v1
 
 docker ps
 docker logs [CONTAINER_ID]
