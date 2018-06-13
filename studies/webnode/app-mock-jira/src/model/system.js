@@ -1,7 +1,7 @@
 'use strict'
 
-const { port } = require('../env/index')
-const baseUrl = `http://localhost:${port}/jira`
+const { dockerPort } = require('../env/index')
+const baseUrl = `http://localhost:${dockerPort}/jira`
 
 function getMyself () {
   const myself = {
