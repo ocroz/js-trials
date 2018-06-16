@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-react-redux-service
+  labels:
+    name: app-react-redux-service
+spec:
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 2000
+      targetPort: 2000
+      nodePort: 32124
+  selector:
+    run: app-react-redux
