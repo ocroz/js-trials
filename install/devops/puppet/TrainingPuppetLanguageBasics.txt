@@ -1,3 +1,7 @@
+# Training Puppet Language Basics
+
+https://learn.puppet.com/course/puppet-language-basics
+
 runbook
 
 package { 'openssh-server':
