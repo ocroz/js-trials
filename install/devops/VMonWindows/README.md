@@ -31,6 +31,17 @@ Hyper-V > Select the VM > Select `Settings`:
 
 On Windows Familly Home editions (where Hyper-V is not provided)
 
+- [Download](https://www.virtualbox.org/wiki/Downloads), Install and Start VirtualBox.
+- Create New VM of type Linux in version Red Hat (64-bits).
+- Adjust the memory eg 1024MB.
+- Create a virtual disk now: VDI, dynamic size, adjust the size eg 30MB.
+
+Configure VM:
+- General > Advanced > clipboard AND drag & drop bidirectional.
+- System > Processor > 2 CPUs.
+- Storage > [Controller: IDE] Empty > Optical Drive > Select Optical Drive > Browse and select the Centos 7 ISO file.
+- Network > Bridge Adapter.
+
 ## Linux VM installation
 
 VM configuration:

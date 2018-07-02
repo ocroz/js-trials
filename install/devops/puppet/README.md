@@ -46,6 +46,11 @@ find /etc/puppetlabs/ -type f
 ## Puppet Agent
 
 ```bash
+sudo rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-pc1-el-7.noarch.rpm
+sudo yum -y install puppet-agent
+```
+
+```bash
 service puppet status # restart
 ```
 
@@ -62,6 +67,11 @@ https://puppet.com/docs/puppet/5.3/config_file_main.html
 - Modifying the /etc/hosts files
 - Opening port 8140 on Puppet Master firewall
 - Sign Certificates on Puppet Master
+
+On Master
+```bash
+iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 8140 -j ACCEPT
+```
 
 On Agent:
 ```bash
