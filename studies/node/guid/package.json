@@ -1,0 +1,15 @@
+{
+  "name": "guid",
+  "version": "1.0.0",
+  "description": "Generate uuid/v1 key",
+  "license": "ISC",
+  "repository": {
+    "type": "git"
+  },
+  "scripts": {
+    "start": "node uuid.js"
+  },
+  "dependencies": {
+    "uuid": "^3.3.2"
+  }
+}
