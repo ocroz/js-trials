@@ -57,5 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# Webstorm local files
+.idea/
+
 # Unzipped document
 Training_Git_Total-20160511_20160513/
