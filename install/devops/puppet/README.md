@@ -230,7 +230,7 @@ node '<agent-02>' {
 See https://forge.puppetlabs.com/
 
 ```bash
-sudo /opt/puppetlabs/bin/puppet module install <module>
+sudo /opt/puppetlabs/bin/puppet module install <module> --environment production # or test
 ```
 
 Then include it as above.

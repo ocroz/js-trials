@@ -36,12 +36,12 @@ class postgresql {
   file { '/var/lib/pgsql/data/postgresql.conf':
     ensure  => file,
     content => '...',
-    require => Package['${package_name}'] # or use before on package
+    require => Package['${package_name}'], # or use before on package
     notify  => Service['${service_name}'], # or use subscribe on service
   }
   service { '${service_name}':
     ensure  => running,
-	enable  => true,
+    enable  => true,
   }
 }
 node 'pgsql.org.com' {
