@@ -96,3 +96,5 @@ sudo hostnamectl set-hostname ${vm-name};sudo reboot
 ```bash
 ssh centos@${vm-name}
 ```
+
+Checkpoint the new ${vm-name} to reserve the IP in case any further installation needs to be reseted.
