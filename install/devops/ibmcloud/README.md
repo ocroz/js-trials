@@ -99,6 +99,13 @@ Open `Kitematic`, select the appropriate `Container`, click on `Settings`, then 
 | ---- | ---- |
 | 6006 | localhost:32008 |
 
+Command line alternative:
+```bash
+docker ps                                # Get the container id
+docker inspect ${container-id} | grep IP # Get the container published ip
+docker port ${container-id} 6006         # Get the container published port
+```
+
 Then open the app at http://localhost:32008/ or http://vboxlocal:32008/.
 
 ## Kubernetes

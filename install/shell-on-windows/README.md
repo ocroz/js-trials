@@ -6,6 +6,7 @@ See:
 - [Download Git](https://git-scm.com/downloads)
 - [MinGW vs Cygwin](https://en.wikipedia.org/wiki/MinGW)
 - [Windows 10 Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+- [Everything You Can Do With Windows 10’s New Bash Shell](https://www.howtogeek.com/265900/everything-you-can-do-with-windows-10s-new-bash-shell/)
 
 Problems with MinGW:
 - The output of the npm commands are not well rendered with *MinGW*.<br>
