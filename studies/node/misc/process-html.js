@@ -24,13 +24,12 @@ async function listPluginUsage () {
   console.log('Add-on name;CQL;Used in spaces')
   $('h2').each(async (ih2, h2) => {
     if ($(h2).text() === 'All macros') {
-      const tr = $(h2).parent().find('table tbody tr').toArray()
-      for (let itr = 0; itr < tr.length; itr++) { // use for loop over each(async fn) to preserve order
-        // console.log($(tr[itr]).html())
-        const addonName = $($($(tr[itr]).contents()[0]).contents()[0]).text() // contents()[1] if html from file
-        // const addonUsage = $($(tr[itr]).contents()[1]).text() // server wide usage should be > 0
+      const pUsage = $(h2).parent().find('table tbody tr').toArray().map(async tr => {
+        // console.log($(tr).html())
+        const addonName = $($($(tr).contents()[0]).contents()[0]).text() // contents()[1] if html from file
+        // const addonUsage = $($(tr).contents()[1]).text() // server wide usage should be > 0
         const macros = []
-        $(tr[itr]).find('li').each((ili, li) => {
+        $(tr).find('li').each((ili, li) => {
           macros.push(
             $(li).html().replace(/\n/g, '').replace(/.*cql=macro.%3D./, '').replace(/".*/, '').replace(/&quot;/g, '"')
           )
@@ -39,7 +38,11 @@ async function listPluginUsage () {
         // const searchUrl = baseUrl + '/dosearchsite.action?cql=' + cql
         const searchUrl = baseUrl + '/rest/api/content/search?cql=' + cql + '&limit=1'
         const nbResults = await getResults(searchUrl)
-        console.log(addonName, ';', cql, ';', nbResults > 0)
+        return addonName + ';' + cql + ';' + (nbResults > 0).toString()
+      })
+      const usage = await Promise.all(pUsage)
+      for (let i = 0; i < usage.length; i++) {
+        console.log(usage[i])
       }
     }
   })
