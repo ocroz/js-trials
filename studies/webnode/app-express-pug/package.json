@@ -12,14 +12,14 @@
     "debug:server": "nodemon --inspect src/server.js"
   },
   "dependencies": {
-    "body-parser": "^1.17.2",
-    "express": "^4.15.3",
-    "method-override": "^2.3.9",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "method-override": "^3.0.0",
     "node-fetch": "^1.7.2",
     "pug": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "colors": "^1.1.2",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.18.9"
   }
 }

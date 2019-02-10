@@ -12,10 +12,10 @@
     "debug:server": "nodemon --inspect src/server.js"
   },
   "dependencies": {
-    "express": "^4.15.3"
+    "express": "^4.16.4"
   },
   "devDependencies": {
     "colors": "^1.1.2",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.18.10"
   }
 }

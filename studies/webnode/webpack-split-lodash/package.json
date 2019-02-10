@@ -12,9 +12,9 @@
     "start": "bash bin/chrome dist/index.html"
   },
   "devDependencies": {
-    "webpack": "^3.0.0"
+    "webpack": "^4.29.3"
   },
   "dependencies": {
-    "lodash": "^4.17.4"
+    "lodash": ">=4.17.11"
   }
 }

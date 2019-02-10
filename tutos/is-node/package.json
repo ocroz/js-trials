@@ -10,8 +10,8 @@
     "./src/lib/index.js": "./src/lib/browser.js"
   },
   "dependencies": {
-    "browserify": "^14.4.0",
-    "webpack": "^3.0.0"
+    "browserify": "^16.2.3",
+    "webpack": "^4.29.3"
   },
   "scripts": {
     "start": "npm run sol1:start:server",
@@ -34,16 +34,16 @@
     "sol6:debug:server": "node --inspect src/solution6-node.js"
   },
   "devDependencies": {
-    "babel-core": "^6.25.0",
+    "babel-core": "^6.26.3",
     "babel-loader": "^7.1.1",
-    "babel-preset-env": "^1.6.0",
+    "babel-preset-env": "^1.7.0",
     "chai": "^4.0.2",
     "colors": "^1.1.2",
     "cross-env": "^5.0.1",
     "eslint-loader": "^1.9.0",
     "jest": "^20.0.4",
-    "nightmare": "^2.10.0",
-    "standard": "^10.0.2"
+    "nightmare": "^3.0.1",
+    "standard": "^12.0.1"
   },
   "eslintConfig": {
     "extends": "standard"

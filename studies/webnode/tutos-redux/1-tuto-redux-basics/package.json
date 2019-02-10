@@ -14,20 +14,20 @@
     "debug:server": "nodemon --inspect src/server.js"
   },
   "dependencies": {
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-loader": "^7.1.2",
-    "babel-preset-env": "^1.6.0",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
-    "express": "^4.15.3",
+    "express": "^4.16.4",
     "pug": "^2.0.0-rc.3",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-redux": "^5.0.6",
     "redux": "^3.7.2",
-    "webpack": "^3.5.5"
+    "webpack": "^4.29.3"
   },
   "devDependencies": {
     "colors": "^1.1.2",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.18.10"
   }
 }
