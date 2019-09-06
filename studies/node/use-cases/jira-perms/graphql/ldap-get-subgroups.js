@@ -23,8 +23,8 @@ async function getSubgroups () {
   const groups = await fetchGraphql('/graphql', 'POST', `query{searchGroup(name:"${searchGroups}"){sAMAccountName}}`)
 
   // Query and show groups with their subgroups
-  for (let group of groups.data.searchGroup) {
-    console.log(`Processing ${group.sAMAccountName} ...`)
+  for (let group of groups.data.searchGroup.filter(g => g.sAMAccountName.indexOf('-archived') < 0)) {
+    // console.log(`Processing ${group.sAMAccountName} ...`)
     const subgroups = await fetchGraphql('/graphql', 'POST', `query{searchGroup(name:"${group.sAMAccountName}"){sAMAccountName,memberGroup{sAMAccountName}}}`)
     for (let subgroup of subgroups.data.searchGroup[0].memberGroup) {
       console.log(group.sAMAccountName + DELIM + subgroup.sAMAccountName)
