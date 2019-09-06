@@ -3,8 +3,7 @@
 const https = require('https')
 const fetch = require('node-fetch')
 
-const baseUrl = 'https://qtwebservice-01.hq.k.grp:8099'
-const searchGroups = 'app-jira-*' // app-confluence-*
+const baseUrl = 'https://atlassian.hq.k.grp/confluence'
 const DELIM = ';'
 
 const [user, pass] = [process.env['USERNAME'], process.env['pw']] // you should export pw
@@ -13,27 +12,24 @@ const agent = new https.Agent({ rejectUnauthorized: false }) // insecure
 const Authorization = 'Basic ' + Buffer.from(user + ':' + pass, 'binary').toString('base64')
 const headers = { Authorization, 'Accept': 'application/json', 'Content-Type': 'application/json' }
 
-getSubgroups()
-async function getSubgroups () {
-  // Login first
-  const token = await fetchUrl('/login')
-  headers.Authorization = `Bearer ${token.trim()}`
+getRestrictedPages()
+async function getRestrictedPages () {
+  const spaces = await fetchUrl('/rest/api/space?type=global&status=CURRENT&limit=200')
+  if (spaces.size === spaces.limit) { console.log('ERROR> size equals limit, you should increase limit !!!') }
 
-  // Query all the groups
-  const groups = await fetchGraphql('/graphql', 'POST', `query{searchGroup(name:"${searchGroups}"){sAMAccountName}}`)
+  for (let space of spaces.results) {
+    const pages = await fetchUrl('/rpc/json-rpc/confluenceservice-v2/getPages', 'POST', [space.key])
 
-  // Query and show groups with their subgroups
-  for (let group of groups.data.searchGroup) {
-    console.log(`Processing ${group.sAMAccountName} ...`)
-    const subgroups = await fetchGraphql('/graphql', 'POST', `query{searchGroup(name:"${group.sAMAccountName}"){sAMAccountName,memberGroup{sAMAccountName}}}`)
-    for (let subgroup of subgroups.data.searchGroup[0].memberGroup) {
-      console.log(group.sAMAccountName + DELIM + subgroup.sAMAccountName)
+    for (let page of pages) {
+      const pagePermissions = await fetchUrl('/rpc/json-rpc/confluenceservice-v2/getContentPermissionSets', 'POST', [page.id])
+
+      for (let pagePermission of pagePermissions) {
+        for (let contentPermission of pagePermission.contentPermissions) {
+          contentPermission.groupName && console.log([space.key, page.id, contentPermission.type, contentPermission.groupName].join(DELIM))
+        }
+      }
     }
   }
-}
-
-async function fetchGraphql (path, method, query, variables) {
-  return fetchUrl(path, method, { query, variables })
 }
 
 async function fetchUrl (path, method = 'GET', body) {

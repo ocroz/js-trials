@@ -8,6 +8,7 @@ const baseUrl = 'https://atlassian.hq.k.grp/confluence'
 
 const ADMINS = 'svc-atl-admins'
 const MESSAGEFORDESCRIPTION = 'Archived in 2019 because unused'
+const EOL = '\n' // Or '\r\n'
 
 const [user, pass] = [process.env['USERNAME'], process.env['pw']] // you should export pw
 if (pass === undefined) { console.error('ERROR> you should export pw prior running this script !!!') }
@@ -19,7 +20,7 @@ archiveSpaces()
 async function archiveSpaces () {
   const permissionLevels = await fetchUrl('/rpc/json-rpc/confluenceservice-v2/getSpaceLevelPermissions', 'POST')
 
-  const spaceKeys = fs.readFileSync('./archivedSpaceKeys.txt', 'utf-8').split('\r\n').filter(Boolean)
+  const spaceKeys = fs.readFileSync('./archivedSpaceKeys.txt', 'utf-8').split(EOL).filter(Boolean)
 
   for (let spaceKey of spaceKeys) {
     // Get current permissions, then add ADMINS

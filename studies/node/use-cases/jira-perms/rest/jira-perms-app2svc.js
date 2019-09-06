@@ -53,8 +53,11 @@ async function fetchUrl (path, method = 'GET', body) {
     .then(resp => {
       const { ok, status, statusText } = resp
       if (resp.status === 204) { resolve({ ok, status, statusText }); return } // no content
-      if (ok) { resp.json().then(data => { resolve(data) }); return }          // json data
-      resp.json().then(data => { reject(new Error(JSON.stringify(data))) })    // json error
+      if (resp.headers.get('Content-Type').search(/application.json/i) >= 0) { // json or text
+        resp.json().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify(data))))
+      } else {
+        resp.text().then(data => ok ? resolve(data) : reject(new Error(data)))
+      }
     })
   })
 }

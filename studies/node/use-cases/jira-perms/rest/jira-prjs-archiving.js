@@ -45,7 +45,7 @@ async function fetchUrl (path, method = 'GET', body) {
       if (resp.headers.get('Content-Type').search(/application.json/i) >= 0) { // json or text
         resp.json().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify(data))))
       } else {
-        resp.text().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify(data))))
+        resp.text().then(data => ok ? resolve(data) : reject(new Error(data)))
       }
     })
   })

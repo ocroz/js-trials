@@ -1,6 +1,5 @@
 'use strict'
 
-const fs = require('fs')
 const https = require('https')
 const fetch = require('node-fetch')
 
@@ -21,22 +20,58 @@ async function alignPermsOnSpaces () {
   if (spaces.size === spaces.limit) { console.log('ERROR> size equals limit, you should increase limit !!!') }
 
   for (let space of spaces.results) {
-    console.log(`Looping through space ${space.key} ...`)
+    const addedMembers = {}
+    const spaceGroups = {
+      readers: `${STANDARDPREFIX}-${space.key.toLowerCase()}-r`,
+      contribs: `${STANDARDPREFIX}-${space.key.toLowerCase()}-rw`,
+      admins: `${STANDARDPREFIX}-${space.key.toLowerCase()}-a`
+    }
+    const addedGroupMembers = { [spaceGroups.readers]: [], [spaceGroups.contribs]: [], [spaceGroups.admins]: [] }
+    // console.log(`Looping through space ${space.key} ...`)
     const spacePermissions = await fetchUrl('/rpc/json-rpc/confluenceservice-v2/getSpacePermissionSets', 'POST', [space.key])
 
+    // Remove and List extra permissions
     for (let spacePermission of spacePermissions) {
       const permGrantedTo = spacePermission.spacePermissions.map(p => p.userName || p.groupName)
       for (let userOrGroup of permGrantedTo) {
         if (userOrGroup !== null) { // Anonymous
           if (
-            userOrGroup.localeCompare(`${STANDARDPREFIX}-${space.key.toLowerCase()}-r`) &&
-            userOrGroup.localeCompare(`${STANDARDPREFIX}-${space.key.toLowerCase()}-rw`) &&
-            userOrGroup.localeCompare(`${STANDARDPREFIX}-${space.key.toLowerCase()}-a`) &&
+            userOrGroup.localeCompare(spaceGroups.readers) &&
+            userOrGroup.localeCompare(spaceGroups.contribs) &&
+            userOrGroup.localeCompare(spaceGroups.admins) &&
             userOrGroup.localeCompare(ADMINS)
           ) { // Unless ADMINS and standard space groups
-            console.log('Removing permission ' + spacePermission.type + ' for ' + userOrGroup + ' from ' + space.key + ' ...')
+            // Remove extra permissions
+            // console.log('Removing permission ' + spacePermission.type + ' for ' + userOrGroup + ' from ' + space.key + ' ...')
+
+            // List extra permissions
+            addedMembers[userOrGroup] = { ...addedMembers[userOrGroup], ...{ [spacePermission.type]: true } }
           }
         }
+      }
+    }
+
+    // Group extra members per target groups
+    for (let member of Object.keys(addedMembers)) {
+      // const spaceGroup =
+      //   addedMembers[member].SETSPACEPERMISSIONS ? spaceGroups.admins
+      //   : addedMembers[member].EDITSPACE ? spaceGroups.contribs
+      //   : spaceGroups.readers
+      // console.log(`${member};${Object.keys(addedMembers[member])};${spaceGroup}`)
+
+      if (addedMembers[member].SETSPACEPERMISSIONS) { // space admin permission
+        addedGroupMembers[spaceGroups.admins].push(member)
+      } else if (addedMembers[member].EDITSPACE) { // permission to add page in space
+        addedGroupMembers[spaceGroups.contribs].push(member)
+      } else {
+        addedGroupMembers[spaceGroups.readers].push(member)
+      }
+    }
+
+    // List extra members per target groups
+    for (let spaceGroup of Object.values(spaceGroups)) {
+      if (addedGroupMembers[spaceGroup].length) {
+        console.log(spaceGroup + ' : ' + addedGroupMembers[spaceGroup].join(';'))
       }
     }
 
