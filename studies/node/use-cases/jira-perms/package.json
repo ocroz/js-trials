@@ -5,11 +5,9 @@
   "main": "rest/jira-perms-app2svc.js",
   "license": "ISC",
   "repository": {
-    "type": "p4",
-    "url": "https://p4-corp-swarm.hq.k.grp/files/CMS/cms_main/Atlassian/JIRA/admin/scripts/nodejs/permissions"
+    "type": "git"
   },
   "dependencies": {
-    "node-fetch": "^2.3.0",
-    "selenium-webdriver": "^4.0.0-alpha.4"
+    "node-fetch": "^2.3.0"
   }
 }

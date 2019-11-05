@@ -16,7 +16,7 @@ Example for chrome version `70.0.3538`:
 
 Then use it:
 ```bash
-export PATH="/C/Users/crozier/tools/selenium/:$PATH"
+export PATH="$HOME/tools/selenium/:$PATH"
 chromedriver.exe --version
 node ars-groups-rename.js &>>ars-groups-rename.log
 ```

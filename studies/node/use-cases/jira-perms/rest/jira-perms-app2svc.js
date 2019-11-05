@@ -3,7 +3,7 @@
 const https = require('https')
 const fetch = require('node-fetch')
 
-const baseUrl = 'https://atlassian-dev.hq.k.grp/jira'
+const baseUrl = 'https://atlassian-test.hq.k.grp/jira'
 
 const [user, pass] = [process.env['USERNAME'], process.env['pw']] // you should export pw
 if (pass === undefined) { console.error('ERROR> you should export pw prior running this script !!!') }
@@ -15,23 +15,23 @@ updatePermissions()
 async function updatePermissions () {
   const permissionSchemes = await getPermissionSchemes()
   for (let permissionScheme of permissionSchemes.permissionSchemes) {
-    // if (permissionScheme.id !== 13040) continue // For testing
-    // if (permissionScheme.id !== 13540) continue // For testing
-    // if (permissionScheme.id !== 13042) continue // For testing
-    if (permissionScheme.id !== 11150) continue // For testing
+    // if (permissionScheme.id !== 12341) continue // For testing
+    console.log(`Updating permission scheme ${permissionScheme.id} ...`)
+
     const permissions = await getPermissions(permissionScheme.id)
     for (let permission of permissions.permissions) {
       if (permission.holder.type === 'group' && permission.holder.parameter.startsWith('app-jira-')) {
         const group = permission.holder.parameter.replace(/^app-/, 'svc-')
         const groups = await getGroups(group)
-        if (groups.groups.length !== 1) {
+        if (groups.groups.filter(g => !g.name.localeCompare(group)).length !== 1) {
           console.error(`ERROR> Scheme ${permissionScheme.name}: Group ${group} does not exist, skipping scheme...`); break
         }
         console.log(`Scheme ${permissionScheme.name}: Permission ${permission.permission}> Add ${group} ...`)
         await postPermission(permissionScheme.id, permission.permission, group)
         console.log(`Scheme ${permissionScheme.name}: Permission ${permission.permission}> Remove ${permission.holder.parameter} ...`)
         await deletePermission(permissionScheme.id, permission.id)
-        break // For testing
+
+        // break // For testing
       }
     }
   }
@@ -56,7 +56,7 @@ async function fetchUrl (path, method = 'GET', body) {
       if (resp.headers.get('Content-Type').search(/application.json/i) >= 0) { // json or text
         resp.json().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify(data))))
       } else {
-        resp.text().then(data => ok ? resolve(data) : reject(new Error(data)))
+        resp.text().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify({ ok, status, statusText, data }))))
       }
     })
   })

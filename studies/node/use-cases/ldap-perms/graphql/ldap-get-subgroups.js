@@ -32,8 +32,9 @@ async function getSubgroups () {
   }
 }
 
-async function fetchGraphql (path, method, query, variables) {
-  return fetchUrl(path, method, { query, variables })
+async function fetchGraphql (path, method, query, operationName, variables) {
+  return fetchUrl(path, method, { query, operationName, variables })
+         .then(res => !res.errors ? res : new Promise((resolve, reject) => reject(new Error(JSON.stringify(res)))))
 }
 
 async function fetchUrl (path, method = 'GET', body) {
@@ -46,7 +47,7 @@ async function fetchUrl (path, method = 'GET', body) {
       if (resp.headers.get('Content-Type').search(/application.json/i) >= 0) { // json or text
         resp.json().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify(data))))
       } else {
-        resp.text().then(data => ok ? resolve(data) : reject(new Error(data)))
+        resp.text().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify({ ok, status, statusText, data }))))
       }
     })
   })

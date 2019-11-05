@@ -16,10 +16,13 @@ const headers = { Authorization, 'Accept': 'application/json', 'Content-Type': '
 
 alignPermsOnSpaces()
 async function alignPermsOnSpaces () {
-  const spaces = await fetchUrl('/rest/api/space?type=global&status=CURRENT&limit=200')
+  const spaces = await fetchUrl('/rest/api/space?type=global&status=CURRENT&limit=500')
   if (spaces.size === spaces.limit) { console.log('ERROR> size equals limit, you should increase limit !!!') }
 
   for (let space of spaces.results) {
+    // if (space.key.localeCompare('SERVICESTRANS')) continue // For testing
+    // console.log(`Looping through space ${space.key} ...`)
+
     const addedMembers = {}
     const spaceGroups = {
       readers: `${STANDARDPREFIX}-${space.key.toLowerCase()}-r`,
@@ -27,7 +30,6 @@ async function alignPermsOnSpaces () {
       admins: `${STANDARDPREFIX}-${space.key.toLowerCase()}-a`
     }
     const addedGroupMembers = { [spaceGroups.readers]: [], [spaceGroups.contribs]: [], [spaceGroups.admins]: [] }
-    // console.log(`Looping through space ${space.key} ...`)
     const spacePermissions = await fetchUrl('/rpc/json-rpc/confluenceservice-v2/getSpacePermissionSets', 'POST', [space.key])
 
     // Remove and List extra permissions
@@ -51,8 +53,12 @@ async function alignPermsOnSpaces () {
       }
     }
 
+    const spaceGroupReaders = await getGroupMembers(spaceGroups.readers)
+    const spaceGroupContribs = await getGroupMembers(spaceGroups.contribs)
+    const spaceGroupAdmins = await getGroupMembers(spaceGroups.admins)
+
     // Group extra members per target groups
-    for (let member of Object.keys(addedMembers)) {
+    for (let member in addedMembers) {
       // const spaceGroup =
       //   addedMembers[member].SETSPACEPERMISSIONS ? spaceGroups.admins
       //   : addedMembers[member].EDITSPACE ? spaceGroups.contribs
@@ -60,10 +66,13 @@ async function alignPermsOnSpaces () {
       // console.log(`${member};${Object.keys(addedMembers[member])};${spaceGroup}`)
 
       if (addedMembers[member].SETSPACEPERMISSIONS) { // space admin permission
+        await removeUserPermissionWhenInSpaceGroup(space.key, spaceGroupAdmins, member, Object.keys(addedMembers[member])) ||
         addedGroupMembers[spaceGroups.admins].push(member)
       } else if (addedMembers[member].EDITSPACE) { // permission to add page in space
+        await removeUserPermissionWhenInSpaceGroup(space.key, spaceGroupContribs, member, Object.keys(addedMembers[member])) ||
         addedGroupMembers[spaceGroups.contribs].push(member)
       } else {
+        await removeUserPermissionWhenInSpaceGroup(space.key, spaceGroupReaders, member, Object.keys(addedMembers[member])) ||
         addedGroupMembers[spaceGroups.readers].push(member)
       }
     }
@@ -79,6 +88,33 @@ async function alignPermsOnSpaces () {
   }
 }
 
+async function getGroupMembers (group) {
+  const members = await fetchUrl(`/rest/api/group/${group}/member`)
+  while (members._links.next) { // /rest/api/group/${group}/member?limit=200&start=200"
+    // console.log(`Fetching ${members._links.next} ...`)
+    const nextMembers = await fetchUrl(members._links.next)
+    members.results.push(...nextMembers.results)
+    members.size += nextMembers.size
+    members._links.next = nextMembers._links.next
+  }
+  return members
+}
+
+async function removeUserPermissionWhenInSpaceGroup (spaceKey, spaceGroup, member, permissions) {
+  spaceGroup.results.forEach(m => {
+    if (!m.username) {
+      console.log({spaceKey, spaceGroup, member, permissions})
+      console.log(`ERROR> ${m} has no username ...`)
+    }
+  })
+  if (spaceGroup.results.filter(m => !m.username.localeCompare(member)).length !== 1) return false
+  for (let permission of permissions) {
+    console.log('Removing permission ' + permission + ' for ' + member + ' from ' + spaceKey + ' ...')
+    await fetchUrl('/rpc/json-rpc/confluenceservice-v2/removePermissionFromSpace', 'POST', [permission, member, spaceKey])
+  }
+  return true
+}
+
 async function fetchUrl (path, method = 'GET', body) {
   return new Promise((resolve, reject) => {
     fetch(baseUrl + path, {agent, headers, method, body: body && JSON.stringify(body)})
@@ -89,7 +125,7 @@ async function fetchUrl (path, method = 'GET', body) {
       if (resp.headers.get('Content-Type').search(/application.json/i) >= 0) { // json or text
         resp.json().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify(data))))
       } else {
-        resp.text().then(data => ok ? resolve(data) : reject(new Error(data)))
+        resp.text().then(data => ok ? resolve(data) : reject(new Error(JSON.stringify({ ok, status, statusText, data }))))
       }
     })
   })
