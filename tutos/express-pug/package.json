@@ -13,7 +13,7 @@
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "method-override": "^2.3.10",
-    "pug": "^2.0.0-rc.4"
+    "pug": "^3.0.1"
   },
   "devDependencies": {
     "colors": "^1.1.2",
