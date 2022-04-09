@@ -16,7 +16,7 @@
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "method-override": "^2.3.9",
-    "moment": "^2.20.1",
+    "moment": "^2.29.2",
     "pug": "^2.0.3",
     "serve-index": "^1.9.1",
     "socket.io": "^2.1.0"
