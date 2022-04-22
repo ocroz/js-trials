@@ -26,7 +26,7 @@
     "colors": "^1.1.2",
     "envify": "^4.1.0",
     "httpntlm": "^1.7.5",
-    "nconf": "^0.9.1",
+    "nconf": "^0.11.4",
     "node-fetch": "^1.7.3",
     "oauth": "^0.9.15",
     "request": "^2.88.0"
